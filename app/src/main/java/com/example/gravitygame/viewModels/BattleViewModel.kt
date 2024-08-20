@@ -1,22 +1,22 @@
 package com.example.gravitygame.viewModels
 
 import androidx.lifecycle.ViewModel
-import com.example.gravitygame.models.LocationList
-import com.example.gravitygame.uiStates.MovementUiState
-import com.example.gravitygame.uiStates.SelectArmyUiState
 import com.example.gravitygame.maps.BattleMap
 import com.example.gravitygame.models.Cruiser
 import com.example.gravitygame.models.Destroyer
 import com.example.gravitygame.models.Ghost
+import com.example.gravitygame.models.Location
+import com.example.gravitygame.models.LocationList
 import com.example.gravitygame.models.Ship
 import com.example.gravitygame.models.ShipType
-import com.example.gravitygame.models.Location
 import com.example.gravitygame.models.Warper
 import com.example.gravitygame.ui.utils.CoroutineTimer
 import com.example.gravitygame.ui.utils.Player
 import com.example.gravitygame.ui.utils.Players
 import com.example.gravitygame.ui.utils.calculateBattle
 import com.example.gravitygame.uiStates.MovementRecord
+import com.example.gravitygame.uiStates.MovementUiState
+import com.example.gravitygame.uiStates.SelectArmyUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -278,7 +278,7 @@ class BattleViewModel : ViewModel() {
             changeSelectedLocation(isStart = true, isTrue = true)
             changeMovementPosition(isStart = true, position = position)
             if (!isWarperPresent(position)) {
-                movementUiState.value.startPosition?.let { locationListUiState.value.locationList[it].getConnection(this) }
+                movementUiState.value.startPosition?.let { getAccessibleConnections(it) }
             } else {
                 openAllLocations(position)
             }
@@ -299,6 +299,25 @@ class BattleViewModel : ViewModel() {
                 showArmyDialog(toShow = true)
             }
         }
+    }
+
+    private fun getAccessibleConnections(location: Int){
+        val connections = locationListUiState.value.locationList[location].getConnectionsList()
+        for(i in locationListUiState.value.locationList.indices) {
+            if (connections.any {
+                    it == i &&
+                    locationListUiState.value.locationList[it].myShipList.size < (battleMap?.shipLimitOnPosition?: 0) &&
+                    !checkOwnersRestriction(startLocation = location, endLocation = it)
+                }) {
+                locationListUiState.value.locationList[i].accessible = true
+            }
+        }
+    }
+
+    private fun checkOwnersRestriction(startLocation: Int, endLocation: Int): Boolean{
+        val startLocationOwner = locationListUiState.value.locationList[startLocation].owner.value
+        val endLocationOwner = locationListUiState.value.locationList[endLocation].owner.value
+        return startLocationOwner == playerData.oponent && endLocationOwner == playerData.oponent
     }
 
     fun attack() {
