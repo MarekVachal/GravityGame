@@ -33,11 +33,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.gravitygame.R
-import com.example.gravitygame.uiStates.MovementUiState
 import com.example.gravitygame.models.Location
 import com.example.gravitygame.models.ShipType
 import com.example.gravitygame.models.mapOfShips
 import com.example.gravitygame.ui.utils.ShipInfoDialog
+import com.example.gravitygame.uiStates.MovementUiState
 import com.example.gravitygame.viewModels.BattleViewModel
 
 @Composable
@@ -384,7 +384,7 @@ private fun checkEnabledAddShip(
         isAccesable = true
     } else {
         val connectionList = startLocation?.let {
-            locationList[it].getConnectionList()
+            locationList[it].getConnectionsList()
         }
         connectionList?.forEach { if (it == endLocation) isAccesable = true } ?: return false
     }

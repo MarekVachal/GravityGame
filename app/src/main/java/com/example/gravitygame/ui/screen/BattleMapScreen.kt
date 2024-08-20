@@ -24,8 +24,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.gravitygame.R
-import com.example.gravitygame.models.Cruiser
-import com.example.gravitygame.models.Warper
 import com.example.gravitygame.ui.utils.CoroutineTimer
 import com.example.gravitygame.ui.utils.EndOfGameDialog
 import com.example.gravitygame.ui.utils.Players
@@ -61,9 +59,6 @@ fun BattleMapScreen(
         timer.startTimer()
         locationListUiState.locationList[0].owner.value = Players.PLAYER1
         locationListUiState.locationList.last().owner.value = Players.PLAYER2
-        locationListUiState.locationList[1].enemyShipList.add(Cruiser(9))
-        locationListUiState.locationList[1].enemyShipList.add(Warper(8))
-        locationListUiState.locationList[1].enemyAcceptableLost = 1
         initialization = true
     }
 
