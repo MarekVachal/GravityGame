@@ -18,7 +18,7 @@ class TinyMap : BattleMap() {
     override val boxSize = 100.dp
     override val planetSize = 54.dp
     override val flagSize = 24.dp
-    override val secondsForTurn = 11
+    override val secondsForTurn = 301
     override val shipLimitOnPosition = 6
     override val shipLimitOnMap = 11
     private val location0 = Location(0, listOf(1, 2, 3))

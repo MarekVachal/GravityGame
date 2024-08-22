@@ -1,10 +1,11 @@
 package com.example.gravitygame.ui.utils
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,8 +26,8 @@ import com.example.gravitygame.models.Location
 import com.example.gravitygame.models.ShipType
 import com.example.gravitygame.viewModels.BattleViewModel
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-
 fun MapBox(
     modifier: Modifier = Modifier,
     battleModel: BattleViewModel,
@@ -41,11 +42,13 @@ fun MapBox(
         Box(
             modifier = modifier
                 .size(boxSize)
-                .clickable {
-                    battleModel.setMovementOrder(
-                        position = location
-                    )
-                }
+                .combinedClickable (
+                    onClick = {battleModel.setMovementOrder(position = location)},
+                    onLongClick = {
+                        battleModel.showLocationInfoDialog(true)
+                        battleModel.setLocationForInfo(location = location)
+                    }
+                )
                 .border(
                     BorderStroke(
                         2.dp,
@@ -167,7 +170,7 @@ private fun AcceptableLost(
             modifier = modifier
         ){
             Text(
-                text = locationList[location].myAcceptableLost.toString(),
+                text = locationList[location].myAcceptableLost.intValue.toString(),
                 modifier = modifier.padding(2.dp)
             )
         }

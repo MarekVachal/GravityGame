@@ -7,7 +7,7 @@ import com.example.gravitygame.R
 import kotlinx.serialization.Serializable
 
 @Serializable
-abstract class Ship (open val id: Int){
+abstract class Ship(open val id: Int){
     abstract val name: String
     abstract val nameId: Int
     abstract val type: ShipType
@@ -19,6 +19,7 @@ abstract class Ship (open val id: Int){
     var startingPosition: Int? = null
     var hasMoved: Boolean by mutableStateOf(false)
     var justMoved: Boolean by mutableStateOf(false)
+    abstract fun deepCopy(): Ship
 
 }
 
@@ -30,6 +31,14 @@ data class Cruiser (override val id: Int) : Ship(id){
     override val hp = 10
     override val priority = 4
     override val descriptionId = R.string.cruiserInfo
+    override fun deepCopy(): Cruiser {
+        val copiedShip = Cruiser(id)
+        copiedShip.currentPosition = this.currentPosition
+        copiedShip.startingPosition = this.startingPosition
+        copiedShip.hasMoved = this.hasMoved
+        copiedShip.justMoved = this.justMoved
+        return copiedShip
+    }
 }
 
 data class Destroyer (override val id: Int) : Ship(id) {
@@ -40,6 +49,14 @@ data class Destroyer (override val id: Int) : Ship(id) {
     override val hp = 10
     override val priority = 3
     override val descriptionId = R.string.destroyerInfo
+    override fun deepCopy(): Destroyer {
+        val copiedShip = Destroyer(id)
+        copiedShip.currentPosition = this.currentPosition
+        copiedShip.startingPosition = this.startingPosition
+        copiedShip.hasMoved = this.hasMoved
+        copiedShip.justMoved = this.justMoved
+        return copiedShip
+    }
 }
 
 data class Ghost (override val id: Int) : Ship(id){
@@ -50,6 +67,14 @@ data class Ghost (override val id: Int) : Ship(id){
     override val hp = 5
     override val priority = 2
     override val descriptionId = R.string.ghostInfo
+    override fun deepCopy(): Ghost {
+        val copiedShip = Ghost(id)
+        copiedShip.currentPosition = this.currentPosition
+        copiedShip.startingPosition = this.startingPosition
+        copiedShip.hasMoved = this.hasMoved
+        copiedShip.justMoved = this.justMoved
+        return copiedShip
+    }
 }
 
 data class Warper (override val id: Int) : Ship(id){
@@ -60,6 +85,14 @@ data class Warper (override val id: Int) : Ship(id){
     override val hp = 1
     override val priority = 1
     override val descriptionId = R.string.warperInfo
+    override fun deepCopy(): Warper {
+        val copiedShip = Warper(id)
+        copiedShip.currentPosition = this.currentPosition
+        copiedShip.startingPosition = this.startingPosition
+        copiedShip.hasMoved = this.hasMoved
+        copiedShip.justMoved = this.justMoved
+        return copiedShip
+    }
 }
 
 enum class ShipType{

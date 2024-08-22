@@ -24,9 +24,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.gravitygame.R
+import com.example.gravitygame.ai.createAiArmy
 import com.example.gravitygame.ui.utils.CoroutineTimer
 import com.example.gravitygame.ui.utils.EndOfGameDialog
-import com.example.gravitygame.ui.utils.Players
+import com.example.gravitygame.ui.utils.LocationInfoDialog
 import com.example.gravitygame.viewModels.BattleViewModel
 import com.example.gravitygame.viewModels.ProgressIndicatorViewModel
 import com.example.gravitygame.viewModels.TimerViewModel
@@ -46,19 +47,25 @@ fun BattleMapScreen(
     val locationListUiState by battleModel.locationListUiState.collectAsState()
     val movementRecord by battleModel.movementRecord.collectAsState()
     var initialization by rememberSaveable { mutableStateOf(false) }
+
+
     EndOfGameDialog(
         toShow = movementUiState.showEndOfGameDialog,
         onDismissRequest = endOfGame,
         confirmButton = endOfGame,
         playerData = battleModel.playerData)
+    LocationInfoDialog(battleModel = battleModel, toShow = movementUiState.showLocationInfoDialog)
 
 
     if (!initialization) {
         battleModel.battleMap?.let { timer.updateTimerTime(it.secondsForTurn) }
         progressIndicatorModel.showProgressIndicator(false)
+
+        //AI call
+        val enemyShipList = battleModel.battleMap?.let { createAiArmy(battleMap = it, startLocation = locationListUiState.locationList.last().id) }
+        enemyShipList?.let { battleModel.initializeEnemyShipList(enemyShipList = it) }
+
         timer.startTimer()
-        locationListUiState.locationList[0].owner.value = Players.PLAYER1
-        locationListUiState.locationList.last().owner.value = Players.PLAYER2
         initialization = true
     }
 
