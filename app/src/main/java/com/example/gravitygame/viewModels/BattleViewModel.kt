@@ -1,6 +1,10 @@
 package com.example.gravitygame.viewModels
 
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.ViewModel
+import com.example.gravitygame.ai.GameState
+import com.example.gravitygame.ai.MCTS
+import com.example.gravitygame.ai.Move
 import com.example.gravitygame.maps.BattleMap
 import com.example.gravitygame.models.Cruiser
 import com.example.gravitygame.models.Destroyer
@@ -31,6 +35,9 @@ class BattleViewModel : ViewModel() {
     private val _movementRecord = MutableStateFlow(MovementRecord())
     val movementRecord: StateFlow<MovementRecord> = _movementRecord.asStateFlow()
     val playerData = Player()
+    private val mctsIterations = 100
+    private val aiDifficulty = 5
+
 
     private fun updateRecordsForTurn(){
         val indexOfEndLocation = movementUiState.value.endPosition
@@ -52,6 +59,14 @@ class BattleViewModel : ViewModel() {
     fun createBattleMap(selectedMap: BattleMap){
         battleMap = selectedMap
         battleMap?.let { _locationListUiState.value = _locationListUiState.value.copy(locationList = it.locationList) }
+        setPlayerBases()
+    }
+
+    private fun setPlayerBases() {
+        val player1Base = 0
+        val player2Base = locationListUiState.value.locationList.lastIndex
+        _locationListUiState.value.locationList[player1Base].owner.value = Players.PLAYER1
+        _locationListUiState.value.locationList[player2Base].owner.value = Players.PLAYER2
     }
 
     fun createArmyList(selectArmyUiState: SelectArmyUiState){
@@ -79,6 +94,11 @@ class BattleViewModel : ViewModel() {
 
     }
 
+    fun initializeEnemyShipList(enemyShipList: List<Ship>){
+        val startingLocationIndex = if(playerData.player == Players.PLAYER1) locationListUiState.value.locationList.lastIndex else 0
+        _locationListUiState.value.locationList[startingLocationIndex].enemyShipList.addAll(enemyShipList)
+    }
+
     fun finishTurn(timer: CoroutineTimer){
         cleanHasMoved()
         cleanPositions()
@@ -86,6 +106,7 @@ class BattleViewModel : ViewModel() {
         cleanAccessibleLocations()
         cleanRecordsForTurn()
         showArmyDialog(toShow = false)
+        computeBestMove()
         val newLocationList = locationListUiState.value.locationList
         _locationListUiState.value.locationList.forEach {
             if(it.myShipList.isNotEmpty() && it.enemyShipList.isNotEmpty()){
@@ -114,23 +135,52 @@ class BattleViewModel : ViewModel() {
         */
     }
 
+    private fun initializeGameState(): GameState {
+        val locationList = locationListUiState.value.locationList
+        val enemyBaseLocation = locationListUiState.value.locationList[0]
+        val battleModel = this
+
+        return GameState(
+            locationList = locationList,
+            battleModel = battleModel,
+            enemyBaseLocation = enemyBaseLocation
+        )
+    }
+
+    private fun computeBestMove() {
+        val state = initializeGameState()
+        val mcts = MCTS(mctsIterations, aiDifficulty)
+        val bestMove = mcts.findBestMove(state)
+        updateUIWithBestMove(bestMove)
+    }
+
+    private fun updateUIWithBestMove(moves: List<Move>) {
+        val newLocationList: MutableList<Location> = locationListUiState.value.locationList.toMutableList()
+        moves.forEach {
+            val startLocation = it.ship.startingPosition ?: return@forEach
+            val targetLocation = it.targetLocation
+            newLocationList[startLocation].enemyShipList.remove(it.ship)
+            newLocationList[targetLocation].enemyShipList.add(it.ship)
+            it.ship.startingPosition = targetLocation
+            it.ship.currentPosition = targetLocation
+        }
+
+        _locationListUiState.value = _locationListUiState.value.copy(locationList = newLocationList.toList())
+    }
+
     private fun checkEndCondition(thisPlayer: Players, timer: CoroutineTimer){
-        if(locationListUiState.value.locationList[0].owner.value == Players.PLAYER2){
-            if (thisPlayer == Players.PLAYER1){
-                playerData.lost = true
-            }
-            if (thisPlayer == Players.PLAYER2){
-                playerData.win = true
-            }
+        val player1Base = 0
+        val player2Base = locationListUiState.value.locationList.lastIndex
+
+        if(locationListUiState.value.locationList[player1Base].owner.value == Players.PLAYER2){
+            playerData.lost = thisPlayer == Players.PLAYER1
+            playerData.win = thisPlayer == Players.PLAYER2
             endOfGame(timer = timer)
         }
-        if (locationListUiState.value.locationList.last().owner.value == Players.PLAYER1){
-            if (thisPlayer == Players.PLAYER2){
-                playerData.lost = true
-            }
-            if (thisPlayer == Players.PLAYER1){
-                playerData.win = true
-            }
+
+        if(locationListUiState.value.locationList[player2Base].owner.value == Players.PLAYER1){
+            playerData.lost = thisPlayer == Players.PLAYER2
+            playerData.win = thisPlayer == Players.PLAYER1
             endOfGame(timer = timer)
         }
     }
@@ -148,6 +198,14 @@ class BattleViewModel : ViewModel() {
         }
     }
 
+    fun showLocationInfoDialog(toShow: Boolean){
+        if(toShow){
+            _movementUiState.value = _movementUiState.value.copy(showLocationInfoDialog = true)
+        } else {
+            _movementUiState.value = _movementUiState.value.copy(showLocationInfoDialog = false)
+        }
+    }
+
     private fun moveShips(locationList: MutableList<Location>, shipType: ShipType) {
         val shipInIssueNullable : Ship? = movementUiState.value.startPosition?.let{ startLocation -> locationListUiState.value.locationList[startLocation].myShipList.firstOrNull { ship -> ship.type == shipType && !ship.hasMoved }}
         val shipInIssue: Ship = shipInIssueNullable?. let {shipInIssueNullable} ?: return
@@ -158,6 +216,20 @@ class BattleViewModel : ViewModel() {
         shipInIssue.startingPosition = movementUiState.value.startPosition
         shipInIssue.currentPosition = movementUiState.value.endPosition
     }
+
+    fun initializeLocationDialogValues(){
+        val cruiserOnPosition = locationListUiState.value.locationList[movementUiState.value.locationForInfo].myShipList.count { ship -> ship.type == ShipType.CRUISER }
+        val destroyerOnPosition = locationListUiState.value.locationList[movementUiState.value.locationForInfo].myShipList.count { ship -> ship.type == ShipType.DESTROYER }
+        val ghostOnPosition = locationListUiState.value.locationList[movementUiState.value.locationForInfo].myShipList.count { ship -> ship.type == ShipType.GHOST }
+        val warperOnPosition = locationListUiState.value.locationList[movementUiState.value.locationForInfo].myShipList.count { ship -> ship.type == ShipType.WARPER }
+        _movementUiState.value = _movementUiState.value.copy(
+            cruiserOnPosition = cruiserOnPosition,
+            destroyerOnPosition = destroyerOnPosition,
+            ghostOnPosition = ghostOnPosition,
+            warperOnPosition = warperOnPosition
+        )
+    }
+
 
     fun initializeArmyDialogValues(){
         val cruiserOnPosition = movementUiState.value.endPosition?.let{ locationListUiState.value.locationList[it].myShipList.count { ship -> ship.type == ShipType.CRUISER }}?:0
@@ -271,6 +343,10 @@ class BattleViewModel : ViewModel() {
         }
     }
 
+    fun setLocationForInfo(location: Int){
+        _movementUiState.value = _movementUiState.value.copy(locationForInfo = location)
+    }
+
     fun setMovementOrder(
         position: Int
     ) {
@@ -334,8 +410,9 @@ class BattleViewModel : ViewModel() {
         repeat(movementUiState.value.movingWarpers){
             moveShips(locationList = newLocationList, shipType = ShipType.WARPER)
         }
-        movementUiState.value.endPosition?.let{ newLocationList[it].myAcceptableLost =
-            movementUiState.value.acceptableLost.toInt()
+        movementUiState.value.endPosition?.let{
+            val intValue: Int = movementUiState.value.acceptableLost.toInt()
+            newLocationList[it].myAcceptableLost = mutableIntStateOf(intValue)
         }
 
         _locationListUiState.value = _locationListUiState.value.copy(locationList = newLocationList.toList())
@@ -491,7 +568,7 @@ class BattleViewModel : ViewModel() {
     }
 
     fun cleanAcceptableLost(){
-        _movementUiState.value = _movementUiState.value.copy(acceptableLost = 0.0f)
+        _movementUiState.value = _movementUiState.value.copy(acceptableLost = 1.0f)
     }
 
 }

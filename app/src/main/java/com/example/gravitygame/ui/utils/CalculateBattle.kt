@@ -60,8 +60,8 @@ fun calculateBattle(location: Location): Players {
             enemyLost += 1
         }
 
-        myWin = enemyLost >= location.enemyAcceptableLost
-        enemyWin = myLost >= location.myAcceptableLost
+        myWin = enemyLost >= location.enemyAcceptableLost.intValue
+        enemyWin = myLost >= location.myAcceptableLost.intValue
 
     } while ((!myWin && !enemyWin) || myFir > 0 || enemyFir > 0)
 

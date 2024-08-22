@@ -14,6 +14,8 @@ data class MovementUiState(
     val showGhostInfoDialog: Boolean = false,
     val showWarperInfoDialog: Boolean = false,
     val showEndOfGameDialog: Boolean = false,
+    val showLocationInfoDialog: Boolean = false,
+    val locationForInfo : Int = 0,
 
     val cruiserOnPosition: Int = 0,
     val destroyerOnPosition: Int = 0,

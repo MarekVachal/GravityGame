@@ -153,7 +153,8 @@ fun ArmyDialog(
                                         movementUiState = movementUiState,
                                         weightOfName = weightOfName,
                                         weightOfNumbers = weightOfNumbers,
-                                        weightOfButtons = weightOfButtons
+                                        weightOfButtons = weightOfButtons,
+                                        isInfo = false
                                     )
                                 }
 
@@ -168,7 +169,8 @@ fun ArmyDialog(
                                         movementUiState = movementUiState,
                                         weightOfName = weightOfName,
                                         weightOfNumbers = weightOfNumbers,
-                                        weightOfButtons = weightOfButtons
+                                        weightOfButtons = weightOfButtons,
+                                        isInfo = false
                                     )
                                 }
                                 Row {
@@ -182,7 +184,8 @@ fun ArmyDialog(
                                         movementUiState = movementUiState,
                                         weightOfName = weightOfName,
                                         weightOfNumbers = weightOfNumbers,
-                                        weightOfButtons = weightOfButtons
+                                        weightOfButtons = weightOfButtons,
+                                        isInfo = false
                                     )
                                 }
                                 Row {
@@ -196,7 +199,8 @@ fun ArmyDialog(
                                         movementUiState = movementUiState,
                                         weightOfName = weightOfName,
                                         weightOfNumbers = weightOfNumbers,
-                                        weightOfButtons = weightOfButtons
+                                        weightOfButtons = weightOfButtons,
+                                        isInfo = false
                                     )
                                 }
                             }
@@ -266,7 +270,8 @@ fun ArmyDialogRow(
     movementUiState: MovementUiState,
     weightOfNumbers: Float,
     weightOfName: Float,
-    weightOfButtons: Float
+    weightOfButtons: Float,
+    isInfo: Boolean
 ) {
     val enemyShipsOnPosition by remember {
         derivedStateOf {
@@ -302,29 +307,34 @@ fun ArmyDialogRow(
                 .weight(weightOfNumbers)
         )
 
-        Text(
-            text = when (shipType) {
-                ShipType.CRUISER -> movementUiState.cruiserToMove.toString()
-                ShipType.DESTROYER -> movementUiState.destroyerToMove.toString()
-                ShipType.GHOST -> movementUiState.ghostToMove.toString()
-                ShipType.WARPER -> movementUiState.warperToMove.toString()
-            },
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .weight(weightOfNumbers)
-        )
+        if(!isInfo) {
+            Text(
+                text = when (shipType) {
+                    ShipType.CRUISER -> movementUiState.cruiserToMove.toString()
+                    ShipType.DESTROYER -> movementUiState.destroyerToMove.toString()
+                    ShipType.GHOST -> movementUiState.ghostToMove.toString()
+                    ShipType.WARPER -> movementUiState.warperToMove.toString()
+                },
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .weight(weightOfNumbers)
+            )
+        }
 
-        Text(
-            text = when (shipType) {
-                ShipType.CRUISER -> movementUiState.cruiserOnPosition.toString()
-                ShipType.DESTROYER -> movementUiState.destroyerOnPosition.toString()
-                ShipType.GHOST -> movementUiState.ghostOnPosition.toString()
-                ShipType.WARPER -> movementUiState.warperOnPosition.toString()
-            },
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .weight(weightOfNumbers)
-        )
+
+            Text(
+                text = when (shipType) {
+                    ShipType.CRUISER -> movementUiState.cruiserOnPosition.toString()
+                    ShipType.DESTROYER -> movementUiState.destroyerOnPosition.toString()
+                    ShipType.GHOST -> movementUiState.ghostOnPosition.toString()
+                    ShipType.WARPER -> movementUiState.warperOnPosition.toString()
+                },
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .weight(weightOfNumbers)
+            )
+
+        if(!isInfo){
 
         Button(
             onClick = { battleModel.removeShip(shipType = shipType) },
@@ -340,28 +350,31 @@ fun ArmyDialogRow(
             Text(text = stringResource(R.string.minus))
         }
 
-        Button(
-            onClick = { battleModel.addShip(shipType = shipType) },
-            enabled = when (shipType) {
-                ShipType.CRUISER -> movementUiState.cruiserToMove
-                ShipType.DESTROYER -> movementUiState.destroyerToMove
-                ShipType.GHOST -> movementUiState.ghostToMove
-                ShipType.WARPER -> movementUiState.warperToMove
-            } > 0 &&
-                    checkEnabledAddShip(
-                        ship = shipType,
-                        startLocation = startLocation,
-                        endLocation = endLocation,
-                        isWarperPresent = isWarperPresent,
-                        locationList = locationList
-                    ) &&
-                    battleModel.checkShipLimitOnPosition(),
-            modifier = Modifier
-                .weight(weightOfButtons),
 
-            ) {
-            Text(text = stringResource(R.string.plus))
+            Button(
+                onClick = { battleModel.addShip(shipType = shipType) },
+                enabled = when (shipType) {
+                    ShipType.CRUISER -> movementUiState.cruiserToMove
+                    ShipType.DESTROYER -> movementUiState.destroyerToMove
+                    ShipType.GHOST -> movementUiState.ghostToMove
+                    ShipType.WARPER -> movementUiState.warperToMove
+                } > 0 &&
+                        checkEnabledAddShip(
+                            ship = shipType,
+                            startLocation = startLocation,
+                            endLocation = endLocation,
+                            isWarperPresent = isWarperPresent,
+                            locationList = locationList
+                        ) &&
+                        battleModel.checkShipLimitOnPosition(),
+                modifier = Modifier
+                    .weight(weightOfButtons),
+
+                ) {
+                Text(text = stringResource(R.string.plus))
+            }
         }
+
     }
 }
 
