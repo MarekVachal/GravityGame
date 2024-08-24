@@ -1,18 +1,24 @@
 package com.example.gravitygame.ui.utils
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.gravitygame.R
 import com.example.gravitygame.models.ShipType
 import com.example.gravitygame.models.mapOfShips
@@ -125,7 +132,7 @@ fun LocationInfoDialog(
     modifier: Modifier = Modifier,
     battleModel: BattleViewModel,
     toShow: Boolean,
-    onDismissRequest: () -> Unit = {battleModel.showLocationInfoDialog(false)},
+    onDismissRequest: () -> Unit = { battleModel.closeLocationInfoDialog() },
     closeShipInfoDialog: () -> Unit = {battleModel.showShipInfoDialog(false, ShipType.CRUISER) }
 
 ){
@@ -143,7 +150,8 @@ fun LocationInfoDialog(
 
     if(toShow){
         Dialog(
-            onDismissRequest = onDismissRequest
+            onDismissRequest = onDismissRequest,
+            properties = DialogProperties(usePlatformDefaultWidth = false)
         ){
             var initialization by rememberSaveable { mutableStateOf(false) }
             if (!initialization) {
@@ -152,7 +160,10 @@ fun LocationInfoDialog(
             }
 
             Card(
-                modifier = modifier.padding(padding),
+                modifier = modifier
+                    .width(IntrinsicSize.Min)
+                    .height(IntrinsicSize.Min)
+                    .padding(padding),
                 shape = RoundedCornerShape(16.dp)
 
             ) {
@@ -169,7 +180,7 @@ fun LocationInfoDialog(
                         Column {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = modifier
+                                modifier = modifier.padding(bottom = 8.dp)
 
                             ) {
 
@@ -179,6 +190,7 @@ fun LocationInfoDialog(
                                     modifier = Modifier
                                         .weight(weightOfName)
                                         .wrapContentWidth(align = Alignment.Start)
+                                        .padding(start = 8.dp)
                                 )
 
                                 Text(
@@ -186,6 +198,7 @@ fun LocationInfoDialog(
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier
                                         .weight(weightOfNumbers)
+                                        .padding(start = 8.dp)
                                 )
 
                                 Text(
@@ -193,9 +206,12 @@ fun LocationInfoDialog(
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier
                                         .weight(weightOfNumbers)
+                                        .padding(start = 8.dp)
                                 )
                             }
-                            Row {
+                            Row (
+                                modifier = modifier.padding(bottom = 8.dp)
+                            ){
                                 ArmyDialogRow(
                                     shipType = ShipType.CRUISER,
                                     startLocation = movementUiState.locationForInfo,
@@ -211,7 +227,9 @@ fun LocationInfoDialog(
                                 )
                             }
 
-                            Row {
+                            Row (
+                                modifier = modifier.padding(bottom = 8.dp)
+                            ){
                                 ArmyDialogRow(
                                     shipType = ShipType.DESTROYER,
                                     startLocation = movementUiState.locationForInfo,
@@ -226,7 +244,9 @@ fun LocationInfoDialog(
                                     isInfo = true
                                 )
                             }
-                            Row {
+                            Row (
+                                modifier = modifier.padding(bottom = 8.dp)
+                            ){
                                 ArmyDialogRow(
                                     shipType = ShipType.GHOST,
                                     startLocation = movementUiState.locationForInfo,
@@ -241,7 +261,9 @@ fun LocationInfoDialog(
                                     isInfo = true
                                 )
                             }
-                            Row {
+                            Row (
+                                modifier = modifier.padding(bottom = 8.dp)
+                            ){
                                 ArmyDialogRow(
                                     shipType = ShipType.WARPER,
                                     startLocation = movementUiState.locationForInfo,
@@ -262,8 +284,8 @@ fun LocationInfoDialog(
                 Row(
                     modifier = modifier
                         .fillMaxWidth()
-                        .padding(start = padding, end = padding),
-                    horizontalArrangement = Arrangement.Start,
+                        .padding(bottom = 4.dp),
+                    horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -277,10 +299,28 @@ fun LocationInfoDialog(
                         textAlign = TextAlign.Center
                     )
                 }
+                Row (
+                    modifier = modifier.padding(start = 8.dp, bottom = 4.dp, end = 8.dp)
+                ){
+                    Slider(
+                        value = movementUiState.acceptableLost,
+                        onValueChange = { battleModel.changeValueAcceptableLost(value = it) },
+                        valueRange = 1f..6f,
+                        steps = 4,
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .border(
+                                width = 2.dp,
+                                shape = RoundedCornerShape(16.dp),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            .padding(start = 8.dp, end = 8.dp),
+                    )
+                }
                 Row(
                     modifier = modifier
-                        .padding(start = padding, end = padding, bottom = padding)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp, end = 16.dp),
                     horizontalArrangement = Arrangement.End
                 ) {
                     Button(

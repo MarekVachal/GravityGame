@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import com.example.gravitygame.models.Location
+import com.example.gravitygame.uiStates.MovementUiState
 import com.example.gravitygame.viewModels.BattleViewModel
 
 abstract class BattleMap {
@@ -20,5 +21,6 @@ abstract class BattleMap {
     abstract fun MapLayout(
         modifier: Modifier,
         battleModel: BattleViewModel,
-        locationList: List<Location>)
+        locationList: List<Location>
+    )
 }

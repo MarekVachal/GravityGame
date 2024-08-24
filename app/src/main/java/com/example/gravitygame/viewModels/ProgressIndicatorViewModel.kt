@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+@Suppress("Unused")
 class ProgressIndicatorViewModel: ViewModel() {
     private val _progressIndicatorUiState = MutableStateFlow(ProgressIndicatorUiState())
     val progressIndicatorUiState: StateFlow<ProgressIndicatorUiState> = _progressIndicatorUiState.asStateFlow()

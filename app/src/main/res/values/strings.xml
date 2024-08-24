@@ -31,4 +31,5 @@
     <string name="lostGame">You have fight hard but unfortunately the opponent is more lucky.\nYou lost</string>
     <string name="winGame">You have fight hard and well. The opponent has been destroyed.\nYou win. Congratulation</string>
     <string name="drawGame">You and your opponent have fought hard and there is no winner.</string>
+    <string name="battleWithAI">Play against AI</string>
 </resources>

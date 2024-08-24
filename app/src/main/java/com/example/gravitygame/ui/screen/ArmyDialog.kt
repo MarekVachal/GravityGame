@@ -1,5 +1,6 @@
 package com.example.gravitygame.ui.screen
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,8 +15,8 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -45,14 +46,14 @@ fun ArmyDialog(
     modifier: Modifier = Modifier,
     battleModel: BattleViewModel,
     show: Boolean,
-    onDismissRequest: () -> Unit = { clean(battleModel) },
+    onDismissRequest: () -> Unit = { battleModel.cleanMovementValues() },
     onConfirmation: () -> Unit = { battleModel.attack() },
-    onCancel: () -> Unit = { clean(battleModel) },
+    onCancel: () -> Unit = { battleModel.cleanMovementValues() },
     closeShipInfoDialog: () -> Unit = {battleModel.showShipInfoDialog(false, ShipType.CRUISER)}
 ) {
     val movementUiState by battleModel.movementUiState.collectAsState()
     val locationListUiState by battleModel.locationListUiState.collectAsState()
-    val weightOfName = 0.3f
+    val weightOfName = 0.2f
     val weightOfNumbers = 0.2f
     val weightOfButtons = 0.1f
     val padding = 16.dp
@@ -67,18 +68,15 @@ fun ArmyDialog(
             onDismissRequest = onDismissRequest,
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            Surface(
-                modifier = modifier
-                    .width(IntrinsicSize.Min)
-                    .height(IntrinsicSize.Min)
-            ) {
-                var initialization by rememberSaveable { mutableStateOf(false) }
+            var initialization by rememberSaveable { mutableStateOf(false) }
                 if (!initialization) {
                     battleModel.initializeArmyDialogValues()
                     initialization = true
                 }
                 Card(
-                    modifier = modifier.padding(padding),
+                    modifier = modifier
+                        .width(IntrinsicSize.Min)
+                        .height(IntrinsicSize.Min),
                     shape = RoundedCornerShape(16.dp)
 
                 ) {
@@ -222,12 +220,20 @@ fun ArmyDialog(
                             onValueChange = { battleModel.changeValueAcceptableLost(value = it) },
                             valueRange = 1f..6f,
                             steps = 4,
-                            modifier = modifier.fillMaxWidth(0.9f),
+                            modifier = modifier
+                                .fillMaxWidth(0.9f)
+                                .border(
+                                    width = 2.dp,
+                                    shape = RoundedCornerShape(16.dp),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                .padding(start = 8.dp, end = 8.dp),
                         )
 
                         Text(
                             text = movementUiState.acceptableLost.toInt().toString(),
-                            modifier = modifier.padding(start = padding),
+                            modifier = modifier
+                                .padding(start = padding),
                             textAlign = TextAlign.Center
                         )
                     }
@@ -254,7 +260,7 @@ fun ArmyDialog(
         }
 
 
-    }
+
 }
 
 
@@ -403,16 +409,3 @@ private fun checkEnabledAddShip(
     }
     return isAccesable
 }
-
-/**
- * Set all values to zero for next order
- * @param battleModel BattleViewModel
- */
-private fun clean(battleModel: BattleViewModel) {
-    battleModel.cleanPositions()
-    battleModel.cleanAccessibleLocations()
-    battleModel.cleanMovingShip()
-    battleModel.cleanAcceptableLost()
-    battleModel.showArmyDialog(toShow = false)
-}
-

@@ -17,6 +17,13 @@ object SelectMap : BattleDestination {
     override val route = "SelectArmy"
 }
 
+object MainMenu: BattleDestination{
+    override val route = "MainMenu"
+}
+
 enum class Destination(name: BattleDestination?){
-    SELECTARMY(name = SelectArmy), BATTLEMAP(name = Battle), SELECTMAP(name = SelectMap)
+    SELECTARMY(name = SelectArmy),
+    BATTLEMAP(name = Battle),
+    SELECTMAP(name = SelectMap),
+    MAINMENU(name = MainMenu)
 }
