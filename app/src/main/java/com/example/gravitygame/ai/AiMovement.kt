@@ -1,10 +1,13 @@
 package com.example.gravitygame.ai
 
+import androidx.compose.runtime.MutableIntState
+import androidx.compose.runtime.mutableIntStateOf
 import com.example.gravitygame.models.Location
 import com.example.gravitygame.models.Ship
 import com.example.gravitygame.models.ShipType
 import com.example.gravitygame.models.deepCopy
 import com.example.gravitygame.ui.utils.Players
+import com.example.gravitygame.ui.utils.calculateBattle
 import com.example.gravitygame.viewModels.BattleViewModel
 
 data class GameState(
@@ -17,24 +20,43 @@ data class Move(val ship: Ship, val targetLocation: Int)
 
 class MCTS(private val iterations: Int, private val difficulty: Int) {
 
-    fun findBestMove(initialState: GameState): List<Move> {
-        val mapOfMovement: Map<Int, List<Move>> = simulate(initialState, iterations)
-        val sortedMap: Map<Int, List<Move>> = mapOfMovement.toSortedMap(compareByDescending { it })
-        val chosenMoves: List<List<Move>> = sortedMap.entries
+    fun findBestMove(initialState: GameState): GameState {
+        val mapOfMovement: Map<Int, GameState> = simulate(initialState, iterations)
+        val sortedMap: Map<Int, GameState> = mapOfMovement.toSortedMap(compareByDescending { it })
+        val chosenStates: List<GameState> = sortedMap.entries
             .take(difficulty)
             .map { it.value }
-        return chosenMoves.random()
+        return chosenStates.random()
     }
 
-    private fun simulate(state: GameState, iterate: Int): Map<Int, List<Move>> {
-        val mapOfScoredMoves: MutableMap<Int, List<Move>> = mutableMapOf()
+    private fun simulate(state: GameState, iterate: Int): Map<Int, GameState> {
+        var mapOfAcceptableLost: MutableMap<Int, Int>
+        val mapOfScoredState: MutableMap<Int, GameState> = mutableMapOf()
         repeat(iterate) {
             val moveCombination = generateMoveCombinations(state)
             val movedState = state.applyMoves(moveCombination)
+            if (movedState.checkForBattle()) {
+                mapOfAcceptableLost = generateAcceptableLost(movedState).toMutableMap()
+                movedState.applyAcceptableLost(mapOfAcceptableLost)
+            }
             val score = evaluateGameState(movedState)
-            mapOfScoredMoves[score] = moveCombination
+            mapOfScoredState[score] = movedState
         }
-        return mapOfScoredMoves
+        return mapOfScoredState
+    }
+
+    private fun generateAcceptableLost(state: GameState): Map<Int, Int> {
+        val mapOfAcceptableLost: MutableMap<Int, Int> = mutableMapOf()
+        state.locationList.forEach { location ->
+            if(location.enemyShipList.isNotEmpty() && location.myShipList.isNotEmpty()){
+                when(calculateBattle(location)){
+                    Players.PLAYER1 -> /*TODO( Function for increasing of acceptable lost of AI)*/ mapOfAcceptableLost[location.id] = location.enemyAcceptableLost.intValue++
+                    Players.PLAYER2 -> mapOfAcceptableLost[location.id] = location.enemyAcceptableLost.intValue
+                    Players.NONE -> /*TODO( What to do with a draw?)*/ mapOfAcceptableLost[location.id] = location.enemyAcceptableLost.intValue++
+                }
+            }
+        }
+        return mapOfAcceptableLost
     }
 
     private fun simulateTurn(mapOfMoves: Map<Ship, List<Move>>): List<Move> {
@@ -66,6 +88,24 @@ fun GameState.getAllPossibleMoves(): List<Move> {
     return moves
 }
 
+fun GameState.checkForBattle(): Boolean {
+    this.locationList.forEach { location ->
+        if(location.myShipList.isNotEmpty() && location.enemyShipList.isNotEmpty()){
+            return true
+        }
+    }
+    return false
+}
+
+fun GameState.applyAcceptableLost(mapOfAcceptableLost: Map<Int, Int>): GameState{
+    val newState = this.copy(locationList = locationList.map { it.deepCopy() })
+    mapOfAcceptableLost.forEach { (locationId, acceptableLost) ->
+        val newAcceptableLost: MutableIntState = mutableIntStateOf(acceptableLost)
+        newState.locationList[locationId].enemyAcceptableLost = newAcceptableLost
+    }
+    return newState
+}
+
 fun GameState.applyMoves(moves: List<Move>): GameState {
     var newState = this.copy(locationList = locationList.map { it.deepCopy() })
     for (move in moves) {
@@ -82,6 +122,8 @@ fun GameState.applyMove(move: Move): GameState {
     val targetLocation = newLocationList[move.targetLocation]
     currentLocation.enemyShipList.remove(move.ship)
     targetLocation.enemyShipList.add(move.ship)
+    move.ship.startingPosition = targetLocation.id
+    move.ship.currentPosition = targetLocation.id
     return this.copy(locationList = newLocationList)
 }
 

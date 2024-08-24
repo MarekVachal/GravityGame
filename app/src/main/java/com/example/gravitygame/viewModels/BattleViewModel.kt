@@ -6,7 +6,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.lifecycle.ViewModel
 import com.example.gravitygame.ai.GameState
 import com.example.gravitygame.ai.MCTS
-import com.example.gravitygame.ai.Move
 import com.example.gravitygame.maps.BattleMap
 import com.example.gravitygame.models.Cruiser
 import com.example.gravitygame.models.Destroyer
@@ -170,20 +169,9 @@ class BattleViewModel : ViewModel() {
         updateUIWithBestMove(bestMove)
     }
 
-    private fun updateUIWithBestMove(moves: List<Move>) {
-        val newLocationList: MutableList<Location> =
-            locationListUiState.value.locationList.toMutableList()
-        moves.forEach {
-            val startLocation = it.ship.startingPosition ?: return@forEach
-            val targetLocation = it.targetLocation
-            newLocationList[startLocation].enemyShipList.remove(it.ship)
-            newLocationList[targetLocation].enemyShipList.add(it.ship)
-            it.ship.startingPosition = targetLocation
-            it.ship.currentPosition = targetLocation
-        }
-
+    private fun updateUIWithBestMove(state: GameState) {
         _locationListUiState.value =
-            _locationListUiState.value.copy(locationList = newLocationList.toList())
+            _locationListUiState.value.copy(locationList = state.locationList)
     }
 
     private fun checkEndCondition(thisPlayer: Players, timer: CoroutineTimer) {

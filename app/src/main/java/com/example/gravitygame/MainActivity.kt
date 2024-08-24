@@ -102,9 +102,9 @@ fun ScreenSetup() {
                 timerModel = timerModel,
                 timer = timer,
                 endOfGame = {
-                    navController.navigate(Destination.SELECTMAP.name)
+                    navController.navigate(Destination.MAINMENU.name)
                     battleModel.showEndOfGameDialog(false)
-                } /* TODO Change to main screen */
+                }
             )
         }
         composable(route = Destination.SELECTMAP.name) {
