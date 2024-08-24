@@ -1,10 +1,11 @@
 package com.example.gravitygame.uiStates
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+
 data class MovementUiState(
 
     val acceptableLost: Float = 1f,
-    val startPositionSelected: Boolean = false,
-    val endPositionSelected: Boolean = false,
     val startPosition: Int? = null,
     val endPosition: Int? = null,
     val showArmyDialog: Boolean = false,
@@ -16,6 +17,8 @@ data class MovementUiState(
     val showEndOfGameDialog: Boolean = false,
     val showLocationInfoDialog: Boolean = false,
     val locationForInfo : Int = 0,
+    val mapBoxCoordinates: Map<Int, Rect> = mutableMapOf(),
+    val lastTouchPosition: Offset? = null,
 
     val cruiserOnPosition: Int = 0,
     val destroyerOnPosition: Int = 0,

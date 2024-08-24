@@ -20,5 +20,6 @@ abstract class BattleMap {
     abstract fun MapLayout(
         modifier: Modifier,
         battleModel: BattleViewModel,
-        locationList: List<Location>)
+        locationList: List<Location>
+    )
 }

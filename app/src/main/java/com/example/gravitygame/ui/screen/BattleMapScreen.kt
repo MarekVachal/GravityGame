@@ -29,7 +29,6 @@ import com.example.gravitygame.ui.utils.CoroutineTimer
 import com.example.gravitygame.ui.utils.EndOfGameDialog
 import com.example.gravitygame.ui.utils.LocationInfoDialog
 import com.example.gravitygame.viewModels.BattleViewModel
-import com.example.gravitygame.viewModels.ProgressIndicatorViewModel
 import com.example.gravitygame.viewModels.TimerViewModel
 
 @Composable
@@ -37,7 +36,6 @@ fun BattleMapScreen(
     modifier: Modifier = Modifier,
     battleModel: BattleViewModel,
     timerModel: TimerViewModel,
-    progressIndicatorModel: ProgressIndicatorViewModel,
     timer: CoroutineTimer,
     endOfGame: () -> Unit
 
@@ -59,7 +57,6 @@ fun BattleMapScreen(
 
     if (!initialization) {
         battleModel.battleMap?.let { timer.updateTimerTime(it.secondsForTurn) }
-        progressIndicatorModel.showProgressIndicator(false)
 
         //AI call
         val enemyShipList = battleModel.battleMap?.let { createAiArmy(battleMap = it, startLocation = locationListUiState.locationList.last().id) }

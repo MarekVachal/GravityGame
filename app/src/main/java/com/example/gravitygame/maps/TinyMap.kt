@@ -46,6 +46,7 @@ class TinyMap : BattleMap() {
         battleModel: BattleViewModel,
         locationList: List<Location>
     ) {
+
         ConstraintLayout {
             val startGuideline = createGuidelineFromStart(0.1f)
             val endGuideline = createGuidelineFromEnd(0.1f)
@@ -125,7 +126,7 @@ class TinyMap : BattleMap() {
                         end.linkTo(field5.start)
                         bottom.linkTo(centerHorizontalGuideline)
                     }
-                    .width(200.dp)
+                    .width(250.dp)
             )
 
             Image(
@@ -139,12 +140,12 @@ class TinyMap : BattleMap() {
                         end.linkTo(field4.start)
                         bottom.linkTo(field3.bottom)
                     }
-                    .width(200.dp)
+                    .width(250.dp)
             )
 
             Image(
                 painter = painterResource(id = R.drawable.route),
-                contentDescription = "Route between location 3 and 4",
+                contentDescription = "Route between location 3 and 6",
                 modifier = modifier
                     .rotate(25f)
                     .constrainAs(route6) {
@@ -153,7 +154,7 @@ class TinyMap : BattleMap() {
                         end.linkTo(field6.start)
                         bottom.linkTo(field6.bottom)
                     }
-                    .width(200.dp)
+                    .width(250.dp)
             )
 
             Image(
@@ -180,7 +181,7 @@ class TinyMap : BattleMap() {
                         end.linkTo(field5.start)
                         bottom.linkTo(bottomGuideline)
                     }
-                    .width(200.dp)
+                    .width(250.dp)
             )
 
             Image(
