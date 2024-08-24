@@ -21,6 +21,7 @@ object MainMenu: BattleDestination{
     override val route = "MainMenu"
 }
 
+@Suppress("Unused")
 enum class Destination(name: BattleDestination?){
     SELECTARMY(name = SelectArmy),
     BATTLEMAP(name = Battle),

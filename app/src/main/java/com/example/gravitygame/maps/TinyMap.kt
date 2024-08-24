@@ -12,7 +12,6 @@ import com.example.gravitygame.ui.utils.MapBox
 import com.example.gravitygame.viewModels.BattleViewModel
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.gravitygame.R
-import com.example.gravitygame.uiStates.MovementUiState
 
 class TinyMap : BattleMap() {
     override val mapName = R.string.tinyMapName

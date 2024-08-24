@@ -24,7 +24,6 @@ import com.example.gravitygame.ui.screen.SelectMapScreen
 import com.example.gravitygame.ui.theme.GravityGameTheme
 import com.example.gravitygame.ui.utils.CoroutineTimer
 import com.example.gravitygame.viewModels.BattleViewModel
-import com.example.gravitygame.viewModels.ProgressIndicatorViewModel
 import com.example.gravitygame.viewModels.SelectArmyViewModel
 import com.example.gravitygame.viewModels.TimerViewModel
 

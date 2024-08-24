@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -37,10 +36,8 @@ import androidx.compose.ui.unit.dp
 import com.example.gravitygame.R
 import com.example.gravitygame.uiStates.SelectArmyUiState
 import com.example.gravitygame.models.ShipType
-import com.example.gravitygame.ui.utils.ProgressIndicator
 import com.example.gravitygame.ui.utils.ShipInfoDialog
 import com.example.gravitygame.viewModels.BattleViewModel
-import com.example.gravitygame.viewModels.ProgressIndicatorViewModel
 import com.example.gravitygame.viewModels.SelectArmyViewModel
 
 @Composable
