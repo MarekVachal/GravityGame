@@ -14,10 +14,12 @@ class CoroutineTimer(
     private var timeLeftInMillis: Long = 0
     private var originalTimeInMillis: Long = 0
     private var timerJob: Job? = null
+    private var isPaused = false
 
     fun updateTimerTime(secondsForTurn: Int){
         timeLeftInMillis = secondsForTurn.times(1000).toLong()
         originalTimeInMillis = timeLeftInMillis
+        timerModel.updateTimeUi(timeLeftInMillis)
     }
 
     private fun updateTimer() {
@@ -26,7 +28,7 @@ class CoroutineTimer(
     }
 
     fun startTimer() {
-        if (timerJob != null) return  // If already running, do nothing
+        if (timerJob != null || isPaused) return
 
         timerJob = CoroutineScope(Dispatchers.Main).launch {
 
@@ -45,9 +47,33 @@ class CoroutineTimer(
     fun stopTimer() {
         timerJob?.cancel()
         timerJob = null
+        timerModel.updateTimeUi(timeLeftInMillis)
     }
 
     fun resetTimer() {
         timeLeftInMillis = originalTimeInMillis
+    }
+
+    fun pauseTimer() {
+        isPaused = true
+        stopTimer()
+        timerModel.updateTimeUi(timeLeftInMillis)
+    }
+
+    // Continues the timer from where it left off
+    fun continueTimer() {
+        if (!isPaused || timeLeftInMillis <= 0) return
+
+        isPaused = false
+        timerJob = CoroutineScope(Dispatchers.Main).launch {
+            while (timeLeftInMillis > 0) {
+                updateTimer()
+                delay(1000L)
+            }
+            stopTimer()
+            finishTurn()
+            resetTimer()
+            startTimer()
+        }
     }
 }

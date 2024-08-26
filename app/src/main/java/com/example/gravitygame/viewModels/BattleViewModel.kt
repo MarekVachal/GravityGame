@@ -40,6 +40,10 @@ class BattleViewModel : ViewModel() {
     private val aiDifficulty = 5
 
 
+    private fun turnCounter(){
+        val count = movementUiState.value.turn + 1
+        _movementUiState.value = _movementUiState.value.copy(turn = count)
+    }
     fun createMapBoxPositions(location: Int, coordinates: Rect){
         val mapBoxCoordinates: MutableMap<Int, Rect> = movementUiState.value.mapBoxCoordinates.toMutableMap()
         mapBoxCoordinates[location] = coordinates
@@ -123,6 +127,7 @@ class BattleViewModel : ViewModel() {
         cleanHasMoved()
         cleanRecordsForTurn()
         cleanMovementValues()
+        turnCounter()
         aiMove()
         val newLocationList = locationListUiState.value.locationList
         _locationListUiState.value.locationList.forEach {

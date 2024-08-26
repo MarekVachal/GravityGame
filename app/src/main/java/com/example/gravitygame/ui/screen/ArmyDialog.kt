@@ -37,6 +37,10 @@ import com.example.gravitygame.R
 import com.example.gravitygame.models.Location
 import com.example.gravitygame.models.ShipType
 import com.example.gravitygame.models.mapOfShips
+import com.example.gravitygame.tutorial.Tasks
+import com.example.gravitygame.tutorial.TutorialDialog
+import com.example.gravitygame.tutorial.TutorialViewModel
+import com.example.gravitygame.ui.utils.CoroutineTimer
 import com.example.gravitygame.ui.utils.ShipInfoDialog
 import com.example.gravitygame.uiStates.MovementUiState
 import com.example.gravitygame.viewModels.BattleViewModel
@@ -45,7 +49,9 @@ import com.example.gravitygame.viewModels.BattleViewModel
 fun ArmyDialog(
     modifier: Modifier = Modifier,
     battleModel: BattleViewModel,
+    tutorialModel: TutorialViewModel,
     show: Boolean,
+    timer: CoroutineTimer,
     onDismissRequest: () -> Unit = { battleModel.cleanMovementValues() },
     onConfirmation: () -> Unit = { battleModel.attack() },
     onCancel: () -> Unit = { battleModel.cleanMovementValues() },
@@ -53,6 +59,7 @@ fun ArmyDialog(
 ) {
     val movementUiState by battleModel.movementUiState.collectAsState()
     val locationListUiState by battleModel.locationListUiState.collectAsState()
+    val tutorialUiState by tutorialModel.tutorialUiState.collectAsState()
     val weightOfName = 0.2f
     val weightOfNumbers = 0.2f
     val weightOfButtons = 0.1f
@@ -62,6 +69,14 @@ fun ArmyDialog(
     ShipInfoDialog(shipType = ShipType.DESTROYER, toShow = movementUiState.showDestroyerInfoDialog, onDismissRequest = closeShipInfoDialog, confirmButton = closeShipInfoDialog)
     ShipInfoDialog(shipType = ShipType.GHOST, toShow = movementUiState.showGhostInfoDialog, onDismissRequest = closeShipInfoDialog, confirmButton = closeShipInfoDialog)
     ShipInfoDialog(shipType = ShipType.WARPER, toShow = movementUiState.showWarperInfoDialog, onDismissRequest = closeShipInfoDialog, confirmButton = closeShipInfoDialog)
+
+    TutorialDialog(tutorialModel = tutorialModel, toShow = tutorialUiState.showTutorialDialog, timer = timer)
+    if(!tutorialUiState.sendShipsTask && tutorialUiState.battleOverviewTask && tutorialUiState.movementTask && tutorialUiState.showTutorial && movementUiState.showArmyDialog){
+        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.SEND_SHIPS, timer = timer)
+    }
+    if(!tutorialUiState.acceptableLostTask && tutorialUiState.sendShipsTask && tutorialUiState.showTutorial){
+        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.ACCEPTABLE_LOST, timer = timer)
+    }
 
     if (show) {
         Dialog(
@@ -212,7 +227,7 @@ fun ArmyDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(R.string.maxLost),
+                            text = stringResource(R.string.maxLosses),
                             modifier = modifier.padding(end = padding)
                         )
                         Slider(
@@ -303,7 +318,8 @@ fun ArmyDialogRow(
                 .weight(weightOfName)
                 .wrapContentWidth(align = Alignment.Start)
                 .clickable {
-                    battleModel.showShipInfoDialog(true, shipType)}
+                    battleModel.showShipInfoDialog(true, shipType)
+                }
         )
 
         Text(

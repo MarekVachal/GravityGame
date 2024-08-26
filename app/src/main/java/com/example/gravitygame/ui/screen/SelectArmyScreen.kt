@@ -36,6 +36,9 @@ import androidx.compose.ui.unit.dp
 import com.example.gravitygame.R
 import com.example.gravitygame.uiStates.SelectArmyUiState
 import com.example.gravitygame.models.ShipType
+import com.example.gravitygame.tutorial.Tasks
+import com.example.gravitygame.tutorial.TutorialDialog
+import com.example.gravitygame.tutorial.TutorialViewModel
 import com.example.gravitygame.ui.utils.ShipInfoDialog
 import com.example.gravitygame.viewModels.BattleViewModel
 import com.example.gravitygame.viewModels.SelectArmyViewModel
@@ -45,7 +48,8 @@ fun SelectArmyScreen(
     selectArmyModel: SelectArmyViewModel,
     onNextButtonClicked: () -> Unit,
     battleModel: BattleViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    tutorialModel: TutorialViewModel
 ) {
     val context = LocalContext.current
 
@@ -78,7 +82,8 @@ fun SelectArmyScreen(
             selectArmyModel = selectArmyModel,
             addShip = { selectArmyModel.addShip(it) },
             removeShip = { selectArmyModel.removeShip(it) },
-            battleModel = battleModel
+            battleModel = battleModel,
+            tutorialModel = tutorialModel
         )
 
         FloatingActionButton(
@@ -113,11 +118,13 @@ fun SelectArmy(
     modifier: Modifier = Modifier,
     battleModel: BattleViewModel,
     selectArmyModel: SelectArmyViewModel,
+    tutorialModel: TutorialViewModel,
     addShip: (ShipType) -> Unit,
     removeShip: (ShipType) -> Unit,
     onDismissRequest: () -> Unit = { selectArmyModel.showShipInfoDialog(false) }
 ) {
     val selectArmyUiState by selectArmyModel.selectArmyUiState.collectAsState()
+    val tutorialUiState by tutorialModel.tutorialUiState.collectAsState()
     val column1Weight = 2f
     val column2Weight = 1f
     val column3Weight = 0.5f
@@ -129,6 +136,14 @@ fun SelectArmy(
     if (!initialization) {
         selectArmyModel.cleanUiStates()
         initialization = true
+    }
+    TutorialDialog(tutorialModel = tutorialModel, toShow = tutorialUiState.showTutorialDialog, timer = null)
+    if(!tutorialUiState.infoShipTask && tutorialUiState.numberShipsTask &&tutorialUiState.showTutorial){
+        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.INFO_SHIP)
+    }
+
+    if(!tutorialUiState.numberShipsTask && tutorialUiState.showTutorial){
+        tutorialModel.showTutorialDialog(true, Tasks.NUMBER_SHIPS)
     }
 
     ShipInfoDialog(

@@ -19,6 +19,7 @@ data class MovementUiState(
     val locationForInfo : Int = 0,
     val mapBoxCoordinates: Map<Int, Rect> = mutableMapOf(),
     val lastTouchPosition: Offset? = null,
+    val turn: Int = 1,
 
     val cruiserOnPosition: Int = 0,
     val destroyerOnPosition: Int = 0,
