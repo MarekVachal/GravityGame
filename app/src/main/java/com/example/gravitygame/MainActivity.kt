@@ -18,6 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.gravitygame.ui.screen.BattleMapScreen
 import com.example.gravitygame.navigation.Destination
+import com.example.gravitygame.tutorial.TutorialViewModel
 import com.example.gravitygame.ui.screen.MainMenuScreen
 import com.example.gravitygame.ui.screen.SelectArmyScreen
 import com.example.gravitygame.ui.screen.SelectMapScreen
@@ -82,6 +83,7 @@ fun ScreenSetup() {
     val battleModel: BattleViewModel = viewModel()
     val selectArmyModel: SelectArmyViewModel = viewModel()
     val timerModel: TimerViewModel = viewModel()
+    val tutorialModel: TutorialViewModel = viewModel()
     var timer: CoroutineTimer? = null
     timer = CoroutineTimer(
         timerModel = timerModel,
@@ -93,13 +95,15 @@ fun ScreenSetup() {
             SelectArmyScreen(
                 onNextButtonClicked = { navController.navigate(Destination.BATTLEMAP.name)},
                 battleModel = battleModel,
-                selectArmyModel = selectArmyModel
+                selectArmyModel = selectArmyModel,
+                tutorialModel = tutorialModel
             )
         }
         composable(route = Destination.BATTLEMAP.name) {
             BattleMapScreen(
                 battleModel = battleModel,
                 timerModel = timerModel,
+                tutorialModel = tutorialModel,
                 timer = timer,
                 endOfGame = {
                     navController.navigate(Destination.MAINMENU.name)

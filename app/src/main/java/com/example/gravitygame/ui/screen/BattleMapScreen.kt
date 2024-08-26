@@ -22,9 +22,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import java.util.Locale
 import androidx.compose.ui.unit.dp
 import com.example.gravitygame.R
 import com.example.gravitygame.ai.createAiArmy
+import com.example.gravitygame.tutorial.Tasks
+import com.example.gravitygame.tutorial.TutorialDialog
+import com.example.gravitygame.tutorial.TutorialViewModel
 import com.example.gravitygame.ui.utils.CoroutineTimer
 import com.example.gravitygame.ui.utils.EndOfGameDialog
 import com.example.gravitygame.ui.utils.LocationInfoDialog
@@ -36,6 +40,7 @@ fun BattleMapScreen(
     modifier: Modifier = Modifier,
     battleModel: BattleViewModel,
     timerModel: TimerViewModel,
+    tutorialModel: TutorialViewModel,
     timer: CoroutineTimer,
     endOfGame: () -> Unit
 
@@ -44,6 +49,7 @@ fun BattleMapScreen(
     val timerUiState by timerModel.timerUiState.collectAsState()
     val locationListUiState by battleModel.locationListUiState.collectAsState()
     val movementRecord by battleModel.movementRecord.collectAsState()
+    val tutorialUiState by tutorialModel.tutorialUiState.collectAsState()
     var initialization by rememberSaveable { mutableStateOf(false) }
 
 
@@ -64,6 +70,20 @@ fun BattleMapScreen(
 
         timer.startTimer()
         initialization = true
+    }
+
+    TutorialDialog(tutorialModel = tutorialModel, toShow = tutorialUiState.showTutorialDialog, timer = timer)
+    if(!tutorialUiState.battleOverviewTask && tutorialUiState.showTutorial){
+        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.BATTLE_OVERVIEW, timer = timer)
+    }
+    if(!tutorialUiState.movementTask && tutorialUiState.battleOverviewTask && tutorialUiState.showTutorial){
+        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.MOVEMENT, timer = timer)
+    }
+    if(!tutorialUiState.locationInfoTask && tutorialUiState.acceptableLostTask && tutorialUiState.showTutorial && !movementUiState.showArmyDialog){
+        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.LOCATION_INFO, timer = timer)
+    }
+    if(!tutorialUiState.locationOwnerTask && movementUiState.turn == 2 && tutorialUiState.showTutorial){
+        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.LOCATION_OWNER, timer = timer)
     }
 
     Box(
@@ -93,7 +113,9 @@ fun BattleMapScreen(
         ){
             Text(
                 modifier = modifier.padding(4.dp),
-                text = "${timerUiState.minute}:${timerUiState.second}",
+                text = "${timerUiState.minute ?: 0}:${
+                    timerUiState.second?.let {String.format(Locale.US, "%02d", it)} ?: "00"
+                }",
             )
         }
 
@@ -130,7 +152,9 @@ fun BattleMapScreen(
 
     ArmyDialog(
         battleModel = battleModel,
-        show = movementUiState.showArmyDialog
+        tutorialModel = tutorialModel,
+        show = movementUiState.showArmyDialog,
+        timer = timer
     )
 
 

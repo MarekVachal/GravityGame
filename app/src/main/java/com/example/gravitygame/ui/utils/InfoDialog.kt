@@ -72,7 +72,8 @@ fun ShipInfoDialog(
             },
             text = {
                 Text(
-                    text = mapOfShips[shipType]?.let { stringResource(id = it.descriptionId) }?: "Unknown"
+                    text = mapOfShips[shipType]?.let { stringResource(id = it.descriptionId) }?: "Unknown",
+                    textAlign = TextAlign.Justify
                 )
             },
             modifier = modifier
@@ -118,7 +119,8 @@ fun EndOfGameDialog(
                         stringResource(id = R.string.winGame)
                     } else {
                         stringResource(id = R.string.drawGame)
-                    }
+                    },
+                    textAlign = TextAlign.Justify
                 )
             },
             modifier = modifier
@@ -289,7 +291,7 @@ fun LocationInfoDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = stringResource(R.string.maxLost),
+                        text = stringResource(R.string.maxLosses),
                         modifier = modifier.padding(end = padding)
                     )
 
