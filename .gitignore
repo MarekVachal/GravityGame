@@ -25,3 +25,4 @@ jdks/
 wrapper/
 .tmp/
 native/
+kotlin-profile/

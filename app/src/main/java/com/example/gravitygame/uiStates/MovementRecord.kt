@@ -1,5 +1,7 @@
 package com.example.gravitygame.uiStates
 
+import com.example.gravitygame.models.Ship
+
 data class MovementRecord(
-    val movementRecordOfTurn: MutableList<MutableMap<Int, Int>> = mutableListOf()
+    val movementRecordOfTurn: List<Map<Ship, Int>> = listOf()
 )

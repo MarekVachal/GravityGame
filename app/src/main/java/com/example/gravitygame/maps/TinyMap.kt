@@ -12,6 +12,8 @@ import com.example.gravitygame.ui.utils.MapBox
 import com.example.gravitygame.viewModels.BattleViewModel
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.gravitygame.R
+import com.example.gravitygame.models.Ship
+import com.example.gravitygame.ui.utils.MovementRecordOnLine
 
 class TinyMap : BattleMap() {
     override val mapName = R.string.tinyMapName
@@ -44,6 +46,7 @@ class TinyMap : BattleMap() {
     override fun MapLayout(
         modifier: Modifier,
         battleModel: BattleViewModel,
+        record: List<Map<Ship, Int>>,
         locationList: List<Location>
     ) {
 
@@ -60,6 +63,9 @@ class TinyMap : BattleMap() {
 
             val (field0, field1, field2, field3, field4, field5, field6, field7) = createRefs()
             val (route0, route1, route2, route3, route4, route5, route6, route7, route8, route9, route10, route11) = createRefs()
+            val (rec0, rec1, rec2, rec3, rec4, rec5, rec6, rec7, rec8, rec9, rec10, rec11) = createRefs()
+
+
 
             Image(
                 painter = painterResource(id = R.drawable.route),
@@ -75,6 +81,19 @@ class TinyMap : BattleMap() {
                     .width(150.dp)
             )
 
+            MovementRecordOnLine(
+                battleModel = battleModel,
+                location1 = 0,
+                location2 = 1,
+                record = record,
+                modifier = modifier
+                    .constrainAs(rec0){
+                        centerVerticallyTo(route0)
+                        centerHorizontallyTo(route0)
+
+                    }
+            )
+
             Image(
                 painter = painterResource(id = R.drawable.route),
                 contentDescription = "Route between location 0 and 3",
@@ -86,6 +105,19 @@ class TinyMap : BattleMap() {
                         bottom.linkTo(centerHorizontalGuideline)
                     }
                     .width(200.dp)
+            )
+
+            MovementRecordOnLine(
+                battleModel = battleModel,
+                location1 = 0,
+                location2 = 3,
+                record = record,
+                modifier = modifier
+                    .constrainAs(rec1){
+                        centerVerticallyTo(route1)
+                        centerHorizontallyTo(route1)
+
+                    }
             )
 
             Image(
@@ -102,6 +134,19 @@ class TinyMap : BattleMap() {
                     .width(150.dp)
             )
 
+            MovementRecordOnLine(
+                battleModel = battleModel,
+                location1 = 0,
+                location2 = 2,
+                record = record,
+                modifier = modifier
+                    .constrainAs(rec2){
+                        centerVerticallyTo(route2)
+                        centerHorizontallyTo(route2)
+
+                    }
+            )
+
             Image(
                 painter = painterResource(id = R.drawable.route),
                 contentDescription = "Route between location 1 and 4",
@@ -113,6 +158,19 @@ class TinyMap : BattleMap() {
                         bottom.linkTo(topGuideline)
                     }
                     .width(300.dp)
+            )
+
+            MovementRecordOnLine(
+                battleModel = battleModel,
+                location1 = 1,
+                location2 = 4,
+                record = record,
+                modifier = modifier
+                    .constrainAs(rec3){
+                        centerVerticallyTo(route3)
+                        centerHorizontallyTo(route3)
+
+                    }
             )
 
             Image(
@@ -129,6 +187,19 @@ class TinyMap : BattleMap() {
                     .width(250.dp)
             )
 
+            MovementRecordOnLine(
+                battleModel = battleModel,
+                location1 = 1,
+                location2 = 5,
+                record = record,
+                modifier = modifier
+                    .constrainAs(rec4){
+                        centerVerticallyTo(route4)
+                        centerHorizontallyTo(route4)
+
+                    }
+            )
+
             Image(
                 painter = painterResource(id = R.drawable.route),
                 contentDescription = "Route between location 3 and 4",
@@ -141,6 +212,19 @@ class TinyMap : BattleMap() {
                         bottom.linkTo(field3.bottom)
                     }
                     .width(250.dp)
+            )
+
+            MovementRecordOnLine(
+                battleModel = battleModel,
+                location1 = 3,
+                location2 = 4,
+                record = record,
+                modifier = modifier
+                    .constrainAs(rec5){
+                        centerVerticallyTo(route5)
+                        centerHorizontallyTo(route5)
+
+                    }
             )
 
             Image(
@@ -157,6 +241,19 @@ class TinyMap : BattleMap() {
                     .width(250.dp)
             )
 
+            MovementRecordOnLine(
+                battleModel = battleModel,
+                location1 = 3,
+                location2 = 6,
+                record = record,
+                modifier = modifier
+                    .constrainAs(rec6){
+                        centerVerticallyTo(route6)
+                        centerHorizontallyTo(route6)
+
+                    }
+            )
+
             Image(
                 painter = painterResource(id = R.drawable.route),
                 contentDescription = "Route between location 2 and 6",
@@ -168,6 +265,19 @@ class TinyMap : BattleMap() {
                         bottom.linkTo(bottomGuideline)
                     }
                     .width(300.dp)
+            )
+
+            MovementRecordOnLine(
+                battleModel = battleModel,
+                location1 = 2,
+                location2 = 6,
+                record = record,
+                modifier = modifier
+                    .constrainAs(rec7){
+                        centerVerticallyTo(route7)
+                        centerHorizontallyTo(route7)
+
+                    }
             )
 
             Image(
@@ -184,6 +294,19 @@ class TinyMap : BattleMap() {
                     .width(250.dp)
             )
 
+            MovementRecordOnLine(
+                battleModel = battleModel,
+                location1 = 2,
+                location2 = 5,
+                record = record,
+                modifier = modifier
+                    .constrainAs(rec8){
+                        centerVerticallyTo(route8)
+                        centerHorizontallyTo(route8)
+
+                    }
+            )
+
             Image(
                 painter = painterResource(id = R.drawable.route),
                 contentDescription = "Route between location 7 and 4",
@@ -196,6 +319,19 @@ class TinyMap : BattleMap() {
                         bottom.linkTo(field7.bottom)
                     }
                     .width(150.dp)
+            )
+
+            MovementRecordOnLine(
+                battleModel = battleModel,
+                location1 = 7,
+                location2 = 4,
+                record = record,
+                modifier = modifier
+                    .constrainAs(rec9){
+                        centerVerticallyTo(route9)
+                        centerHorizontallyTo(route9)
+
+                    }
             )
 
             Image(
@@ -211,6 +347,19 @@ class TinyMap : BattleMap() {
                     .width(200.dp)
             )
 
+            MovementRecordOnLine(
+                battleModel = battleModel,
+                location1 = 7,
+                location2 = 5,
+                record = record,
+                modifier = modifier
+                    .constrainAs(rec10){
+                        centerVerticallyTo(route10)
+                        centerHorizontallyTo(route10)
+
+                    }
+            )
+
             Image(
                 painter = painterResource(id = R.drawable.route),
                 contentDescription = "Route between location 7 and 6",
@@ -223,6 +372,19 @@ class TinyMap : BattleMap() {
                         bottom.linkTo(field6.bottom)
                     }
                     .width(150.dp)
+            )
+
+            MovementRecordOnLine(
+                battleModel = battleModel,
+                location1 = 7,
+                location2 = 6,
+                record = record,
+                modifier = modifier
+                    .constrainAs(rec11){
+                        centerVerticallyTo(route11)
+                        centerHorizontallyTo(route11)
+
+                    }
             )
 
             MapBox(

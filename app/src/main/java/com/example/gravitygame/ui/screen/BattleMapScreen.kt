@@ -101,6 +101,7 @@ fun BattleMapScreen(
     battleModel.battleMap?.MapLayout(
         modifier = modifier,
         battleModel = battleModel,
+        record = movementRecord.movementRecordOfTurn,
         locationList = locationListUiState.locationList
     ) ?: return /* TODO Something went wrong with the battle map */
 
