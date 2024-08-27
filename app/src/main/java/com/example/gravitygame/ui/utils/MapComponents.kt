@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,6 +34,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.gravitygame.R
 import com.example.gravitygame.models.Location
+import com.example.gravitygame.models.Ship
 import com.example.gravitygame.models.ShipType
 import com.example.gravitygame.viewModels.BattleViewModel
 
@@ -67,7 +70,8 @@ fun MapBox(
                                 touchPositionInWindow,
                                 battleModel.movementUiState.value.mapBoxCoordinates
                             )
-                            endLocation?.let { battleModel.setEndLocationMovementOrder(it) } ?: battleModel.cleanAfterUnsuccessfulMovement()
+                            endLocation?.let { battleModel.setEndLocationMovementOrder(it) }
+                                ?: battleModel.cleanAfterUnsuccessfulMovement()
                         }
                     },
                     onDrag = { change, _ ->
@@ -189,6 +193,39 @@ fun MapBox(
             location = location,
             isForEnemy = false
         )
+    }
+}
+
+@Composable
+fun MovementRecordOnLine(
+    modifier: Modifier = Modifier,
+    battleModel: BattleViewModel,
+    location1: Int,
+    location2: Int,
+    record: List<Map<Ship, Int>>
+){
+
+    val cruisers = battleModel.getNumberShipsForRecord(shipType = ShipType.CRUISER, location1 = location1, location2 = location2)
+    val destroyers = battleModel.getNumberShipsForRecord(shipType = ShipType.DESTROYER, location1 = location1, location2 = location2)
+    val ghost = battleModel.getNumberShipsForRecord(shipType = ShipType.GHOST, location1 = location1, location2 = location2)
+    val warper = battleModel.getNumberShipsForRecord(shipType = ShipType.WARPER, location1 = location1, location2 = location2)
+    if (record.any { map -> map.any { (it.key.startingPosition == location1 && it.key.currentPosition == location2) || (it.key.startingPosition == location2 && it.key.currentPosition == location1) } }){
+        Card(
+            modifier = modifier,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+            )
+        ){
+            Column (
+                modifier = modifier.padding(4.dp)
+            ){
+                if(cruisers != 0) ArmyInfoRow(shipNumber = cruisers)
+                if(destroyers != 0) ArmyInfoRow(shipNumber = destroyers)
+                if(ghost != 0) ArmyInfoRow(shipNumber = ghost)
+                if(warper != 0) ArmyInfoRow(shipNumber = warper)
+            }
+        }
     }
 }
 

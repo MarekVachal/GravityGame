@@ -5,7 +5,6 @@ import com.example.gravitygame.ui.utils.CoroutineTimer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.Timer
 
 class TutorialViewModel: ViewModel() {
 

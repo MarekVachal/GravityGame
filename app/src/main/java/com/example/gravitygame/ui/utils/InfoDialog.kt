@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -53,9 +54,7 @@ fun ShipInfoDialog(
             onDismissRequest = onDismissRequest,
             confirmButton = {
                 Button(onClick = confirmButton) {
-                    Text(
-                        text = stringResource(id = R.string.ok)
-                    )
+                    Icon(painter = painterResource(id = R.drawable.check), contentDescription = "Check icon")
                 }
             },
             icon = {
@@ -95,9 +94,7 @@ fun EndOfGameDialog(
             onDismissRequest = onDismissRequest,
             confirmButton = {
                 Button(onClick = confirmButton) {
-                    Text(
-                        text = stringResource(id = R.string.ok)
-                    )
+                    Icon(painter = painterResource(id = R.drawable.check), contentDescription = "Check icon")
                 }
             },
             title = {
@@ -328,7 +325,7 @@ fun LocationInfoDialog(
                     Button(
                         onClick = onDismissRequest
                     ) {
-                        Text(text = stringResource(id = R.string.ok))
+                        Icon(painter = painterResource(id = R.drawable.check), contentDescription = "Check icon")
                     }
                 }
             }

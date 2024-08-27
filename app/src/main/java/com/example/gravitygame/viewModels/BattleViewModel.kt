@@ -1,7 +1,6 @@
 package com.example.gravitygame.viewModels
 
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.lifecycle.ViewModel
 import com.example.gravitygame.ai.GameState
@@ -39,39 +38,15 @@ class BattleViewModel : ViewModel() {
     private val mctsIterations = 100
     private val aiDifficulty = 5
 
-
     private fun turnCounter(){
         val count = movementUiState.value.turn + 1
         _movementUiState.value = _movementUiState.value.copy(turn = count)
     }
+
     fun createMapBoxPositions(location: Int, coordinates: Rect){
         val mapBoxCoordinates: MutableMap<Int, Rect> = movementUiState.value.mapBoxCoordinates.toMutableMap()
         mapBoxCoordinates[location] = coordinates
         _movementUiState.value = _movementUiState.value.copy(mapBoxCoordinates = mapBoxCoordinates.toMap())
-    }
-
-    fun changeLastTouchPosition(offset: Offset){
-        _movementUiState.value = _movementUiState.value.copy(lastTouchPosition = offset)
-    }
-
-    private fun updateRecordsForTurn() {
-        val indexOfEndLocation = movementUiState.value.endPosition
-        val movementMap: MutableMap<Int, Int> = mutableMapOf()
-        val movementRecord: MutableList<MutableMap<Int, Int>> =
-            movementRecord.value.movementRecordOfTurn
-        indexOfEndLocation?.let {
-            locationListUiState.value.locationList[it].myShipList
-                .forEach { ship ->
-                    if (ship.justMoved)
-                        movementMap[ship.id] = indexOfEndLocation
-                }
-        }
-        movementRecord.add(movementMap)
-        _movementRecord.value = _movementRecord.value.copy(movementRecordOfTurn = movementRecord)
-    }
-
-    private fun cleanRecordsForTurn() {
-        _movementRecord.value.movementRecordOfTurn.clear()
     }
 
     fun createBattleMap(selectedMap: BattleMap) {
@@ -264,7 +239,6 @@ class BattleViewModel : ViewModel() {
         cleanAcceptableLost()
     }
 
-
     fun initializeArmyDialogValues() {
         val cruiserOnPosition =
             movementUiState.value.endPosition?.let { locationListUiState.value.locationList[it].myShipList.count { ship -> ship.type == ShipType.CRUISER } } ?: 0
@@ -366,35 +340,60 @@ class BattleViewModel : ViewModel() {
         }
     }
 
+    // Functions for movement records
+    private fun updateRecordsForTurn() {
+        val indexOfEndLocation = movementUiState.value.endPosition
+        val movementMap: MutableMap<Ship, Int> = mutableMapOf()
+        val movementRecord: MutableList<Map<Ship, Int>> = movementRecord.value.movementRecordOfTurn.toMutableList()
+        indexOfEndLocation?.let {
+            locationListUiState.value.locationList[it].myShipList
+                .forEach { ship ->
+                    if (ship.justMoved)
+                        movementMap[ship] = indexOfEndLocation
+                }
+        }
+        movementRecord.add(movementMap.toMap())
+        _movementRecord.value = _movementRecord.value.copy(movementRecordOfTurn = movementRecord.toList())
+    }
+
+    private fun cleanRecordsForTurn() {
+        val newRecord = movementRecord.value.movementRecordOfTurn.toMutableList()
+        newRecord.clear()
+        _movementRecord.value = _movementRecord.value.copy(movementRecordOfTurn = newRecord.toList())
+    }
+
     fun undoAttack() {
         if (movementRecord.value.movementRecordOfTurn.isNotEmpty()) {
-            val newLocationList: MutableList<Location> =
-                locationListUiState.value.locationList.toMutableList()
+            val newLocationList: MutableList<Location> = locationListUiState.value.locationList.toMutableList()
             val indexOfLastMove = movementRecord.value.movementRecordOfTurn.size - 1
-            _movementRecord.value.movementRecordOfTurn[indexOfLastMove].forEach { ship ->
-                val shipInIssue: Ship? =
-                    locationListUiState.value.locationList[ship.value].myShipList.find { it.id == ship.key }
-                if (shipInIssue != null) {
-                    shipInIssue.startingPosition?.let {
-                        newLocationList[it].myShipList.add(shipInIssue)
-                    }
-                    shipInIssue.currentPosition?.let {
-                        newLocationList[it].myShipList.remove(shipInIssue)
-                    }
-                    shipInIssue.startingPosition?.let { startingPosition ->
-                        newLocationList[startingPosition].myShipList.find { it.id == ship.key }?.currentPosition =
-                            shipInIssue.startingPosition
-                    }
-                    shipInIssue.hasMoved = false
-                }
+            movementRecord.value.movementRecordOfTurn[indexOfLastMove].forEach { map ->
+                val ship = map.key
+                ship.startingPosition?.let {newLocationList[it].myShipList.add(ship)}
+                ship.currentPosition?.let {newLocationList[it].myShipList.remove(ship)}
+                ship.currentPosition = ship.startingPosition
+                ship.hasMoved = false
             }
-            _locationListUiState.value =
-                _locationListUiState.value.copy(locationList = newLocationList)
-            val newMovementRecord = movementRecord.value.movementRecordOfTurn
+            _locationListUiState.value = _locationListUiState.value.copy(locationList = newLocationList)
+
+            val newMovementRecord = movementRecord.value.movementRecordOfTurn.toMutableList()
             newMovementRecord.removeAt(indexOfLastMove)
-            _movementRecord.value =
-                _movementRecord.value.copy(movementRecordOfTurn = newMovementRecord)
+            _movementRecord.value = _movementRecord.value.copy(movementRecordOfTurn = newMovementRecord.toList())
+
         }
+    }
+
+    fun getNumberShipsForRecord(
+        shipType: ShipType,
+        location1: Int,
+        location2: Int
+    ): Int {
+        val listOfMove = movementRecord.value.movementRecordOfTurn.flatMap {
+            map -> map.filter { it.value == location2 || it.value == location1 }.keys }
+        val sizeOnLocation2 = locationListUiState.value.locationList[location2].myShipList
+            .filter { ship -> ship in listOfMove && ship.type == shipType && ship.currentPosition == location2 && ship.startingPosition == location1 }.size
+        val sizeOnLocation1 = locationListUiState.value.locationList[location1].myShipList
+            .filter { ship -> ship in listOfMove && ship.type == shipType && ship.currentPosition == location1 && ship.startingPosition == location2}.size
+        return sizeOnLocation1 + sizeOnLocation2
     }
 
     private fun changeWarperPresent(isTrue: Boolean) {

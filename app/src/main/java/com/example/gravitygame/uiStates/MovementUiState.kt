@@ -1,6 +1,5 @@
 package com.example.gravitygame.uiStates
 
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 
 data class MovementUiState(
@@ -18,7 +17,6 @@ data class MovementUiState(
     val showLocationInfoDialog: Boolean = false,
     val locationForInfo : Int = 0,
     val mapBoxCoordinates: Map<Int, Rect> = mutableMapOf(),
-    val lastTouchPosition: Offset? = null,
     val turn: Int = 1,
 
     val cruiserOnPosition: Int = 0,
