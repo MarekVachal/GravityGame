@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -28,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -60,8 +62,8 @@ fun ArmyDialog(
     val movementUiState by battleModel.movementUiState.collectAsState()
     val locationListUiState by battleModel.locationListUiState.collectAsState()
     val tutorialUiState by tutorialModel.tutorialUiState.collectAsState()
-    val weightOfName = 0.2f
-    val weightOfNumbers = 0.2f
+    val weightOfName = 0.15f
+    val weightOfNumbers = 0.15f
     val weightOfButtons = 0.1f
     val padding = 16.dp
 
@@ -117,28 +119,32 @@ fun ArmyDialog(
                                         textAlign = TextAlign.Start,
                                         modifier = Modifier
                                             .weight(weightOfName)
-                                            .wrapContentWidth(align = Alignment.Start)
+                                            .wrapContentWidth(align = Alignment.Start),
+                                        style = MaterialTheme.typography.titleMedium
                                     )
 
                                     Text(
                                         text = stringResource(id = R.string.enemyShips),
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
-                                            .weight(weightOfNumbers)
+                                            .weight(weightOfNumbers),
+                                        style = MaterialTheme.typography.titleMedium
                                     )
 
                                     Text(
                                         text = stringResource(id = R.string.possibleShipsToMove),
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
-                                            .weight(weightOfNumbers)
+                                            .weight(weightOfNumbers),
+                                        style = MaterialTheme.typography.titleMedium
                                     )
 
                                     Text(
                                         text = stringResource(id = R.string.shipsToMove),
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
-                                            .weight(weightOfNumbers)
+                                            .weight(weightOfNumbers),
+                                        style = MaterialTheme.typography.titleMedium
                                     )
 
                                     Text(
@@ -261,7 +267,7 @@ fun ArmyDialog(
                         Button(
                             onClick = onCancel
                         ) {
-                            Text(text = stringResource(id = R.string.cancel))
+                            Icon(painter = painterResource(id = R.drawable.close), contentDescription = "Close icon")
                         }
 
                         Button(
@@ -273,9 +279,6 @@ fun ArmyDialog(
                 }
             }
         }
-
-
-
 }
 
 
@@ -309,7 +312,7 @@ fun ArmyDialogRow(
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
+        modifier = modifier.wrapContentWidth()
     ) {
         Text(
             text = mapOfShips[shipType]?.let { stringResource(id = it.nameId) }?: "Unknown",
@@ -369,7 +372,7 @@ fun ArmyDialogRow(
             modifier = modifier
                 .weight(weightOfButtons)
         ) {
-            Text(text = stringResource(R.string.minus))
+            Icon(painter = painterResource(id = R.drawable.remove), contentDescription = "Remove icon")
         }
 
 
@@ -393,7 +396,7 @@ fun ArmyDialogRow(
                     .weight(weightOfButtons),
 
                 ) {
-                Text(text = stringResource(R.string.plus))
+                Icon(painter = painterResource(id = R.drawable.add), contentDescription = "Add icon")
             }
         }
 

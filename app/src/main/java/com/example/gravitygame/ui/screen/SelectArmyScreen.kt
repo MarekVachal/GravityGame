@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -73,7 +75,8 @@ fun SelectArmyScreen(
                 text = stringResource(id = R.string.chooseArmyTitle),
                 modifier = modifier
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.headlineMedium
             )
         }
 
@@ -104,9 +107,11 @@ fun SelectArmyScreen(
                 .align(Alignment.BottomEnd)
                 .padding(end = 16.dp, bottom = 16.dp)
         ) {
-            Text(
-                text = stringResource(id = R.string.ok),
-                modifier = modifier.padding(16.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.check),
+                contentDescription = "Check icon",
+                modifier = modifier.padding(16.dp)
+            )
         }
 
     }
@@ -186,7 +191,7 @@ fun SelectArmy(
                     modifier = Modifier
                         .weight(column2Weight)
                 ) {
-                    Text(text = stringResource(R.string.minus))
+                    Icon(painter = painterResource(id = R.drawable.remove), contentDescription = "Remove icon")
                 }
 
                 Text(
@@ -202,7 +207,7 @@ fun SelectArmy(
                     modifier = Modifier
                         .weight(column4Weight)
                 ) {
-                    Text(text = stringResource(R.string.plus))
+                    Icon(painter = painterResource(id = R.drawable.add), contentDescription = "Add icon")
                 }
             }
             Row(
@@ -226,7 +231,7 @@ fun SelectArmy(
                     modifier = Modifier
                         .weight(column2Weight)
                 ) {
-                    Text(text = stringResource(R.string.minus))
+                    Icon(painter = painterResource(id = R.drawable.remove), contentDescription = "Remove icon")
                 }
 
                 Text(
@@ -242,7 +247,7 @@ fun SelectArmy(
                     modifier = Modifier
                         .weight(column4Weight)
                 ) {
-                    Text(text = stringResource(R.string.plus))
+                    Icon(painter = painterResource(id = R.drawable.add), contentDescription = "Add icon")
                 }
             }
 
@@ -267,7 +272,7 @@ fun SelectArmy(
                     modifier = Modifier
                         .weight(column2Weight)
                 ) {
-                    Text(text = stringResource(R.string.minus))
+                    Icon(painter = painterResource(id = R.drawable.remove), contentDescription = "Remove icon")
                 }
                 Text(
                     text = selectArmyUiState.numberGhosts.toString(),
@@ -282,7 +287,7 @@ fun SelectArmy(
                     modifier = Modifier
                         .weight(column4Weight)
                 ) {
-                    Text(text = stringResource(R.string.plus))
+                    Icon(painter = painterResource(id = R.drawable.add), contentDescription = "Add icon")
                 }
             }
 
