@@ -1,7 +1,6 @@
 package com.example.gravitygame.tutorial
 
 data class TutorialUiState(
-    val showTutorial: Boolean = true,
     val showTutorialDialog: Boolean = false,
     val typeTaskToShow: Tasks? = null,
     val battleOverviewTask: Boolean = false,

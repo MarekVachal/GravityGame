@@ -1,6 +1,5 @@
-package com.example.gravitygame.ui.utils
+package com.example.gravitygame.timer
 
-import com.example.gravitygame.viewModels.TimerViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

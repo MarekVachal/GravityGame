@@ -1,4 +1,4 @@
-package com.example.gravitygame.uiStates
+package com.example.gravitygame.timer
 
 data class TimerUiState (
     

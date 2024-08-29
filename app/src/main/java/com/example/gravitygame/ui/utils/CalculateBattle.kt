@@ -8,7 +8,7 @@ import com.example.gravitygame.models.mapOfShips
 import java.lang.Integer.min
 import kotlin.math.max
 
-fun calculateBattle(location: Location): Players {
+fun calculateBattle(location: Location, playerData: PlayerData): Players {
     var myHp = 0
     var enemyHp = 0
 
@@ -23,8 +23,17 @@ fun calculateBattle(location: Location): Players {
 
     do {
         if (myFir == 0 && enemyFir == 0) {
-            myFir = calcFirepower(location.myShipList, location.enemyShipList)
-            enemyFir = calcFirepower(location.enemyShipList, location.myShipList)
+            myFir = calcFirepower(
+                shipList = location.myShipList,
+                shipListOther = location.enemyShipList,
+                location = location,
+                player = playerData.player
+            )
+            enemyFir = calcFirepower(
+                shipList = location.enemyShipList,
+                shipListOther = location.myShipList,
+                location = location,
+                player = playerData.opponent)
         }
 
         if (myFir == 0 && enemyFir == 0) {
@@ -100,7 +109,9 @@ private fun getPriorityUnit(shipList: SnapshotStateList<Ship>): ShipType {
 
 private fun calcFirepower(
     shipList: SnapshotStateList<Ship>,
-    shipListOther: SnapshotStateList<Ship>
+    shipListOther: SnapshotStateList<Ship>,
+    location: Location,
+    player: Players
 ): Int {
     var firepower = 0
     var destroyerFirepower = 0
@@ -118,5 +129,6 @@ private fun calcFirepower(
     }
     destroyerFirepower = max(destroyerFirepower, 0)
     firepower += min(destroyerFirepower, shipListOther.size)
+    firepower += if (location.owner.value == player) 1 else 0
     return firepower
 }

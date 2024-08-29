@@ -9,7 +9,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.gravitygame.models.Location
 import com.example.gravitygame.ui.utils.MapBox
-import com.example.gravitygame.viewModels.BattleViewModel
+import com.example.gravitygame.ui.screens.battleMapScreen.BattleViewModel
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.gravitygame.R
 import com.example.gravitygame.models.Ship
@@ -41,6 +41,8 @@ class TinyMap : BattleMap() {
         location6,
         location7
     )
+    override val player1Base = locationList.first().id
+    override val player2Base = locationList.last().id
 
     @Composable
     override fun MapLayout(

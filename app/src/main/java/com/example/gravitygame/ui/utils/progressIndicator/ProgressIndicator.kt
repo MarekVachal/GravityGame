@@ -1,4 +1,4 @@
-package com.example.gravitygame.ui.utils
+package com.example.gravitygame.ui.utils.progressIndicator
 
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape

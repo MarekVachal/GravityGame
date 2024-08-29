@@ -36,7 +36,7 @@ import com.example.gravitygame.R
 import com.example.gravitygame.models.Location
 import com.example.gravitygame.models.Ship
 import com.example.gravitygame.models.ShipType
-import com.example.gravitygame.viewModels.BattleViewModel
+import com.example.gravitygame.ui.screens.battleMapScreen.BattleViewModel
 
 @Composable
 fun MapBox(

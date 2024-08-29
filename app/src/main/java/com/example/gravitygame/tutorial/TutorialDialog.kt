@@ -1,5 +1,6 @@
 package com.example.gravitygame.tutorial
 
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
@@ -16,32 +17,53 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.example.gravitygame.R
-import com.example.gravitygame.ui.utils.CoroutineTimer
+import com.example.gravitygame.timer.CoroutineTimer
+import com.example.gravitygame.ui.screens.settingScreen.SettingViewModel
 
 @Composable
 fun TutorialDialog(
     modifier: Modifier = Modifier,
     tutorialModel: TutorialViewModel,
     timer: CoroutineTimer?,
+    settingsModel: SettingViewModel,
+    context: Context,
     toShow: Boolean
 ){
     val tutorialUiState by tutorialModel.tutorialUiState.collectAsState()
 
     if(toShow){
         AlertDialog(
-            onDismissRequest = { tutorialModel.showTutorialDialog(toShow = false, timer = timer) },
+            onDismissRequest = {
+                tutorialModel.showTutorialDialog(
+                    toShow = false,
+                    timer = timer
+                )
+            },
             dismissButton = {
                 Button(
                     onClick = {
-                        tutorialModel.closeTutorial()
-                        tutorialModel.showTutorialDialog(toShow = false, timer = timer)
+                        settingsModel.changeShowTutorial(
+                            toShow = false,
+                            context = context
+                        )
+                        tutorialModel.showTutorialDialog(
+                            toShow = false,
+                            timer = timer
+                        )
+                        tutorialModel.cleanTutorialState()
                     }
                 ){
                     Text(text = stringResource(id = R.string.closeTutorial))
                 }
             },
             confirmButton = {
-                Button(onClick = { tutorialModel.showTutorialDialog(toShow = false, timer = timer) }
+                Button(
+                    onClick = {
+                        tutorialModel.showTutorialDialog(
+                            toShow = false,
+                            timer = timer
+                        )
+                    }
                 ){
                     Icon(painter = painterResource(id = R.drawable.check), contentDescription = "Check icon")
                 }

@@ -8,7 +8,8 @@ import com.example.gravitygame.models.ShipType
 import com.example.gravitygame.models.deepCopy
 import com.example.gravitygame.ui.utils.Players
 import com.example.gravitygame.ui.utils.calculateBattle
-import com.example.gravitygame.viewModels.BattleViewModel
+import com.example.gravitygame.ui.screens.battleMapScreen.BattleViewModel
+import com.example.gravitygame.ui.utils.PlayerData
 
 data class GameState(
     val locationList: List<Location>,
@@ -20,8 +21,8 @@ data class Move(val ship: Ship, val targetLocation: Int)
 
 class MCTS(private val iterations: Int, private val difficulty: Int) {
 
-    fun findBestMove(initialState: GameState): GameState {
-        val mapOfMovement: Map<Int, GameState> = simulate(initialState, iterations)
+    fun findBestMove(initialState: GameState, playerData: PlayerData): GameState {
+        val mapOfMovement: Map<Int, GameState> = simulate(state = initialState, iterate = iterations, playerData = playerData)
         val sortedMap: Map<Int, GameState> = mapOfMovement.toSortedMap(compareByDescending { it })
         val chosenStates: List<GameState> = sortedMap.entries
             .take(difficulty)
@@ -29,14 +30,16 @@ class MCTS(private val iterations: Int, private val difficulty: Int) {
         return chosenStates.random()
     }
 
-    private fun simulate(state: GameState, iterate: Int): Map<Int, GameState> {
+    private fun simulate(state: GameState, iterate: Int, playerData: PlayerData): Map<Int, GameState> {
         var mapOfAcceptableLost: MutableMap<Int, Int>
         val mapOfScoredState: MutableMap<Int, GameState> = mutableMapOf()
         repeat(iterate) {
             val moveCombination = generateMoveCombinations(state)
             val movedState = state.applyMoves(moveCombination)
             if (movedState.checkForBattle()) {
-                mapOfAcceptableLost = generateAcceptableLost(movedState).toMutableMap()
+                mapOfAcceptableLost = generateAcceptableLost(
+                    state = movedState, playerData = playerData
+                ).toMutableMap()
                 movedState.applyAcceptableLost(mapOfAcceptableLost)
             }
             val score = evaluateGameState(movedState)
@@ -45,11 +48,11 @@ class MCTS(private val iterations: Int, private val difficulty: Int) {
         return mapOfScoredState
     }
 
-    private fun generateAcceptableLost(state: GameState): Map<Int, Int> {
+    private fun generateAcceptableLost(state: GameState, playerData: PlayerData): Map<Int, Int> {
         val mapOfAcceptableLost: MutableMap<Int, Int> = mutableMapOf()
         state.locationList.forEach { location ->
             if(location.enemyShipList.isNotEmpty() && location.myShipList.isNotEmpty()){
-                when(calculateBattle(location)){
+                when(calculateBattle(location = location, playerData = playerData)){
                     Players.PLAYER1 -> /*TODO( Function for increasing of acceptable lost of AI)*/ mapOfAcceptableLost[location.id] = location.enemyAcceptableLost.intValue++
                     Players.PLAYER2 -> mapOfAcceptableLost[location.id] = location.enemyAcceptableLost.intValue
                     Players.NONE -> /*TODO( What to do with a draw?)*/ mapOfAcceptableLost[location.id] = location.enemyAcceptableLost.intValue++

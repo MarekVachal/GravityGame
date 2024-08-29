@@ -1,4 +1,4 @@
-package com.example.gravitygame.uiStates
+package com.example.gravitygame.ui.utils
 
 import com.example.gravitygame.models.Ship
 

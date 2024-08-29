@@ -1,4 +1,4 @@
-package com.example.gravitygame.uiStates
+package com.example.gravitygame.ui.screens.battleMapScreen
 
 import androidx.compose.ui.geometry.Rect
 

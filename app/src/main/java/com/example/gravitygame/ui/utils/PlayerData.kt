@@ -1,6 +1,6 @@
 package com.example.gravitygame.ui.utils
 
-data class Player(
+data class PlayerData(
     var player: Players = Players.PLAYER1,
     var opponent: Players = Players.PLAYER2,
     var showTutorial: Boolean = true,

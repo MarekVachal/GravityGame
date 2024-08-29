@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import com.example.gravitygame.models.Location
 import com.example.gravitygame.models.Ship
-import com.example.gravitygame.viewModels.BattleViewModel
+import com.example.gravitygame.ui.screens.battleMapScreen.BattleViewModel
 
 abstract class BattleMap {
     abstract val mapName: Int
@@ -16,6 +16,8 @@ abstract class BattleMap {
     abstract val shipLimitOnMap: Int
     abstract val shipLimitOnPosition: Int
     abstract val locationList: List<Location>
+    abstract val player1Base: Int
+    abstract val player2Base: Int
 
     @Composable
     abstract fun MapLayout(

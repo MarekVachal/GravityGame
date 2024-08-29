@@ -1,4 +1,4 @@
-package com.example.gravitygame.viewModels
+package com.example.gravitygame.ui.screens.battleMapScreen
 
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.geometry.Rect
@@ -14,13 +14,12 @@ import com.example.gravitygame.models.LocationList
 import com.example.gravitygame.models.Ship
 import com.example.gravitygame.models.ShipType
 import com.example.gravitygame.models.Warper
-import com.example.gravitygame.ui.utils.CoroutineTimer
-import com.example.gravitygame.ui.utils.Player
+import com.example.gravitygame.timer.CoroutineTimer
+import com.example.gravitygame.ui.utils.PlayerData
 import com.example.gravitygame.ui.utils.Players
 import com.example.gravitygame.ui.utils.calculateBattle
-import com.example.gravitygame.uiStates.MovementRecord
-import com.example.gravitygame.uiStates.MovementUiState
-import com.example.gravitygame.uiStates.SelectArmyUiState
+import com.example.gravitygame.ui.utils.MovementRecord
+import com.example.gravitygame.ui.screens.selectArmyScreen.SelectArmyUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,7 +33,7 @@ class BattleViewModel : ViewModel() {
     var battleMap: BattleMap? = null
     private val _movementRecord = MutableStateFlow(MovementRecord())
     val movementRecord: StateFlow<MovementRecord> = _movementRecord.asStateFlow()
-    val playerData = Player()
+    val playerData = PlayerData()
     private val mctsIterations = 100
     private val aiDifficulty = 5
 
@@ -107,7 +106,7 @@ class BattleViewModel : ViewModel() {
         val newLocationList = locationListUiState.value.locationList
         _locationListUiState.value.locationList.forEach {
             if (it.myShipList.isNotEmpty() && it.enemyShipList.isNotEmpty()) {
-                when (calculateBattle(it)) {
+                when (calculateBattle(location = it, playerData = playerData)) {
                     Players.PLAYER1 -> newLocationList[it.id].owner.value = Players.PLAYER1
                     Players.PLAYER2 -> newLocationList[it.id].owner.value = Players.PLAYER2
                     Players.NONE -> return
@@ -145,7 +144,7 @@ class BattleViewModel : ViewModel() {
     private fun aiMove() {
         val state = initializeGameState()
         val mcts = MCTS(mctsIterations, aiDifficulty)
-        val bestMove = mcts.findBestMove(state)
+        val bestMove = mcts.findBestMove(initialState = state, playerData = playerData)
         updateUIWithBestMove(bestMove)
     }
 
@@ -155,16 +154,19 @@ class BattleViewModel : ViewModel() {
     }
 
     private fun checkEndCondition(thisPlayer: Players, timer: CoroutineTimer) {
-        val player1Base = 0
-        val player2Base = locationListUiState.value.locationList.lastIndex
+        val player1Base = battleMap?.player1Base ?: return
+        val player2Base = battleMap?.player2Base ?: return
 
-        if (locationListUiState.value.locationList[player1Base].owner.value == Players.PLAYER2) {
+        if (
+            locationListUiState.value.locationList[player1Base].owner.value == Players.PLAYER2
+            && locationListUiState.value.locationList[player2Base].owner.value == Players.PLAYER1){
+            playerData.draw = true
+            endOfGame(timer = timer)
+        } else if (locationListUiState.value.locationList[player1Base].owner.value == Players.PLAYER2) {
             playerData.lost = thisPlayer == Players.PLAYER1
             playerData.win = thisPlayer == Players.PLAYER2
             endOfGame(timer = timer)
-        }
-
-        if (locationListUiState.value.locationList[player2Base].owner.value == Players.PLAYER1) {
+        } else if (locationListUiState.value.locationList[player2Base].owner.value == Players.PLAYER1) {
             playerData.lost = thisPlayer == Players.PLAYER2
             playerData.win = thisPlayer == Players.PLAYER1
             endOfGame(timer = timer)

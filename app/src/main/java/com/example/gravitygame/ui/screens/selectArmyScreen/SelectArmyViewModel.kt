@@ -1,7 +1,6 @@
-package com.example.gravitygame.viewModels
+package com.example.gravitygame.ui.screens.selectArmyScreen
 
 import androidx.lifecycle.ViewModel
-import com.example.gravitygame.uiStates.SelectArmyUiState
 import com.example.gravitygame.models.ShipType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

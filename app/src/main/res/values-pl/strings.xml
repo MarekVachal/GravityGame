@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Gravity Game</string>
+    <string name="battleWithAI">Graj s AI</string>
+    <string name="selectLanguage">Wybierz jezyka</string>
+    <string name="english">Angielsky</string>
+    <string name="czech">Czesky</string>
+    <string name="showTutorial">Pokaz tutorial</string>
+    <string name="polish">Polsky</string>
+</resources>

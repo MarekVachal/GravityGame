@@ -1,7 +1,6 @@
-package com.example.gravitygame.viewModels
+package com.example.gravitygame.ui.utils.progressIndicator
 
 import androidx.lifecycle.ViewModel
-import com.example.gravitygame.uiStates.ProgressIndicatorUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

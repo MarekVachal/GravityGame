@@ -1,6 +1,5 @@
-package com.example.gravitygame.ui.utils
+package com.example.gravitygame.ui.screens.infoDialogsScreens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,11 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -37,94 +34,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.gravitygame.R
 import com.example.gravitygame.models.ShipType
-import com.example.gravitygame.models.mapOfShips
-import com.example.gravitygame.ui.screen.ArmyDialogRow
-import com.example.gravitygame.viewModels.BattleViewModel
-
-@Composable
-fun ShipInfoDialog(
-    shipType: ShipType,
-    toShow: Boolean,
-    modifier: Modifier = Modifier,
-    onDismissRequest: () -> Unit,
-    confirmButton: () -> Unit
-) {
-    if (toShow) {
-        AlertDialog(
-            onDismissRequest = onDismissRequest,
-            confirmButton = {
-                Button(onClick = confirmButton) {
-                    Icon(painter = painterResource(id = R.drawable.check), contentDescription = "Check icon")
-                }
-            },
-            icon = {
-                Image(
-                    painter = painterResource(id = R.drawable.ship_icon),
-                    contentDescription = "Image of the ship",
-                    modifier = modifier.size(40.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = mapOfShips[shipType]?.let { stringResource(id = it.nameId) }?: "Unknown"
-                )
-            },
-            text = {
-                Text(
-                    text = mapOfShips[shipType]?.let { stringResource(id = it.descriptionId) }?: "Unknown",
-                    textAlign = TextAlign.Justify
-                )
-            },
-            modifier = modifier
-
-        )
-    }
-}
-
-@Composable
-fun EndOfGameDialog(
-    toShow: Boolean,
-    playerData: Player,
-    modifier: Modifier = Modifier,
-    onDismissRequest: () -> Unit,
-    confirmButton: () -> Unit
-){
-    if(toShow){
-        AlertDialog(
-            onDismissRequest = onDismissRequest,
-            confirmButton = {
-                Button(onClick = confirmButton) {
-                    Icon(painter = painterResource(id = R.drawable.check), contentDescription = "Check icon")
-                }
-            },
-            title = {
-                Text(
-                    text = if(playerData.lost){
-                        stringResource(id = R.string.titleLostGame)
-                    } else if (playerData.win){
-                        stringResource(id = R.string.titleWinGame)
-                    } else {
-                        stringResource(id = R.string.titleDrawGame)
-                    }
-                )
-            },
-            text = {
-                Text(
-                    text = if(playerData.lost){
-                        stringResource(id = R.string.lostGame)
-                    } else if (playerData.win){
-                        stringResource(id = R.string.winGame)
-                    } else {
-                        stringResource(id = R.string.drawGame)
-                    },
-                    textAlign = TextAlign.Justify
-                )
-            },
-            modifier = modifier
-
-        )
-    }
-}
+import com.example.gravitygame.ui.screens.armyDialogScreen.ArmyDialogRow
+import com.example.gravitygame.ui.screens.battleMapScreen.BattleViewModel
 
 @Composable
 fun LocationInfoDialog(
@@ -188,7 +99,6 @@ fun LocationInfoDialog(
                                     textAlign = TextAlign.Start,
                                     modifier = Modifier
                                         .weight(weightOfName)
-                                        .wrapContentWidth(align = Alignment.Start)
                                         .padding(start = 8.dp)
                                 )
 

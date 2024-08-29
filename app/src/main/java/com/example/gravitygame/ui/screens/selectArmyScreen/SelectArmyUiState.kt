@@ -1,4 +1,4 @@
-package com.example.gravitygame.uiStates
+package com.example.gravitygame.ui.screens.selectArmyScreen
 
 data class SelectArmyUiState(
     val numberCruisers: Int = 0,

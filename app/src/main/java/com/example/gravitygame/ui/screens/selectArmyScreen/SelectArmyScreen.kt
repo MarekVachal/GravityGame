@@ -1,5 +1,7 @@
-package com.example.gravitygame.ui.screen
+package com.example.gravitygame.ui.screens.selectArmyScreen
 
+import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -30,30 +32,29 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.gravitygame.R
-import com.example.gravitygame.uiStates.SelectArmyUiState
 import com.example.gravitygame.models.ShipType
 import com.example.gravitygame.tutorial.Tasks
 import com.example.gravitygame.tutorial.TutorialDialog
 import com.example.gravitygame.tutorial.TutorialViewModel
-import com.example.gravitygame.ui.utils.ShipInfoDialog
-import com.example.gravitygame.viewModels.BattleViewModel
-import com.example.gravitygame.viewModels.SelectArmyViewModel
+import com.example.gravitygame.ui.screens.infoDialogsScreens.ShipInfoDialog
+import com.example.gravitygame.ui.screens.battleMapScreen.BattleViewModel
+import com.example.gravitygame.ui.screens.settingScreen.SettingViewModel
 
 @Composable
 fun SelectArmyScreen(
     selectArmyModel: SelectArmyViewModel,
     onNextButtonClicked: () -> Unit,
     battleModel: BattleViewModel,
+    settingsModel: SettingViewModel,
     modifier: Modifier = Modifier,
-    tutorialModel: TutorialViewModel
+    tutorialModel: TutorialViewModel,
+    context: Context
 ) {
-    val context = LocalContext.current
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -86,13 +87,17 @@ fun SelectArmyScreen(
             addShip = { selectArmyModel.addShip(it) },
             removeShip = { selectArmyModel.removeShip(it) },
             battleModel = battleModel,
-            tutorialModel = tutorialModel
+            tutorialModel = tutorialModel,
+            settingsModel = settingsModel,
+            context = context
         )
 
         FloatingActionButton(
             onClick = {
                 if (checkArmySize(selectArmyModel.selectArmyUiState.value, battleModel)) {
+                    Log.d("To Battle", "Starting")
                     battleModel.createArmyList(selectArmyUiState = selectArmyModel.selectArmyUiState.value)
+                    Log.d("To Battle", "ArmyList created")
                     onNextButtonClicked()
                 } else {
                     Toast.makeText(
@@ -124,12 +129,15 @@ fun SelectArmy(
     battleModel: BattleViewModel,
     selectArmyModel: SelectArmyViewModel,
     tutorialModel: TutorialViewModel,
+    context: Context,
+    settingsModel: SettingViewModel,
     addShip: (ShipType) -> Unit,
     removeShip: (ShipType) -> Unit,
     onDismissRequest: () -> Unit = { selectArmyModel.showShipInfoDialog(false) }
 ) {
     val selectArmyUiState by selectArmyModel.selectArmyUiState.collectAsState()
     val tutorialUiState by tutorialModel.tutorialUiState.collectAsState()
+    val settingsUiState by settingsModel.settingUiState.collectAsState()
     val column1Weight = 2f
     val column2Weight = 1f
     val column3Weight = 0.5f
@@ -142,12 +150,12 @@ fun SelectArmy(
         selectArmyModel.cleanUiStates()
         initialization = true
     }
-    TutorialDialog(tutorialModel = tutorialModel, toShow = tutorialUiState.showTutorialDialog, timer = null)
-    if(!tutorialUiState.infoShipTask && tutorialUiState.numberShipsTask &&tutorialUiState.showTutorial){
+    TutorialDialog(tutorialModel = tutorialModel, toShow = tutorialUiState.showTutorialDialog, timer = null, settingsModel = settingsModel, context = context)
+    if(!tutorialUiState.infoShipTask && tutorialUiState.numberShipsTask && settingsUiState.showTutorial){
         tutorialModel.showTutorialDialog(toShow = true, task = Tasks.INFO_SHIP)
     }
 
-    if(!tutorialUiState.numberShipsTask && tutorialUiState.showTutorial){
+    if(!tutorialUiState.numberShipsTask && settingsUiState.showTutorial){
         tutorialModel.showTutorialDialog(true, Tasks.NUMBER_SHIPS)
     }
 

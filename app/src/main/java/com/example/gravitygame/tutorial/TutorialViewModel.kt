@@ -1,7 +1,7 @@
 package com.example.gravitygame.tutorial
 
 import androidx.lifecycle.ViewModel
-import com.example.gravitygame.ui.utils.CoroutineTimer
+import com.example.gravitygame.timer.CoroutineTimer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,11 +11,26 @@ class TutorialViewModel: ViewModel() {
     private val _tutorialUiState = MutableStateFlow(TutorialUiState())
     val tutorialUiState: StateFlow<TutorialUiState> = _tutorialUiState.asStateFlow()
 
-    fun closeTutorial(){
-        _tutorialUiState.value = _tutorialUiState.value.copy(showTutorial = false)
+    fun cleanTutorialState(){
+        _tutorialUiState.value = _tutorialUiState.value.copy(
+            typeTaskToShow = null,
+            battleOverviewTask = false,
+            infoShipTask = false,
+            numberShipsTask = false,
+            timerTask = false,
+            movementTask = false,
+            locationInfoTask = false,
+            locationOwnerTask = false,
+            sendShipsTask = false,
+            acceptableLostTask = false
+        )
     }
 
-    fun showTutorialDialog(toShow: Boolean, task: Tasks? = null, timer: CoroutineTimer? = null){
+    fun showTutorialDialog(
+        toShow: Boolean,
+        task: Tasks? = null,
+        timer: CoroutineTimer? = null
+    ){
         if(toShow){
             _tutorialUiState.value = _tutorialUiState.value.copy(
                 showTutorialDialog = true,
@@ -23,12 +38,9 @@ class TutorialViewModel: ViewModel() {
             timer?.pauseTimer()
 
         } else {
-            _tutorialUiState.value = _tutorialUiState.value.copy(
-                showTutorialDialog = false)
+            _tutorialUiState.value = _tutorialUiState.value.copy(showTutorialDialog = false)
             tutorialUiState.value.typeTaskToShow?.let { closeTask(task = it) } ?: return
-            _tutorialUiState.value = _tutorialUiState.value.copy(
-                typeTaskToShow = task
-            )
+            _tutorialUiState.value = _tutorialUiState.value.copy(typeTaskToShow = task)
             timer?.continueTimer()
         }
     }

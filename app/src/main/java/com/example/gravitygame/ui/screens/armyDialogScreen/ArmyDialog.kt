@@ -1,5 +1,6 @@
-package com.example.gravitygame.ui.screen
+package com.example.gravitygame.ui.screens.armyDialogScreen
 
+import android.content.Context
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,17 +43,20 @@ import com.example.gravitygame.models.mapOfShips
 import com.example.gravitygame.tutorial.Tasks
 import com.example.gravitygame.tutorial.TutorialDialog
 import com.example.gravitygame.tutorial.TutorialViewModel
-import com.example.gravitygame.ui.utils.CoroutineTimer
-import com.example.gravitygame.ui.utils.ShipInfoDialog
-import com.example.gravitygame.uiStates.MovementUiState
-import com.example.gravitygame.viewModels.BattleViewModel
+import com.example.gravitygame.timer.CoroutineTimer
+import com.example.gravitygame.ui.screens.infoDialogsScreens.ShipInfoDialog
+import com.example.gravitygame.ui.screens.battleMapScreen.MovementUiState
+import com.example.gravitygame.ui.screens.battleMapScreen.BattleViewModel
+import com.example.gravitygame.ui.screens.settingScreen.SettingViewModel
 
 @Composable
 fun ArmyDialog(
     modifier: Modifier = Modifier,
     battleModel: BattleViewModel,
     tutorialModel: TutorialViewModel,
+    settingsModel: SettingViewModel,
     show: Boolean,
+    context: Context,
     timer: CoroutineTimer,
     onDismissRequest: () -> Unit = { battleModel.cleanMovementValues() },
     onConfirmation: () -> Unit = { battleModel.attack() },
@@ -62,6 +66,7 @@ fun ArmyDialog(
     val movementUiState by battleModel.movementUiState.collectAsState()
     val locationListUiState by battleModel.locationListUiState.collectAsState()
     val tutorialUiState by tutorialModel.tutorialUiState.collectAsState()
+    val settingsUiState by settingsModel.settingUiState.collectAsState()
     val weightOfName = 0.15f
     val weightOfNumbers = 0.15f
     val weightOfButtons = 0.1f
@@ -72,11 +77,11 @@ fun ArmyDialog(
     ShipInfoDialog(shipType = ShipType.GHOST, toShow = movementUiState.showGhostInfoDialog, onDismissRequest = closeShipInfoDialog, confirmButton = closeShipInfoDialog)
     ShipInfoDialog(shipType = ShipType.WARPER, toShow = movementUiState.showWarperInfoDialog, onDismissRequest = closeShipInfoDialog, confirmButton = closeShipInfoDialog)
 
-    TutorialDialog(tutorialModel = tutorialModel, toShow = tutorialUiState.showTutorialDialog, timer = timer)
-    if(!tutorialUiState.sendShipsTask && tutorialUiState.battleOverviewTask && tutorialUiState.movementTask && tutorialUiState.showTutorial && movementUiState.showArmyDialog){
+    TutorialDialog(tutorialModel = tutorialModel, toShow = tutorialUiState.showTutorialDialog, timer = timer, settingsModel = settingsModel, context = context)
+    if(!tutorialUiState.sendShipsTask && tutorialUiState.battleOverviewTask && tutorialUiState.movementTask && settingsUiState.showTutorial && movementUiState.showArmyDialog){
         tutorialModel.showTutorialDialog(toShow = true, task = Tasks.SEND_SHIPS, timer = timer)
     }
-    if(!tutorialUiState.acceptableLostTask && tutorialUiState.sendShipsTask && tutorialUiState.showTutorial){
+    if(!tutorialUiState.acceptableLostTask && tutorialUiState.sendShipsTask && settingsUiState.showTutorial){
         tutorialModel.showTutorialDialog(toShow = true, task = Tasks.ACCEPTABLE_LOST, timer = timer)
     }
 
