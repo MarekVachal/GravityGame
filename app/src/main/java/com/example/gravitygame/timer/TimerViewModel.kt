@@ -15,4 +15,27 @@ class TimerViewModel : ViewModel() {
             second = (millisUntilFinished/1000 % 60).toInt(),
             minute =(millisUntilFinished/1000/60).toInt())
     }
+
+    fun makeTimer(timer: CoroutineTimer){
+        _timerUiState.value = _timerUiState.value.copy(timer = timer)
+        timer.startTimer()
+    }
+
+    fun cancelTimer(){
+        stopTimer()
+        _timerUiState.value = _timerUiState.value.copy(timer = null)
+    }
+
+    fun stopTimer(){
+        timerUiState.value.timer?.stopTimer()
+
+    }
+
+    fun resetTimer(){
+        timerUiState.value.timer?.resetTimer()
+    }
+
+    fun startTimer(){
+        timerUiState.value.timer?.startTimer()
+    }
 }

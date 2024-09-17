@@ -1,6 +1,7 @@
 package com.example.gravitygame.ui.screens.battleMapScreen
 
 import androidx.compose.ui.geometry.Rect
+import com.example.gravitygame.models.ShipType
 
 data class MovementUiState(
 
@@ -18,6 +19,14 @@ data class MovementUiState(
     val locationForInfo : Int = 0,
     val mapBoxCoordinates: Map<Int, Rect> = mutableMapOf(),
     val turn: Int = 1,
+    val endOfGame: Boolean = false,
+    val isArmyDialogInitialized: Boolean = false,
+    val isBattleScreenInitialized: Boolean = false,
+    val isLocationInfoInitialized: Boolean = false,
+    val myLostShips: Int = 0,
+    val enemyShipsDestroyed: Int = 0,
+    val showBattleInfoOnLocation: Boolean = false,
+    val battleLocationToShow: Int = 0,
 
     val cruiserOnPosition: Int = 0,
     val destroyerOnPosition: Int = 0,

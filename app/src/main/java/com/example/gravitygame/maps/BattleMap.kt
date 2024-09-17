@@ -11,6 +11,7 @@ abstract class BattleMap {
     abstract val mapName: Int
     abstract val boxSize: Dp
     abstract val planetSize: Dp
+    abstract val explosionSize: Dp
     abstract val flagSize: Dp
     abstract val secondsForTurn: Int
     abstract val shipLimitOnMap: Int
@@ -24,6 +25,7 @@ abstract class BattleMap {
         modifier: Modifier,
         battleModel: BattleViewModel,
         record: List<Map<Ship, Int>>,
+        enemyRecord: List<Ship>,
         locationList: List<Location>
     )
 }

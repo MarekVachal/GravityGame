@@ -17,14 +17,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.example.gravitygame.R
-import com.example.gravitygame.timer.CoroutineTimer
+import com.example.gravitygame.timer.TimerViewModel
 import com.example.gravitygame.ui.screens.settingScreen.SettingViewModel
 
 @Composable
 fun TutorialDialog(
     modifier: Modifier = Modifier,
     tutorialModel: TutorialViewModel,
-    timer: CoroutineTimer?,
+    timerModel: TimerViewModel?,
     settingsModel: SettingViewModel,
     context: Context,
     toShow: Boolean
@@ -36,7 +36,7 @@ fun TutorialDialog(
             onDismissRequest = {
                 tutorialModel.showTutorialDialog(
                     toShow = false,
-                    timer = timer
+                    timerModel = timerModel
                 )
             },
             dismissButton = {
@@ -48,7 +48,7 @@ fun TutorialDialog(
                         )
                         tutorialModel.showTutorialDialog(
                             toShow = false,
-                            timer = timer
+                            timerModel = timerModel
                         )
                         tutorialModel.cleanTutorialState()
                     }
@@ -61,7 +61,7 @@ fun TutorialDialog(
                     onClick = {
                         tutorialModel.showTutorialDialog(
                             toShow = false,
-                            timer = timer
+                            timerModel = timerModel
                         )
                     }
                 ){
@@ -82,6 +82,7 @@ fun TutorialDialog(
                             Tasks.ACCEPTABLE_LOST -> R.string.acceptableLossesTitle
                             null -> R.string.unknown
                             Tasks.BATTLE_OVERVIEW -> R.string.battleOverviewTitle
+                            Tasks.BATTLE_INFO -> R.string.battleInfoTaskTitle
                         }
                     ),
                     textAlign = TextAlign.Center
@@ -102,6 +103,7 @@ fun TutorialDialog(
                                 Tasks.ACCEPTABLE_LOST -> R.string.acceptableLossesTask
                                 null -> R.string.unknown
                                 Tasks.BATTLE_OVERVIEW -> R.string.battleOverviewTask
+                                Tasks.BATTLE_INFO -> R.string.battleInfoTask
                             }
                         ),
                         textAlign = TextAlign.Justify,

@@ -38,6 +38,7 @@ fun MainMenuScreen(
     onBattleButtonClick: () -> Unit,
     mainMenuModel: MainMenuViewModel,
     onSettingClick: () -> Unit,
+    onAccountClick: () -> Unit,
     activity: Activity
 ) {
 
@@ -49,6 +50,7 @@ fun MainMenuScreen(
         contentScale = ContentScale.FillBounds,
         modifier = modifier.fillMaxSize()
     )
+
     Row (
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Top,
@@ -73,7 +75,7 @@ fun MainMenuScreen(
                         tint = Color.Unspecified
                     )
                 }
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = { onAccountClick() }) {
                     Icon(
                         painter = painterResource(id = R.drawable.user_account),
                         contentDescription = "User account icon",
@@ -85,9 +87,9 @@ fun MainMenuScreen(
     }
 
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.Bottom,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.padding(bottom = 96.dp)
     ) {
         OutlinedButton(
             onClick = onBattleButtonClick,

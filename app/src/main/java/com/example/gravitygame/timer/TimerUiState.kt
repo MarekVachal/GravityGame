@@ -1,9 +1,8 @@
 package com.example.gravitygame.timer
 
 data class TimerUiState (
-    
-    val second: Int? = null,
-    val minute: Int? = null,
+    val timer: CoroutineTimer? = null,
 
-    val isRunning: Boolean = false
+    val second: Int? = null,
+    val minute: Int? = null
 )

@@ -1,11 +1,14 @@
 package com.example.gravitygame.ui.screens.battleMapScreen
 
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.geometry.Rect
 import androidx.lifecycle.ViewModel
+import com.example.gravitygame.R
 import com.example.gravitygame.ai.GameState
 import com.example.gravitygame.ai.MCTS
+import com.example.gravitygame.database.BattleResult
+import com.example.gravitygame.database.DatabaseViewModel
 import com.example.gravitygame.maps.BattleMap
+import com.example.gravitygame.maps.TinyMap
 import com.example.gravitygame.models.Cruiser
 import com.example.gravitygame.models.Destroyer
 import com.example.gravitygame.models.Ghost
@@ -14,7 +17,7 @@ import com.example.gravitygame.models.LocationList
 import com.example.gravitygame.models.Ship
 import com.example.gravitygame.models.ShipType
 import com.example.gravitygame.models.Warper
-import com.example.gravitygame.timer.CoroutineTimer
+import com.example.gravitygame.timer.TimerViewModel
 import com.example.gravitygame.ui.utils.PlayerData
 import com.example.gravitygame.ui.utils.Players
 import com.example.gravitygame.ui.utils.calculateBattle
@@ -36,6 +39,92 @@ class BattleViewModel : ViewModel() {
     val playerData = PlayerData()
     private val mctsIterations = 100
     private val aiDifficulty = 5
+
+    fun writeDestroyedShips(isSimulation: Boolean, myLostShip: Int, enemyLostShip: Int){
+        if (!isSimulation){
+            val newEnemyLostShip = movementUiState.value.enemyShipsDestroyed + enemyLostShip
+            val newMyLostShip = movementUiState.value.myLostShips + myLostShip
+            _movementUiState.value = _movementUiState.value.copy(
+                enemyShipsDestroyed = newEnemyLostShip,
+                myLostShips = newMyLostShip
+            )
+        }
+    }
+
+    fun changeArmyDialogInitialization(isInitialized: Boolean){
+        _movementUiState.value = _movementUiState.value.copy(isArmyDialogInitialized = isInitialized)
+    }
+
+    fun changeBattleScreenInitialization(isInitialized: Boolean){
+        _movementUiState.value = _movementUiState.value.copy(isBattleScreenInitialized = isInitialized)
+    }
+
+    fun changeLocationInfoInitialization(isInitialized: Boolean){
+        _movementUiState.value = _movementUiState.value.copy(isLocationInfoInitialized = isInitialized)
+    }
+
+    fun getShipImage(shipType: ShipType): Int {
+        return when (shipType) {
+            ShipType.CRUISER -> R.drawable.cruiser
+            ShipType.DESTROYER -> R.drawable.destroyer
+            ShipType.GHOST -> R.drawable.ghost
+            ShipType.WARPER -> R.drawable.warper
+        }
+    }
+
+    fun checkRemoveShip(shipType: ShipType): Boolean{
+        return when (shipType) {
+            ShipType.CRUISER -> movementUiState.value.movingCruisers
+            ShipType.DESTROYER -> movementUiState.value.movingDestroyers
+            ShipType.GHOST -> movementUiState.value.movingGhosts
+            ShipType.WARPER -> movementUiState.value.movingWarpers
+        } > 0
+    }
+
+    fun checkAddShip(
+        isWarperPresent: Boolean,
+        shipType: ShipType,
+        startLocation: Int?,
+        locationList: List<Location>,
+        endLocation: Int?
+    ): Boolean{
+        val isEnabled = checkAddShipAccordingToNumberOfShips(shipType = shipType) && checkAddShipAccordingToMovementRestriction(isWarperPresent = isWarperPresent, endLocation = endLocation, locationList = locationList, ship = shipType, startLocation = startLocation) && checkShipLimitOnPosition()
+        return isEnabled
+    }
+
+    private fun checkAddShipAccordingToNumberOfShips(shipType: ShipType): Boolean{
+        return when (shipType) {
+            ShipType.CRUISER -> movementUiState.value.cruiserToMove
+            ShipType.DESTROYER -> movementUiState.value.destroyerToMove
+            ShipType.GHOST -> movementUiState.value.ghostToMove
+            ShipType.WARPER -> movementUiState.value.warperToMove
+        } > 0
+    }
+    /**
+     * Check if a ship can move to the position
+     * @param isWarperPresent is there a warper ship type
+     * @param ship
+     */
+    private fun checkAddShipAccordingToMovementRestriction(
+        isWarperPresent: Boolean,
+        ship: ShipType,
+        startLocation: Int?,
+        locationList: List<Location>,
+        endLocation: Int?
+    ): Boolean {
+        var isAccesable = false
+        if (ship == ShipType.WARPER) {
+            isAccesable = true
+        } else if (!isWarperPresent) {
+            isAccesable = true
+        } else {
+            val connectionList = startLocation?.let {
+                locationList[it].getConnectionsList()
+            }
+            connectionList?.forEach { if (it == endLocation) isAccesable = true } ?: return false
+        }
+        return isAccesable
+    }
 
     private fun turnCounter(){
         val count = movementUiState.value.turn + 1
@@ -97,20 +186,68 @@ class BattleViewModel : ViewModel() {
         )
     }
 
-    fun finishTurn(timer: CoroutineTimer) {
-        cleanHasMoved()
-        cleanRecordsForTurn()
-        cleanMovementValues()
-        turnCounter()
-        aiMove()
+    private fun wasBattleOnLocation(location: Int, wasBattle: Boolean){
+        val newLocationList = locationListUiState.value.locationList.toMutableList()
+        newLocationList[location].wasBattleHere.value = wasBattle
+        _locationListUiState.value = _locationListUiState.value.copy(locationList = newLocationList.toList())
+    }
+
+    private fun cleanBattleOnLocations(){
+        locationListUiState.value.locationList.forEach {
+            location -> wasBattleOnLocation(location.id, wasBattle = false) }
+    }
+
+    private fun setMapsOfShipsBeforeBattle(location: Int){
+        val newLocationList = locationListUiState.value.locationList
+        val myOriginalShipList: MutableMap<ShipType, Int> = newLocationList[location].myShipList
+            .groupingBy { it.type }
+            .eachCount()
+            .toMutableMap()
+        val enemyOriginalShipList: MutableMap<ShipType, Int> = newLocationList[location].enemyShipList
+            .groupingBy { it.type }
+            .eachCount()
+            .toMutableMap()
+        ShipType.entries.forEach { shipType ->
+            myOriginalShipList.putIfAbsent(shipType, 0)
+            enemyOriginalShipList.putIfAbsent(shipType, 0)
+        }
+        newLocationList[location].originalMyShipList.clear()
+        newLocationList[location].originalMyShipList.putAll(myOriginalShipList)
+        newLocationList[location].originalEnemyShipList.clear()
+        newLocationList[location].originalEnemyShipList.putAll(enemyOriginalShipList)
+
+        _locationListUiState.value = _locationListUiState.value.copy(locationList = newLocationList)
+    }
+
+    private fun conductBattles(){
         val newLocationList = locationListUiState.value.locationList
         _locationListUiState.value.locationList.forEach {
             if (it.myShipList.isNotEmpty() && it.enemyShipList.isNotEmpty()) {
-                when (calculateBattle(location = it, playerData = playerData)) {
+                wasBattleOnLocation(location = it.id, wasBattle = true)
+                setMapsOfShipsBeforeBattle(it.id)
+                val (player, mapMyLost, mapEnemyLost) = (calculateBattle(
+                    location = it,
+                    playerData = playerData,
+                    isSimulation = false,
+                    battleModel = this)
+                        )
+                when (player) {
                     Players.PLAYER1 -> newLocationList[it.id].owner.value = Players.PLAYER1
                     Players.PLAYER2 -> newLocationList[it.id].owner.value = Players.PLAYER2
-                    Players.NONE -> return
+                    Players.NONE -> newLocationList[it.id].owner.value = newLocationList[it.id].owner.value
                 }
+                val newMapMyLost: MutableMap<ShipType, Int> = mapMyLost
+                val newMapEnemyLost: MutableMap<ShipType, Int> = mapEnemyLost
+                newLocationList[it.id].mapMyLost.clear()
+                newLocationList[it.id].mapMyLost.putAll(newMapMyLost)
+                newLocationList[it.id].mapEnemyLost.clear()
+                newLocationList[it.id].mapEnemyLost.putAll(newMapEnemyLost)
+                newLocationList[it.id].lastBattleResult = when(player){
+                    Players.PLAYER1 -> "Win"
+                    Players.PLAYER2 -> "Lost"
+                    Players.NONE -> "Draw"
+                }.toString()
+
             }
             if (it.myShipList.isNotEmpty() && it.enemyShipList.isEmpty() && it.owner.value != playerData.player) {
                 newLocationList[it.id].owner.value = playerData.player
@@ -120,7 +257,40 @@ class BattleViewModel : ViewModel() {
             }
         }
         _locationListUiState.value = _locationListUiState.value.copy(locationList = newLocationList)
-        checkEndCondition(thisPlayer = playerData.player, timer = timer)
+
+    }
+
+    private fun cleanEnemyAcceptableLost(){
+        val newLocationList = locationListUiState.value.locationList.toMutableList()
+        newLocationList.forEach { location -> location.enemyAcceptableLost.intValue = 1 }
+        _locationListUiState.value = _locationListUiState.value.copy(locationList = newLocationList.toList())
+    }
+
+    suspend fun finishTurn(timerModel: TimerViewModel, databaseModel: DatabaseViewModel) {
+        timerModel.stopTimer()
+        cleanBattleOnLocations()
+        cleanHasMoved()
+        cleanRecordsForTurn()
+        cleanMovementValues()
+        turnCounter()
+        aiMove()
+        conductBattles()
+        cleanEnemyAcceptableLost()
+        checkEndCondition(thisPlayer = playerData.player)
+        if(!movementUiState.value.endOfGame){
+            timerModel.resetTimer()
+            timerModel.startTimer()
+        } else {
+            databaseModel.insertBattleResult(
+                BattleResult(
+                    result = (if(playerData.win) "win" else if (playerData.lost) "lost" else "draw").toString(),
+                    timestamp = System.currentTimeMillis(),
+                    enemyShipDestroyed = movementUiState.value.enemyShipsDestroyed,
+                    myShipLost = movementUiState.value.myLostShips,
+                    turn = movementUiState.value.turn
+                )
+            )
+        }
 
 
         /*
@@ -132,20 +302,34 @@ class BattleViewModel : ViewModel() {
 
     private fun initializeGameState(): GameState {
         val locationList = locationListUiState.value.locationList
-        val enemyBaseLocation = locationListUiState.value.locationList[0]
+        val gameMap = battleMap?.let { battleMap }?: TinyMap()
         val battleModel = this
         return GameState(
             locationList = locationList,
             battleModel = battleModel,
-            enemyBaseLocation = enemyBaseLocation
+            gameMap = gameMap
         )
     }
 
-    private fun aiMove() {
+    private suspend fun aiMove() {
         val state = initializeGameState()
         val mcts = MCTS(mctsIterations, aiDifficulty)
-        val bestMove = mcts.findBestMove(initialState = state, playerData = playerData)
+        val bestMove = mcts.findBestMove(
+            initialState = state,
+            playerData = playerData
+        )
         updateUIWithBestMove(bestMove)
+        updateEnemyRecord(bestMove)
+    }
+
+    private fun updateEnemyRecord(state: GameState){
+        val newList: MutableList<Ship> = mutableListOf()
+        state.locationList.forEach {
+            location -> location.enemyShipList.forEach {
+                ship -> if(ship.startingPosition != ship.currentPosition) newList.add(ship)
+            }
+        }
+        _movementRecord.value = _movementRecord.value.copy(enemyRecord = newList.toList())
     }
 
     private fun updateUIWithBestMove(state: GameState) {
@@ -153,7 +337,7 @@ class BattleViewModel : ViewModel() {
             _locationListUiState.value.copy(locationList = state.locationList)
     }
 
-    private fun checkEndCondition(thisPlayer: Players, timer: CoroutineTimer) {
+    private fun checkEndCondition(thisPlayer: Players) {
         val player1Base = battleMap?.player1Base ?: return
         val player2Base = battleMap?.player2Base ?: return
 
@@ -161,37 +345,33 @@ class BattleViewModel : ViewModel() {
             locationListUiState.value.locationList[player1Base].owner.value == Players.PLAYER2
             && locationListUiState.value.locationList[player2Base].owner.value == Players.PLAYER1){
             playerData.draw = true
-            endOfGame(timer = timer)
+            endOfGame()
         } else if (locationListUiState.value.locationList[player1Base].owner.value == Players.PLAYER2) {
             playerData.lost = thisPlayer == Players.PLAYER1
             playerData.win = thisPlayer == Players.PLAYER2
-            endOfGame(timer = timer)
+            endOfGame()
         } else if (locationListUiState.value.locationList[player2Base].owner.value == Players.PLAYER1) {
             playerData.lost = thisPlayer == Players.PLAYER2
             playerData.win = thisPlayer == Players.PLAYER1
-            endOfGame(timer = timer)
+            endOfGame()
         }
     }
 
-    private fun endOfGame(timer: CoroutineTimer) {
+    private fun endOfGame() {
         showEndOfGameDialog(true)
-        timer.stopTimer()
+        changeEndOfGameState(true)
+    }
+
+    fun changeEndOfGameState(isEnd: Boolean){
+        _movementUiState.value = _movementUiState.value.copy(endOfGame = isEnd)
     }
 
     fun showEndOfGameDialog(toShow: Boolean) {
-        if (toShow) {
-            _movementUiState.value = _movementUiState.value.copy(showEndOfGameDialog = true)
-        } else {
-            _movementUiState.value = _movementUiState.value.copy(showEndOfGameDialog = false)
-        }
+        _movementUiState.value = _movementUiState.value.copy(showEndOfGameDialog = toShow)
     }
 
     fun showLocationInfoDialog(toShow: Boolean) {
-        if (toShow) {
-            _movementUiState.value = _movementUiState.value.copy(showLocationInfoDialog = true)
-        } else {
-            _movementUiState.value = _movementUiState.value.copy(showLocationInfoDialog = false)
-        }
+        _movementUiState.value = _movementUiState.value.copy(showLocationInfoDialog = toShow)
     }
 
     private fun moveShips(locationList: MutableList<Location>, shipType: ShipType) {
@@ -223,21 +403,20 @@ class BattleViewModel : ViewModel() {
             locationListUiState.value.locationList[movementUiState.value.locationForInfo].myShipList.count { ship -> ship.type == ShipType.GHOST }
         val warperOnPosition =
             locationListUiState.value.locationList[movementUiState.value.locationForInfo].myShipList.count { ship -> ship.type == ShipType.WARPER }
-        val acceptableLost = locationListUiState.value.locationList[movementUiState.value.locationForInfo].myAcceptableLost
+        val acceptableLost = locationListUiState.value.locationList[movementUiState.value.locationForInfo].myAcceptableLost.intValue.toFloat()
         _movementUiState.value = _movementUiState.value.copy(
-            acceptableLost = acceptableLost.intValue.toFloat(),
+            acceptableLost = acceptableLost,
             cruiserOnPosition = cruiserOnPosition,
             destroyerOnPosition = destroyerOnPosition,
             ghostOnPosition = ghostOnPosition,
-            warperOnPosition = warperOnPosition
+            warperOnPosition = warperOnPosition,
         )
     }
 
     fun closeLocationInfoDialog(){
-        val newLocationList = locationListUiState.value.locationList
-        val intValue: Int = movementUiState.value.acceptableLost.toInt()
-        newLocationList[movementUiState.value.locationForInfo].myAcceptableLost = mutableIntStateOf(intValue)
-        showLocationInfoDialog(false)
+        showLocationInfoDialog(toShow = false)
+        changeLocationInfoInitialization(isInitialized = false)
+        changeAcceptableLost(position = movementUiState.value.locationForInfo)
         cleanAcceptableLost()
     }
 
@@ -258,6 +437,8 @@ class BattleViewModel : ViewModel() {
             movementUiState.value.startPosition?.let { locationListUiState.value.locationList[it].myShipList.count { ship -> ship.type == ShipType.GHOST && !ship.hasMoved } } ?: 0
         val warperToMove =
             movementUiState.value.startPosition?.let { locationListUiState.value.locationList[it].myShipList.count { ship -> ship.type == ShipType.WARPER && !ship.hasMoved } } ?: 0
+        val acceptableLost =
+            movementUiState.value.endPosition?.let {locationListUiState.value.locationList[it].myAcceptableLost.intValue.toFloat()} ?: 1.0f
         _movementUiState.value = _movementUiState.value.copy(
             cruiserOnPosition = cruiserOnPosition,
             destroyerOnPosition = destroyerOnPosition,
@@ -266,7 +447,15 @@ class BattleViewModel : ViewModel() {
             cruiserToMove = cruiserToMove,
             destroyerToMove = destroyerToMove,
             ghostToMove = ghostToMove,
-            warperToMove = warperToMove
+            warperToMove = warperToMove,
+            acceptableLost = acceptableLost
+        )
+    }
+
+    fun showBattleInfo(location: Int, toShow: Boolean){
+        _movementUiState.value = _movementUiState.value.copy(
+            showBattleInfoOnLocation = toShow,
+            battleLocationToShow = location
         )
     }
 
@@ -387,23 +576,36 @@ class BattleViewModel : ViewModel() {
     fun getNumberShipsForRecord(
         shipType: ShipType,
         location1: Int,
-        location2: Int
+        location2: Int,
+        isMyRecord: Boolean
     ): Int {
-        val listOfMove = movementRecord.value.movementRecordOfTurn.flatMap {
-            map -> map.filter { it.value == location2 || it.value == location1 }.keys }
-        val sizeOnLocation2 = locationListUiState.value.locationList[location2].myShipList
-            .filter { ship -> ship in listOfMove && ship.type == shipType && ship.currentPosition == location2 && ship.startingPosition == location1 }.size
-        val sizeOnLocation1 = locationListUiState.value.locationList[location1].myShipList
-            .filter { ship -> ship in listOfMove && ship.type == shipType && ship.currentPosition == location1 && ship.startingPosition == location2}.size
-        return sizeOnLocation1 + sizeOnLocation2
+        val listOfMove =
+            if(isMyRecord){
+                movementRecord.value.movementRecordOfTurn.flatMap {
+                    map -> map.filter { it.value == location2 || it.value == location1 }.keys }
+            } else {
+                movementRecord.value.enemyRecord.filter {
+                    (it.currentPosition == location2 && it.currentPosition != it.startingPosition) ||
+                    (it.currentPosition == location1 && it.currentPosition != it.startingPosition)
+                }
+            }
+        val shipListLocation2 = if(isMyRecord){
+            locationListUiState.value.locationList[location2].myShipList
+        } else {
+            movementRecord.value.enemyRecord.filter { it.currentPosition == location2 || it.startingPosition == location2}
+        }
+        val size2 = shipListLocation2.filter { ship -> ship in listOfMove && ship.type == shipType && ship.currentPosition == location2 && ship.startingPosition == location1 }.size
+        val shipListLocation1 = if(isMyRecord) {
+            locationListUiState.value.locationList[location1].myShipList
+        } else {
+            movementRecord.value.enemyRecord.filter { it.currentPosition == location1 || it.startingPosition == location1 }
+        }
+        val size1 = shipListLocation1.filter { ship -> ship in listOfMove && ship.type == shipType && ship.currentPosition == location1 && ship.startingPosition == location2}.size
+        return size1 + size2
     }
 
-    private fun changeWarperPresent(isTrue: Boolean) {
-        if (isTrue) {
-            _movementUiState.value = _movementUiState.value.copy(isWarperPresent = true)
-        } else {
-            _movementUiState.value = _movementUiState.value.copy(isWarperPresent = false)
-        }
+    private fun changeWarperPresent(isPresent: Boolean) {
+        _movementUiState.value = _movementUiState.value.copy(isWarperPresent = isPresent)
     }
 
     fun setLocationForInfo(location: Int) {
@@ -429,11 +631,11 @@ class BattleViewModel : ViewModel() {
             } else {
                 if (!isWarperPresent(movementUiState.value.startPosition) && checkArmyReach(position = position)) {
                     changeMovementPosition(isStart = false, position = position)
-                    changeWarperPresent(isTrue = false)
+                    changeWarperPresent(isPresent = false)
                     showArmyDialog(toShow = true)
                 } else if (isWarperPresent(movementUiState.value.startPosition)) {
                     changeMovementPosition(isStart = false, position = position)
-                    changeWarperPresent(isTrue = true)
+                    changeWarperPresent(isPresent = true)
                     showArmyDialog(toShow = true)
                 }
             }
@@ -444,11 +646,12 @@ class BattleViewModel : ViewModel() {
         val connections = locationListUiState.value.locationList[location].getConnectionsList()
         for (i in locationListUiState.value.locationList.indices) {
             if (connections.any {
-                    it == i &&
-                            locationListUiState.value.locationList[it].myShipList.size < (battleMap?.shipLimitOnPosition
-                        ?: 0) &&
-                            !checkOwnersRestriction(startLocation = location, endLocation = it)
-                }) {
+                it == i &&
+                locationListUiState.value.locationList[it].myShipList.size < (battleMap?.shipLimitOnPosition
+                    ?: 0) &&
+                !checkOwnersRestriction(startLocation = location, endLocation = it)
+                }
+            ) {
                 locationListUiState.value.locationList[i].accessible = true
             }
         }
@@ -475,17 +678,24 @@ class BattleViewModel : ViewModel() {
         repeat(movementUiState.value.movingWarpers) {
             moveShips(locationList = newLocationList, shipType = ShipType.WARPER)
         }
-        movementUiState.value.endPosition?.let {
-            val intValue: Int = movementUiState.value.acceptableLost.toInt()
-            newLocationList[it].myAcceptableLost = mutableIntStateOf(intValue)
-        }
-
         _locationListUiState.value =
             _locationListUiState.value.copy(locationList = newLocationList.toList())
+        movementUiState.value.endPosition?.let { changeAcceptableLost(position = it) }
         updateRecordsForTurn()
         cleanJustMoved()
         cleanMovementValues()
-        changeWarperPresent(isTrue = false)
+        changeWarperPresent(isPresent = false)
+    }
+
+    private fun changeAcceptableLost(position: Int){
+        val newLocationList: MutableList<Location> = locationListUiState.value.locationList.toMutableList()
+        val intValue: Int = movementUiState.value.acceptableLost.toInt()
+        newLocationList[position].myAcceptableLost.intValue = intValue
+        _locationListUiState.value = _locationListUiState.value.copy(locationList = newLocationList.toList())
+    }
+
+    fun changeValueAcceptableLost(value: Float) {
+        _movementUiState.value = _movementUiState.value.copy(acceptableLost = value)
     }
 
     fun showShipInfoDialog(toShow: Boolean, shipType: ShipType) {
@@ -504,6 +714,7 @@ class BattleViewModel : ViewModel() {
                     _movementUiState.value.copy(showWarperInfoDialog = true)
             }
         } else {
+            changeLocationInfoInitialization(isInitialized = false)
             _movementUiState.value = _movementUiState.value.copy(
                 showCruiserInfoDialog = false,
                 showDestroyerInfoDialog = false,
@@ -514,11 +725,7 @@ class BattleViewModel : ViewModel() {
     }
 
     private fun showArmyDialog(toShow: Boolean) {
-        if (toShow) {
-            _movementUiState.value = _movementUiState.value.copy(showArmyDialog = true)
-        } else {
-            _movementUiState.value = _movementUiState.value.copy(showArmyDialog = false)
-        }
+        _movementUiState.value = _movementUiState.value.copy(showArmyDialog = toShow)
     }
 
     fun cleanAfterUnsuccessfulMovement(){
@@ -560,7 +767,7 @@ class BattleViewModel : ViewModel() {
         val newLocationList: MutableList<Location> =
             locationListUiState.value.locationList.toMutableList()
         newLocationList.forEach {
-            if (it.id != location && checkShipLimitOnPosition(it.id)) it.accessible = true
+            if (it.id != location && !checkShipLimitOnPosition(it.id)) it.accessible = true
         }
         _locationListUiState.value = _locationListUiState.value.copy(locationList = newLocationList)
     }
@@ -591,14 +798,17 @@ class BattleViewModel : ViewModel() {
 
     fun getNumberOfShip(
         locationList: List<Location>,
-        location: Int,
+        location: Int?,
         shipType: ShipType,
         isForEnemy: Boolean = false
     ): Int {
-        return if (!isForEnemy)
+        return if (location == null){
+            0
+        } else if (!isForEnemy){
             locationList[location].myShipList.count { it.type == shipType }
-        else
+        } else {
             locationList[location].enemyShipList.count { it.type == shipType }
+        }
     }
 
     /**
@@ -609,11 +819,13 @@ class BattleViewModel : ViewModel() {
     private fun checkShipLimitOnPosition(location: Int?): Boolean {
         val shipsOnPosition =
             location?.let { locationListUiState.value.locationList[it].myShipList.size } ?: 100
-        return (battleMap?.shipLimitOnPosition ?: 0) > shipsOnPosition
+        return (battleMap?.shipLimitOnPosition ?: 0) <= shipsOnPosition
     }
 
-    fun changeValueAcceptableLost(value: Float) {
-        _movementUiState.value = _movementUiState.value.copy(acceptableLost = value)
+    fun checkShipLimitOnBase(location: Int?): Boolean {
+        val shipsOnPosition =
+            location?.let { locationListUiState.value.locationList[it].myShipList.size } ?: 100
+        return (battleMap?.shipLimitOnPosition ?: 0) >= shipsOnPosition
     }
 
     private fun cleanMovingShip() {
@@ -625,7 +837,7 @@ class BattleViewModel : ViewModel() {
         )
     }
 
-    fun checkShipLimitOnPosition(): Boolean {
+    private fun checkShipLimitOnPosition(): Boolean {
         val totalShipsOnPosition: Int
         val shipsAlreadyOnPosition =
             movementUiState.value.endPosition?.let { locationListUiState.value.locationList[it].myShipList.size }
@@ -649,5 +861,6 @@ class BattleViewModel : ViewModel() {
         cleanMovingShip()
         cleanAcceptableLost()
         showArmyDialog(toShow = false)
+        changeArmyDialogInitialization(isInitialized = false)
     }
 }

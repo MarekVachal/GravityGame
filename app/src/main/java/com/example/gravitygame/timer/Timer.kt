@@ -8,18 +8,12 @@ import kotlinx.coroutines.launch
 
 class CoroutineTimer(
     private val timerModel: TimerViewModel,
-    private val finishTurn: () -> Unit
+    private val finishTurn: suspend () -> Unit,
+    secondsForTurn: Int
 ) {
-    private var timeLeftInMillis: Long = 0
-    private var originalTimeInMillis: Long = 0
+    private var timeLeftInMillis: Long = secondsForTurn.times(1000).toLong()
+    private var originalTimeInMillis: Long = timeLeftInMillis
     private var timerJob: Job? = null
-    private var isPaused = false
-
-    fun updateTimerTime(secondsForTurn: Int){
-        timeLeftInMillis = secondsForTurn.times(1000).toLong()
-        originalTimeInMillis = timeLeftInMillis
-        timerModel.updateTimeUi(timeLeftInMillis)
-    }
 
     private fun updateTimer() {
         timeLeftInMillis -= 1000
@@ -27,43 +21,9 @@ class CoroutineTimer(
     }
 
     fun startTimer() {
-        if (timerJob != null || isPaused) return
-
-        timerJob = CoroutineScope(Dispatchers.Main).launch {
-
-                while (timeLeftInMillis > 0) {
-                    updateTimer()
-                    delay(1000L)
-                }
-                stopTimer()
-                finishTurn()
-                resetTimer()
-                startTimer()
-            }
-
-        }
-
-    fun stopTimer() {
-        timerJob?.cancel()
-        timerJob = null
+        if (timerJob != null) return
+        
         timerModel.updateTimeUi(timeLeftInMillis)
-    }
-
-    fun resetTimer() {
-        timeLeftInMillis = originalTimeInMillis
-    }
-
-    fun pauseTimer() {
-        isPaused = true
-        stopTimer()
-        timerModel.updateTimeUi(timeLeftInMillis)
-    }
-
-    // Continues the timer from where it left off
-    fun continueTimer() {
-        if (!isPaused || timeLeftInMillis <= 0) return
-
-        isPaused = false
         timerJob = CoroutineScope(Dispatchers.Main).launch {
             while (timeLeftInMillis > 0) {
                 updateTimer()
@@ -75,4 +35,14 @@ class CoroutineTimer(
             startTimer()
         }
     }
+
+    fun stopTimer() {
+        timerJob?.cancel()
+        timerJob = null
+    }
+
+    fun resetTimer() {
+        timeLeftInMillis = originalTimeInMillis
+    }
+
 }

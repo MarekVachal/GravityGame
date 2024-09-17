@@ -2,6 +2,8 @@ package com.example.gravitygame.ui.screens.infoDialogsScreens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -26,6 +28,7 @@ fun ShipInfoDialog(
 ) {
     if (toShow) {
         AlertDialog(
+            modifier = modifier,
             onDismissRequest = onDismissRequest,
             confirmButton = {
                 Button(onClick = confirmButton) {
@@ -37,9 +40,16 @@ fun ShipInfoDialog(
             },
             icon = {
                 Image(
-                    painter = painterResource(id = R.drawable.ship_icon),
+                    painter = painterResource(
+                        when(shipType){
+                            ShipType.CRUISER -> R.drawable.cruiser
+                            ShipType.DESTROYER -> R.drawable.destroyer
+                            ShipType.GHOST -> R.drawable.ghost
+                            ShipType.WARPER -> R.drawable.warper
+                        }
+                    ),
                     contentDescription = "Image of the ship",
-                    modifier = modifier.size(40.dp)
+                    modifier = modifier.size(48.dp)
                 )
             },
             title = {
@@ -51,10 +61,10 @@ fun ShipInfoDialog(
                 Text(
                     text = mapOfShips[shipType]?.let { stringResource(id = it.descriptionId) }
                         ?: "Unknown",
-                    textAlign = TextAlign.Justify
+                    textAlign = TextAlign.Justify,
+                    modifier = modifier.verticalScroll(rememberScrollState())
                 )
-            },
-            modifier = modifier
+            }
         )
     }
 }

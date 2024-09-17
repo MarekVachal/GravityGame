@@ -1,8 +1,7 @@
 package com.example.gravitygame.ui.screens.battleMapScreen
 
-
 import android.content.Context
-import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,9 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,6 +27,7 @@ import java.util.Locale
 import androidx.compose.ui.unit.dp
 import com.example.gravitygame.R
 import com.example.gravitygame.ai.createAiArmy
+import com.example.gravitygame.database.DatabaseViewModel
 import com.example.gravitygame.tutorial.Tasks
 import com.example.gravitygame.tutorial.TutorialDialog
 import com.example.gravitygame.tutorial.TutorialViewModel
@@ -38,7 +36,10 @@ import com.example.gravitygame.timer.CoroutineTimer
 import com.example.gravitygame.ui.screens.infoDialogsScreens.EndOfGameDialog
 import com.example.gravitygame.ui.screens.infoDialogsScreens.LocationInfoDialog
 import com.example.gravitygame.timer.TimerViewModel
+import com.example.gravitygame.ui.screens.infoDialogsScreens.BattleInfoDialog
 import com.example.gravitygame.ui.screens.settingScreen.SettingViewModel
+import com.example.gravitygame.ui.utils.Players
+import kotlinx.coroutines.launch
 
 @Composable
 fun BattleMapScreen(
@@ -47,18 +48,19 @@ fun BattleMapScreen(
     timerModel: TimerViewModel,
     tutorialModel: TutorialViewModel,
     settingsModel: SettingViewModel,
+    databaseModel: DatabaseViewModel,
     context: Context,
-    timer: CoroutineTimer,
     endOfGame: () -> Unit
 
+
 ) {
+    val coroutineScope = rememberCoroutineScope()
     val movementUiState by battleModel.movementUiState.collectAsState()
     val timerUiState by timerModel.timerUiState.collectAsState()
     val locationListUiState by battleModel.locationListUiState.collectAsState()
     val movementRecord by battleModel.movementRecord.collectAsState()
     val tutorialUiState by tutorialModel.tutorialUiState.collectAsState()
     val settingsUiState by settingsModel.settingUiState.collectAsState()
-    var initialization by rememberSaveable { mutableStateOf(false) }
 
     EndOfGameDialog(
         toShow = movementUiState.showEndOfGameDialog,
@@ -66,35 +68,30 @@ fun BattleMapScreen(
         confirmButton = endOfGame,
         playerData = battleModel.playerData)
     LocationInfoDialog(battleModel = battleModel, toShow = movementUiState.showLocationInfoDialog)
+    BattleInfoDialog(battleModel = battleModel, toShow = movementUiState.showBattleInfoOnLocation, location = movementUiState.battleLocationToShow)
 
-    if (!initialization) {
-        battleModel.battleMap?.let { timer.updateTimerTime(it.secondsForTurn) }
-
-        //AI call
-        Log.d("To Battle", "enemyShipList starts initializing")
+    if (!movementUiState.isBattleScreenInitialized) {
         val enemyShipList = battleModel.battleMap?.let { createAiArmy(battleMap = it, startLocation = locationListUiState.locationList.last().id) }
-        Log.d("To Battle", "enemyShipList variable initialized")
         enemyShipList?.let { battleModel.initializeEnemyShipList(enemyShipList = it) }
-        Log.d("To Battle", "enemyShipList initialized")
-
-        Log.d("To Battle", "Timer starts initializing")
-        timer.startTimer()
-        initialization = true
-        Log.d("To Battle", "Timer initialized")
+        timerModel.makeTimer(CoroutineTimer(timerModel = timerModel, finishTurn = { battleModel.finishTurn(timerModel = timerModel, databaseModel = databaseModel) }, secondsForTurn = battleModel.battleMap?.secondsForTurn?: 0))
+        battleModel.changeBattleScreenInitialization(isInitialized = true)
     }
 
-    TutorialDialog(tutorialModel = tutorialModel, toShow = tutorialUiState.showTutorialDialog, timer = timer, settingsModel = settingsModel, context = context)
+    TutorialDialog(tutorialModel = tutorialModel, toShow = tutorialUiState.showTutorialDialog, timerModel = timerModel, settingsModel = settingsModel, context = context)
     if(!tutorialUiState.battleOverviewTask && settingsUiState.showTutorial){
-        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.BATTLE_OVERVIEW, timer = timer)
+        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.BATTLE_OVERVIEW, timerModel = timerModel)
     }
     if(!tutorialUiState.movementTask && tutorialUiState.battleOverviewTask && settingsUiState.showTutorial){
-        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.MOVEMENT, timer = timer)
+        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.MOVEMENT, timerModel = timerModel)
     }
     if(!tutorialUiState.locationInfoTask && tutorialUiState.acceptableLostTask && settingsUiState.showTutorial && !movementUiState.showArmyDialog){
-        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.LOCATION_INFO, timer = timer)
+        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.LOCATION_INFO, timerModel = timerModel)
     }
     if(!tutorialUiState.locationOwnerTask && movementUiState.turn == 2 && settingsUiState.showTutorial){
-        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.LOCATION_OWNER, timer = timer)
+        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.LOCATION_OWNER, timerModel = timerModel)
+    }
+    if(settingsUiState.showTutorial && locationListUiState.locationList.any { location -> location.wasBattleHere.value }){
+        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.BATTLE_INFO, timerModel = timerModel)
     }
 
     Box(
@@ -109,14 +106,13 @@ fun BattleMapScreen(
         )
     }
 
-    Log.d("To Battle", "MapLayout starts initializing")
     battleModel.battleMap?.MapLayout(
         modifier = modifier,
         battleModel = battleModel,
         record = movementRecord.movementRecordOfTurn,
+        enemyRecord = movementRecord.enemyRecord,
         locationList = locationListUiState.locationList
-    ) ?: return println("MapLayout initialization return")
-    Log.d("To Battle", "MapLayout initialized")
+    ) ?: return
 
     Row(
         verticalAlignment = Alignment.Top,
@@ -149,12 +145,21 @@ fun BattleMapScreen(
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.End
     ) {
+        val baseLocation = if(battleModel.playerData.player == Players.PLAYER1){
+            battleModel.battleMap?.player1Base ?: return} else {battleModel.battleMap?.player2Base?: return}
         FloatingActionButton(
             onClick = {
-                timer.stopTimer()
-                battleModel.finishTurn(timer = timer)
-                timer.resetTimer()
-                timer.startTimer()
+                if(!battleModel.checkShipLimitOnBase(baseLocation)){
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.manyShipsOnBaseLocation),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    coroutineScope.launch {
+                        battleModel.finishTurn(timerModel = timerModel, databaseModel = databaseModel)
+                    }
+                }
             },
             modifier.padding(end = 16.dp, bottom = 16.dp)
         ) {
@@ -169,7 +174,7 @@ fun BattleMapScreen(
         battleModel = battleModel,
         tutorialModel = tutorialModel,
         show = movementUiState.showArmyDialog,
-        timer = timer,
+        timerModel = timerModel,
         settingsModel = settingsModel,
         context = context
     )

@@ -7,13 +7,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -21,9 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -43,9 +42,12 @@ fun LocationInfoDialog(
     battleModel: BattleViewModel,
     toShow: Boolean,
     onDismissRequest: () -> Unit = { battleModel.closeLocationInfoDialog() },
-    closeShipInfoDialog: () -> Unit = {battleModel.showShipInfoDialog(false, ShipType.CRUISER) }
+    closeShipInfoDialog: () -> Unit = {
+        battleModel.showShipInfoDialog(false, ShipType.CRUISER)
 
-){
+    }
+
+) {
     val movementUiState by battleModel.movementUiState.collectAsState()
     val locationListUiState by battleModel.locationListUiState.collectAsState()
     val weightOfName = 0.3f
@@ -53,189 +55,195 @@ fun LocationInfoDialog(
     val weightOfButtons = 0.1f
     val padding = 16.dp
 
-    ShipInfoDialog(shipType = ShipType.CRUISER, toShow = movementUiState.showCruiserInfoDialog, onDismissRequest = closeShipInfoDialog, confirmButton = closeShipInfoDialog)
-    ShipInfoDialog(shipType = ShipType.DESTROYER, toShow = movementUiState.showDestroyerInfoDialog, onDismissRequest = closeShipInfoDialog, confirmButton = closeShipInfoDialog)
-    ShipInfoDialog(shipType = ShipType.GHOST, toShow = movementUiState.showGhostInfoDialog, onDismissRequest = closeShipInfoDialog, confirmButton = closeShipInfoDialog)
-    ShipInfoDialog(shipType = ShipType.WARPER, toShow = movementUiState.showWarperInfoDialog, onDismissRequest = closeShipInfoDialog, confirmButton = closeShipInfoDialog)
+    ShipInfoDialog(
+        shipType = ShipType.CRUISER,
+        toShow = movementUiState.showCruiserInfoDialog,
+        onDismissRequest = closeShipInfoDialog,
+        confirmButton = closeShipInfoDialog
+    )
+    ShipInfoDialog(
+        shipType = ShipType.DESTROYER,
+        toShow = movementUiState.showDestroyerInfoDialog,
+        onDismissRequest = closeShipInfoDialog,
+        confirmButton = closeShipInfoDialog
+    )
+    ShipInfoDialog(
+        shipType = ShipType.GHOST,
+        toShow = movementUiState.showGhostInfoDialog,
+        onDismissRequest = closeShipInfoDialog,
+        confirmButton = closeShipInfoDialog
+    )
+    ShipInfoDialog(
+        shipType = ShipType.WARPER,
+        toShow = movementUiState.showWarperInfoDialog,
+        onDismissRequest = closeShipInfoDialog,
+        confirmButton = closeShipInfoDialog
+    )
 
-    if(toShow){
+    if (toShow) {
         Dialog(
             onDismissRequest = onDismissRequest,
             properties = DialogProperties(usePlatformDefaultWidth = false)
-        ){
-            var initialization by rememberSaveable { mutableStateOf(false) }
-            if (!initialization) {
+        ) {
+            if (!movementUiState.isLocationInfoInitialized) {
                 battleModel.initializeLocationDialogValues()
-                initialization = true
+                battleModel.changeLocationInfoInitialization(isInitialized = true)
             }
-
             Card(
                 modifier = modifier
-                    .width(IntrinsicSize.Min)
-                    .height(IntrinsicSize.Min)
-                    .padding(padding),
-                shape = RoundedCornerShape(16.dp)
-
+                    .verticalScroll(rememberScrollState())
+                    .wrapContentSize(),
+                shape = RoundedCornerShape(padding)
             ) {
-                Row(
-                    verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = modifier.wrapContentWidth()
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = modifier
+                        .padding(padding)
                 ) {
-                    Box(
-                        contentAlignment = Alignment.TopStart,
+                    Column(
                         modifier = modifier
-                            .padding(top = padding, start = padding, end = padding)
+                            .width(IntrinsicSize.Min)
+                            .wrapContentSize()
                     ) {
-                        Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = modifier
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.nameShip),
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier
+                                    .weight(weightOfName)
+                            )
+                            Text(
+                                text = stringResource(id = R.string.enemyShips),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .weight(weightOfNumbers)
+                            )
+                            Text(
+                                text = stringResource(id = R.string.possibleShipsToMove),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .weight(weightOfNumbers)
+                            )
+                        }
+                        HorizontalDivider()
+                        Row(
+                            modifier = modifier
+                        ) {
+                            ArmyDialogRow(
+                                shipType = ShipType.CRUISER,
+                                startLocation = movementUiState.locationForInfo,
+                                endLocation = movementUiState.locationForInfo,
+                                isWarperPresent = movementUiState.isWarperPresent,
+                                locationList = locationListUiState.locationList,
+                                battleModel = battleModel,
+                                movementUiState = movementUiState,
+                                weightOfName = weightOfName,
+                                weightOfNumbers = weightOfNumbers,
+                                weightOfButtons = weightOfButtons,
+                                isInfo = true
+                            )
+                        }
+                        HorizontalDivider()
+                        Row(
+                            modifier = modifier
+                        ) {
+                            ArmyDialogRow(
+                                shipType = ShipType.DESTROYER,
+                                startLocation = movementUiState.locationForInfo,
+                                endLocation = movementUiState.locationForInfo,
+                                isWarperPresent = movementUiState.isWarperPresent,
+                                locationList = locationListUiState.locationList,
+                                battleModel = battleModel,
+                                movementUiState = movementUiState,
+                                weightOfName = weightOfName,
+                                weightOfNumbers = weightOfNumbers,
+                                weightOfButtons = weightOfButtons,
+                                isInfo = true
+                            )
+                        }
+                        HorizontalDivider()
+                        Row(
+                            modifier = modifier
+                        ) {
+                            ArmyDialogRow(
+                                shipType = ShipType.GHOST,
+                                startLocation = movementUiState.locationForInfo,
+                                endLocation = movementUiState.locationForInfo,
+                                isWarperPresent = movementUiState.isWarperPresent,
+                                locationList = locationListUiState.locationList,
+                                battleModel = battleModel,
+                                movementUiState = movementUiState,
+                                weightOfName = weightOfName,
+                                weightOfNumbers = weightOfNumbers,
+                                weightOfButtons = weightOfButtons,
+                                isInfo = true
+                            )
+                        }
+                        HorizontalDivider()
+                        Row(
+                            modifier = modifier
+                        ) {
+                            ArmyDialogRow(
+                                shipType = ShipType.WARPER,
+                                startLocation = movementUiState.locationForInfo,
+                                endLocation = movementUiState.locationForInfo,
+                                isWarperPresent = movementUiState.isWarperPresent,
+                                locationList = locationListUiState.locationList,
+                                battleModel = battleModel,
+                                movementUiState = movementUiState,
+                                weightOfName = weightOfName,
+                                weightOfNumbers = weightOfNumbers,
+                                weightOfButtons = weightOfButtons,
+                                isInfo = true
+                            )
+                        }
+                        Row(
+                            modifier = modifier
+                                .padding(horizontal = padding, vertical = 4.dp)
+                        ) {
+                            Slider(
+                                value = movementUiState.acceptableLost,
+                                onValueChange = {battleModel.changeValueAcceptableLost(value = it)},
+                                valueRange = 1f..6f,
+                                steps = 4,
+                                modifier = modifier
+                                    .border(
+                                        width = 2.dp,
+                                        shape = RoundedCornerShape(16.dp),
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                    .padding(horizontal = 8.dp),
+                            )
+                        }
+                        Row(
+                            modifier = modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
                             Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = modifier.padding(bottom = 8.dp)
-
+                                modifier = modifier
                             ) {
-
                                 Text(
-                                    text = stringResource(id = R.string.nameShip),
-                                    textAlign = TextAlign.Start,
-                                    modifier = Modifier
-                                        .weight(weightOfName)
-                                        .padding(start = 8.dp)
+                                    text = stringResource(R.string.maxLosses),
+                                    modifier = modifier
                                 )
-
                                 Text(
-                                    text = stringResource(id = R.string.enemyShips),
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier
-                                        .weight(weightOfNumbers)
-                                        .padding(start = 8.dp)
-                                )
-
-                                Text(
-                                    text = stringResource(id = R.string.possibleShipsToMove),
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier
-                                        .weight(weightOfNumbers)
-                                        .padding(start = 8.dp)
+                                    text = movementUiState.acceptableLost.toInt().toString(),
+                                    modifier = modifier.padding(start = padding)
                                 )
                             }
-                            Row (
-                                modifier = modifier.padding(bottom = 8.dp)
-                            ){
-                                ArmyDialogRow(
-                                    shipType = ShipType.CRUISER,
-                                    startLocation = movementUiState.locationForInfo,
-                                    endLocation = movementUiState.locationForInfo,
-                                    isWarperPresent = movementUiState.isWarperPresent,
-                                    locationList = locationListUiState.locationList,
-                                    battleModel = battleModel,
-                                    movementUiState = movementUiState,
-                                    weightOfName = weightOfName,
-                                    weightOfNumbers = weightOfNumbers,
-                                    weightOfButtons = weightOfButtons,
-                                    isInfo = true
-                                )
-                            }
-
-                            Row (
-                                modifier = modifier.padding(bottom = 8.dp)
-                            ){
-                                ArmyDialogRow(
-                                    shipType = ShipType.DESTROYER,
-                                    startLocation = movementUiState.locationForInfo,
-                                    endLocation = movementUiState.locationForInfo,
-                                    isWarperPresent = movementUiState.isWarperPresent,
-                                    locationList = locationListUiState.locationList,
-                                    battleModel = battleModel,
-                                    movementUiState = movementUiState,
-                                    weightOfName = weightOfName,
-                                    weightOfNumbers = weightOfNumbers,
-                                    weightOfButtons = weightOfButtons,
-                                    isInfo = true
-                                )
-                            }
-                            Row (
-                                modifier = modifier.padding(bottom = 8.dp)
-                            ){
-                                ArmyDialogRow(
-                                    shipType = ShipType.GHOST,
-                                    startLocation = movementUiState.locationForInfo,
-                                    endLocation = movementUiState.locationForInfo,
-                                    isWarperPresent = movementUiState.isWarperPresent,
-                                    locationList = locationListUiState.locationList,
-                                    battleModel = battleModel,
-                                    movementUiState = movementUiState,
-                                    weightOfName = weightOfName,
-                                    weightOfNumbers = weightOfNumbers,
-                                    weightOfButtons = weightOfButtons,
-                                    isInfo = true
-                                )
-                            }
-                            Row (
-                                modifier = modifier.padding(bottom = 8.dp)
-                            ){
-                                ArmyDialogRow(
-                                    shipType = ShipType.WARPER,
-                                    startLocation = movementUiState.locationForInfo,
-                                    endLocation = movementUiState.locationForInfo,
-                                    isWarperPresent = movementUiState.isWarperPresent,
-                                    locationList = locationListUiState.locationList,
-                                    battleModel = battleModel,
-                                    movementUiState = movementUiState,
-                                    weightOfName = weightOfName,
-                                    weightOfNumbers = weightOfNumbers,
-                                    weightOfButtons = weightOfButtons,
-                                    isInfo = true
+                            Button(
+                                onClick = onDismissRequest
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.check),
+                                    contentDescription = "Check icon"
                                 )
                             }
                         }
-                    }
-                }
-                Row(
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.maxLosses),
-                        modifier = modifier.padding(end = padding)
-                    )
-
-                    Text(
-                        text = movementUiState.acceptableLost.toInt().toString(),
-                        modifier = modifier.padding(start = padding),
-                        textAlign = TextAlign.Center
-                    )
-                }
-                Row (
-                    modifier = modifier.padding(start = 8.dp, bottom = 4.dp, end = 8.dp)
-                ){
-                    Slider(
-                        value = movementUiState.acceptableLost,
-                        onValueChange = { battleModel.changeValueAcceptableLost(value = it) },
-                        valueRange = 1f..6f,
-                        steps = 4,
-                        modifier = modifier
-                            .fillMaxWidth()
-                            .border(
-                                width = 2.dp,
-                                shape = RoundedCornerShape(16.dp),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            .padding(start = 8.dp, end = 8.dp),
-                    )
-                }
-                Row(
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp, end = 16.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Button(
-                        onClick = onDismissRequest
-                    ) {
-                        Icon(painter = painterResource(id = R.drawable.check), contentDescription = "Check icon")
                     }
                 }
             }

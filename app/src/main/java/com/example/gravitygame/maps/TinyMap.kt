@@ -19,6 +19,7 @@ class TinyMap : BattleMap() {
     override val mapName = R.string.tinyMapName
     override val boxSize = 100.dp
     override val planetSize = 54.dp
+    override val explosionSize = 24.dp
     override val flagSize = 24.dp
     override val secondsForTurn = 301
     override val shipLimitOnPosition = 6
@@ -49,6 +50,7 @@ class TinyMap : BattleMap() {
         modifier: Modifier,
         battleModel: BattleViewModel,
         record: List<Map<Ship, Int>>,
+        enemyRecord: List<Ship>,
         locationList: List<Location>
     ) {
 
@@ -87,7 +89,8 @@ class TinyMap : BattleMap() {
                 battleModel = battleModel,
                 location1 = 0,
                 location2 = 1,
-                record = record,
+                myRecord = record,
+                enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec0){
                         centerVerticallyTo(route0)
@@ -113,7 +116,8 @@ class TinyMap : BattleMap() {
                 battleModel = battleModel,
                 location1 = 0,
                 location2 = 3,
-                record = record,
+                myRecord = record,
+                enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec1){
                         centerVerticallyTo(route1)
@@ -140,7 +144,8 @@ class TinyMap : BattleMap() {
                 battleModel = battleModel,
                 location1 = 0,
                 location2 = 2,
-                record = record,
+                myRecord = record,
+                enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec2){
                         centerVerticallyTo(route2)
@@ -166,7 +171,8 @@ class TinyMap : BattleMap() {
                 battleModel = battleModel,
                 location1 = 1,
                 location2 = 4,
-                record = record,
+                myRecord = record,
+                enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec3){
                         centerVerticallyTo(route3)
@@ -193,7 +199,8 @@ class TinyMap : BattleMap() {
                 battleModel = battleModel,
                 location1 = 1,
                 location2 = 5,
-                record = record,
+                myRecord = record,
+                enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec4){
                         centerVerticallyTo(route4)
@@ -220,7 +227,8 @@ class TinyMap : BattleMap() {
                 battleModel = battleModel,
                 location1 = 3,
                 location2 = 4,
-                record = record,
+                myRecord = record,
+                enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec5){
                         centerVerticallyTo(route5)
@@ -247,7 +255,8 @@ class TinyMap : BattleMap() {
                 battleModel = battleModel,
                 location1 = 3,
                 location2 = 6,
-                record = record,
+                myRecord = record,
+                enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec6){
                         centerVerticallyTo(route6)
@@ -273,7 +282,8 @@ class TinyMap : BattleMap() {
                 battleModel = battleModel,
                 location1 = 2,
                 location2 = 6,
-                record = record,
+                myRecord = record,
+                enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec7){
                         centerVerticallyTo(route7)
@@ -300,7 +310,8 @@ class TinyMap : BattleMap() {
                 battleModel = battleModel,
                 location1 = 2,
                 location2 = 5,
-                record = record,
+                myRecord = record,
+                enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec8){
                         centerVerticallyTo(route8)
@@ -327,7 +338,8 @@ class TinyMap : BattleMap() {
                 battleModel = battleModel,
                 location1 = 7,
                 location2 = 4,
-                record = record,
+                myRecord = record,
+                enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec9){
                         centerVerticallyTo(route9)
@@ -353,7 +365,8 @@ class TinyMap : BattleMap() {
                 battleModel = battleModel,
                 location1 = 7,
                 location2 = 5,
-                record = record,
+                myRecord = record,
+                enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec10){
                         centerVerticallyTo(route10)
@@ -380,7 +393,8 @@ class TinyMap : BattleMap() {
                 battleModel = battleModel,
                 location1 = 7,
                 location2 = 6,
-                record = record,
+                myRecord = record,
+                enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec11){
                         centerVerticallyTo(route11)
@@ -403,7 +417,8 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.planet1
+                planetImage = R.drawable.planet1,
+                explosionSize = explosionSize
             )
 
             MapBox(
@@ -420,7 +435,8 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.moon2
+                planetImage = R.drawable.moon2,
+                explosionSize = explosionSize
             )
 
             MapBox(
@@ -437,7 +453,8 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.moon2
+                planetImage = R.drawable.moon2,
+                explosionSize = explosionSize
             )
 
             MapBox(
@@ -454,7 +471,8 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.moon2
+                planetImage = R.drawable.moon2,
+                explosionSize = explosionSize
             )
 
             MapBox(
@@ -471,7 +489,8 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.moon2
+                planetImage = R.drawable.moon2,
+                explosionSize = explosionSize
             )
 
             MapBox(
@@ -488,7 +507,8 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.moon2
+                planetImage = R.drawable.moon2,
+                explosionSize = explosionSize
             )
 
             MapBox(
@@ -505,7 +525,8 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.moon2
+                planetImage = R.drawable.moon2,
+                explosionSize = explosionSize
             )
 
             MapBox(
@@ -522,7 +543,8 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.planet2
+                planetImage = R.drawable.planet2,
+                explosionSize = explosionSize
             )
         }
     }

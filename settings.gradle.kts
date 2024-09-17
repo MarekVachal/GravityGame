@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Gravity Game"
+rootProject.name = "GravityGame"
 include(":app")
  

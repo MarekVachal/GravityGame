@@ -112,6 +112,7 @@ fun LanguageSelection(
                 }
             }
         )
+        /*
         LanguageOptionRow(
             text = stringResource(id = R.string.polish),
             checked = settingUiState.isPolishChecked,
@@ -122,6 +123,8 @@ fun LanguageSelection(
                 }
             }
         )
+
+         */
     }
 }
 

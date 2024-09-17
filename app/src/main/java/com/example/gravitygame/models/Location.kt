@@ -20,21 +20,33 @@ data class Location(
     val myShipList: SnapshotStateList<Ship> = mutableStateListOf(),
     @Contextual
     val enemyShipList: SnapshotStateList<Ship> = mutableStateListOf(),
-    var myAcceptableLost: MutableIntState = mutableIntStateOf(1),
-    var enemyAcceptableLost: MutableIntState = mutableIntStateOf(1),
-    var owner: MutableState<Players> = mutableStateOf(Players.NONE)
+    val myAcceptableLost: MutableIntState = mutableIntStateOf(1),
+    val enemyAcceptableLost: MutableIntState = mutableIntStateOf(1),
+    val owner: MutableState<Players> = mutableStateOf(Players.NONE),
+    val wasBattleHere: MutableState<Boolean> = mutableStateOf(false),
+
 ) {
     var accessible by mutableStateOf(false)
+    val originalMyShipList: MutableMap<ShipType, Int> = mutableMapOf()
+    val originalEnemyShipList: MutableMap<ShipType, Int> = mutableMapOf()
+    val mapMyLost: MutableMap<ShipType, Int> = mutableMapOf()
+    val mapEnemyLost: MutableMap<ShipType, Int> = mutableMapOf()
+    var lastBattleResult: String = ""
 
     fun getConnectionsList(): List<Int>{
-        return connections
+        return connections.toList()
     }
 }
 
 fun Location.deepCopy(): Location {
     return this.copy(
         enemyShipList = this.enemyShipList.deepCopy(),
-        myShipList = this.myShipList.deepCopy()
+        myShipList = this.myShipList.deepCopy(),
+        myAcceptableLost = mutableIntStateOf(this.myAcceptableLost.intValue),
+        enemyAcceptableLost = mutableIntStateOf(this.enemyAcceptableLost.intValue),
+        owner = mutableStateOf(this.owner.value),
+        wasBattleHere = mutableStateOf(this.wasBattleHere.value)
+
     )
 }
 

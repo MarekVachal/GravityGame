@@ -16,10 +16,10 @@
     <string name="tinyMapName">Tiny map</string>
     <string name="maxLosses">Max losses</string>
     <string name="nextTurn">Next turn</string>
-    <string name="cruiserInfo">Firepower: 1\nHit Points: 10\nDescription:\n\nThe basic unit with no extra ability.</string>
-    <string name="destroyerInfo">Firepower: 2\nHit points: 10\nDescription:\n\nThe sum of firepower of all your destroyers is maximally as high as the sum of all enemy ships in the battle.</string>
-    <string name="ghostInfo">Firepower: 1\nHit points: 5\nDescription:\n\nEvery ghost in the battle excludes one of the enemy destroyers from battle until the ghost is destroyed.</string>
-    <string name="warperInfo">Firepower: 2\nHit points: 1\nDescription:\n\nWarper can move to any sector on a battlefield.</string>
+    <string name="cruiserInfo">Firepower: 1\nHit Points: 10\n\nThe basic unit with no extra ability.</string>
+    <string name="destroyerInfo">Firepower: 2\nHit points: 10\n\nThe sum of firepower of all your destroyers is maximally as high as the sum of all enemy ships in the battle.</string>
+    <string name="ghostInfo">Firepower: 1\nHit points: 5\n\nEvery ghost in the battle excludes one of the enemy destroyers from battle until the ghost is destroyed.</string>
+    <string name="warperInfo">Firepower: 2\nHit points: 1\n\nWarper can move to any sector on a battlefield.</string>
     <string name="titleLostGame">You lost the game</string>
     <string name="titleWinGame">You win the game</string>
     <string name="titleDrawGame">The game is draw</string>
@@ -57,4 +57,26 @@
     <string name="showTutorial">Show tutorial</string>
     <string name="polish">Polish</string>
     <string name="donate" translatable="false">Donate</string>
+    <string name="manyShipsOnBaseLocation">There is too many units on your base planet.</string>
+    <string name="statisticTitle">Statistics</string>
+    <string name="achievementsTitle" translatable="false">Achievements</string>
+    <string name="totalBattle">Total battles: %1$s</string>
+    <string name="averageTurns">Average turns: %1$s</string>
+    <string name="countOfWins">Count of Wins: %1$s</string>
+    <string name="countOfLost">Count of Lost: %1$s</string>
+    <string name="countOfDraw">Count of Draws: %1$s</string>
+    <string name="date" translatable="false">%1$s</string>
+    <string name="battleResult">Result: %1$s</string>
+    <string name="turns">Turns: %1$s</string>
+    <string name="myShipLost">My units lost: %1$s</string>
+    <string name="enemyShipDestroyed">Enemy units destroyed: %1$s</string>
+    <string name="generalStatistics">General Statistics</string>
+    <string name="detailOfBattle">Detail of Battle</string>
+    <string name="enemyShipsBeforeBattle">Enemy units before battle</string>
+    <string name="enemyShipsLost">Enemy units lost</string>
+    <string name="myShipsBeforeBattle">My units before battle</string>
+    <string name="myShipsLost">My units lost</string>
+    <string name="battleResultOnLocation">"Last battle on the location you %1$s"</string>
+    <string name="battleInfoTask">When a battle occur on a planet, you will see a explosion on it. You can long click on the planet to see, how the battle went.</string>
+    <string name="battleInfoTaskTitle">Battle info</string>
 </resources>
