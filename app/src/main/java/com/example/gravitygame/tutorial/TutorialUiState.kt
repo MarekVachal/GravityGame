@@ -12,7 +12,7 @@ data class TutorialUiState(
     val locationOwnerTask: Boolean = false,
     val sendShipsTask: Boolean = false,
     val acceptableLostTask: Boolean = false,
-    val battleInfoTask: Boolean = false,
+    val battleInfoTask: Boolean = false
 )
 
 enum class Tasks{

@@ -35,7 +35,8 @@ class TutorialViewModel: ViewModel() {
         if(toShow){
             _tutorialUiState.value = _tutorialUiState.value.copy(
                 showTutorialDialog = true,
-                typeTaskToShow = task)
+                typeTaskToShow = task
+            )
             timerModel?.stopTimer()
 
         } else {

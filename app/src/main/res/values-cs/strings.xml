@@ -74,4 +74,6 @@
     <string name="myShipsBeforeBattle">Mé jednotky před bitvou</string>
     <string name="myShipsLost">Mé ztracené jednotky</string>
     <string name="battleResultOnLocation">Poslední bitvu na této pozici jsi %1$s</string>
+    <string name="battleInfoTask">Pokud byla svedena bitva na nějaké planětě, objeví se na ní symbol exploze. Můžeš na takovouto planetu dlouze kliknout pro zobrazení informací o průběhu bitvy.</string>
+    <string name="battleInfoTaskTitle">Informace o bitvě</string>
 </resources>

@@ -102,7 +102,7 @@ fun BattleMapScreen(
         if(!tutorialUiState.locationOwnerTask && movementUiState.turn == 2){
             tutorialModel.showTutorialDialog(toShow = true, task = Tasks.LOCATION_OWNER, timerModel = timerModel)
         }
-        if(locationListUiState.locationList.any { location -> location.wasBattleHere.value }){
+        if(!tutorialUiState.battleInfoTask && locationListUiState.locationList.any { location -> location.wasBattleHere.value }){
             tutorialModel.showTutorialDialog(toShow = true, task = Tasks.BATTLE_INFO, timerModel = timerModel)
         }
     }
