@@ -11,11 +11,7 @@ class ProgressIndicatorViewModel: ViewModel() {
     val progressIndicatorUiState: StateFlow<ProgressIndicatorUiState> = _progressIndicatorUiState.asStateFlow()
 
     fun showProgressIndicator(toShow: Boolean){
-        if (toShow) {
-            _progressIndicatorUiState.value = _progressIndicatorUiState.value.copy(showProgressIndicator = true)
-        } else {
-            _progressIndicatorUiState.value = _progressIndicatorUiState.value.copy(showProgressIndicator = false)
-        }
+        _progressIndicatorUiState.value = _progressIndicatorUiState.value.copy(showProgressIndicator = toShow)
     }
 }
 
