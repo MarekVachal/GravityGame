@@ -37,7 +37,7 @@ class BattleViewModel : ViewModel() {
     private val _movementRecord = MutableStateFlow(MovementRecord())
     val movementRecord: StateFlow<MovementRecord> = _movementRecord.asStateFlow()
     val playerData = PlayerData()
-    private val mctsIterations = 1000
+    private val mctsIterations = 500
     private val difficulty = 5
 
     fun writeDestroyedShips(isSimulation: Boolean, myLostShip: Int, enemyLostShip: Int){
