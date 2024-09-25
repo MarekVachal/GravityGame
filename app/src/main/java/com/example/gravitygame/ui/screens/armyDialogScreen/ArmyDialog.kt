@@ -106,20 +106,23 @@ fun ArmyDialog(
         settingsModel = settingsModel,
         context = context
     )
-    if (!tutorialUiState.sendShipsTask && tutorialUiState.battleOverviewTask && tutorialUiState.movementTask && settingsUiState.showTutorial && movementUiState.showArmyDialog) {
-        tutorialModel.showTutorialDialog(
-            toShow = true,
-            task = Tasks.SEND_SHIPS,
-            timerModel = timerModel
-        )
+    if (settingsUiState.showTutorial){
+        if (!tutorialUiState.sendShipsTask && tutorialUiState.battleOverviewTask && tutorialUiState.movementTask && movementUiState.showArmyDialog) {
+            tutorialModel.showTutorialDialog(
+                toShow = true,
+                task = Tasks.SEND_SHIPS,
+                timerModel = timerModel
+            )
+        }
+        if (!tutorialUiState.acceptableLostTask && tutorialUiState.sendShipsTask) {
+            tutorialModel.showTutorialDialog(
+                toShow = true,
+                task = Tasks.ACCEPTABLE_LOST,
+                timerModel = timerModel
+            )
+        }
     }
-    if (!tutorialUiState.acceptableLostTask && tutorialUiState.sendShipsTask && settingsUiState.showTutorial) {
-        tutorialModel.showTutorialDialog(
-            toShow = true,
-            task = Tasks.ACCEPTABLE_LOST,
-            timerModel = timerModel
-        )
-    }
+
 
     if (show) {
         Dialog(

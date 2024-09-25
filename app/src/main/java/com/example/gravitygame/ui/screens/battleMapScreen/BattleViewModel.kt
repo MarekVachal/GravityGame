@@ -38,7 +38,7 @@ class BattleViewModel : ViewModel() {
     val movementRecord: StateFlow<MovementRecord> = _movementRecord.asStateFlow()
     val playerData = PlayerData()
     private val mctsIterations = 100
-    private val aiDifficulty = 5
+    private val difficulty = 5
 
     fun writeDestroyedShips(isSimulation: Boolean, myLostShip: Int, enemyLostShip: Int){
         if (!isSimulation){
@@ -313,13 +313,19 @@ class BattleViewModel : ViewModel() {
 
     private suspend fun aiMove() {
         val state = initializeGameState()
-        val mcts = MCTS(mctsIterations, aiDifficulty)
+        val mcts = MCTS(mctsIterations, difficulty)
         val bestMove = mcts.findBestMove(
             initialState = state,
             playerData = playerData
         )
         updateUIWithBestMove(bestMove)
         updateEnemyRecord(bestMove)
+    }
+
+    fun cleanEnemyRecord(){
+        val newList = movementRecord.value.enemyRecord.toMutableList()
+        newList.clear()
+        _movementRecord.value = _movementRecord.value.copy(enemyRecord = newList.toList())
     }
 
     private fun updateEnemyRecord(state: GameState){
@@ -346,11 +352,13 @@ class BattleViewModel : ViewModel() {
             && locationListUiState.value.locationList[player2Base].owner.value == Players.PLAYER1){
             playerData.draw = true
             endOfGame()
-        } else if (locationListUiState.value.locationList[player1Base].owner.value == Players.PLAYER2) {
+        } else if (locationListUiState.value.locationList[player1Base].owner.value == Players.PLAYER2 ||
+            locationListUiState.value.locationList.all { it.myShipList.isEmpty() }) {
             playerData.lost = thisPlayer == Players.PLAYER1
             playerData.win = thisPlayer == Players.PLAYER2
             endOfGame()
-        } else if (locationListUiState.value.locationList[player2Base].owner.value == Players.PLAYER1) {
+        } else if (locationListUiState.value.locationList[player2Base].owner.value == Players.PLAYER1 ||
+            locationListUiState.value.locationList.all { it.enemyShipList.isEmpty() }) {
             playerData.lost = thisPlayer == Players.PLAYER2
             playerData.win = thisPlayer == Players.PLAYER1
             endOfGame()

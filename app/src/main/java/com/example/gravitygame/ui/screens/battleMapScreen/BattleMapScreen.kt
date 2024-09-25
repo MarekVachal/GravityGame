@@ -16,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,6 +38,7 @@ import com.example.gravitygame.timer.TimerViewModel
 import com.example.gravitygame.ui.screens.infoDialogsScreens.BattleInfoDialog
 import com.example.gravitygame.ui.screens.settingScreen.SettingViewModel
 import com.example.gravitygame.ui.utils.Players
+import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -73,26 +73,40 @@ fun BattleMapScreen(
     if (!movementUiState.isBattleScreenInitialized) {
         val enemyShipList = battleModel.battleMap?.let { createAiArmy(battleMap = it, startLocation = locationListUiState.locationList.last().id) }
         enemyShipList?.let { battleModel.initializeEnemyShipList(enemyShipList = it) }
-        timerModel.makeTimer(CoroutineTimer(timerModel = timerModel, finishTurn = { battleModel.finishTurn(timerModel = timerModel, databaseModel = databaseModel) }, secondsForTurn = battleModel.battleMap?.secondsForTurn?: 0))
+        timerModel.makeTimer(
+            CoroutineTimer(
+                timerModel = timerModel,
+                finishTurn = {
+                    coroutineScope.launch {
+                        battleModel.finishTurn(timerModel = timerModel, databaseModel = databaseModel)
+                    }
+                },
+                secondsForTurn = battleModel.battleMap?.secondsForTurn ?: 0
+            )
+        )
+        battleModel.cleanEnemyRecord()
         battleModel.changeBattleScreenInitialization(isInitialized = true)
     }
 
     TutorialDialog(tutorialModel = tutorialModel, toShow = tutorialUiState.showTutorialDialog, timerModel = timerModel, settingsModel = settingsModel, context = context)
-    if(!tutorialUiState.battleOverviewTask && settingsUiState.showTutorial){
-        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.BATTLE_OVERVIEW, timerModel = timerModel)
+    if(settingsUiState.showTutorial){
+        if(!tutorialUiState.battleOverviewTask){
+            tutorialModel.showTutorialDialog(toShow = true, task = Tasks.BATTLE_OVERVIEW, timerModel = timerModel)
+        }
+        if(!tutorialUiState.movementTask && tutorialUiState.battleOverviewTask){
+            tutorialModel.showTutorialDialog(toShow = true, task = Tasks.MOVEMENT, timerModel = timerModel)
+        }
+        if(!tutorialUiState.locationInfoTask && tutorialUiState.acceptableLostTask && !movementUiState.showArmyDialog){
+            tutorialModel.showTutorialDialog(toShow = true, task = Tasks.LOCATION_INFO, timerModel = timerModel)
+        }
+        if(!tutorialUiState.locationOwnerTask && movementUiState.turn == 2){
+            tutorialModel.showTutorialDialog(toShow = true, task = Tasks.LOCATION_OWNER, timerModel = timerModel)
+        }
+        if(locationListUiState.locationList.any { location -> location.wasBattleHere.value }){
+            tutorialModel.showTutorialDialog(toShow = true, task = Tasks.BATTLE_INFO, timerModel = timerModel)
+        }
     }
-    if(!tutorialUiState.movementTask && tutorialUiState.battleOverviewTask && settingsUiState.showTutorial){
-        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.MOVEMENT, timerModel = timerModel)
-    }
-    if(!tutorialUiState.locationInfoTask && tutorialUiState.acceptableLostTask && settingsUiState.showTutorial && !movementUiState.showArmyDialog){
-        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.LOCATION_INFO, timerModel = timerModel)
-    }
-    if(!tutorialUiState.locationOwnerTask && movementUiState.turn == 2 && settingsUiState.showTutorial){
-        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.LOCATION_OWNER, timerModel = timerModel)
-    }
-    if(settingsUiState.showTutorial && locationListUiState.locationList.any { location -> location.wasBattleHere.value }){
-        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.BATTLE_INFO, timerModel = timerModel)
-    }
+
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -157,7 +171,10 @@ fun BattleMapScreen(
                     ).show()
                 } else {
                     coroutineScope.launch {
-                        battleModel.finishTurn(timerModel = timerModel, databaseModel = databaseModel)
+                        battleModel.finishTurn(
+                            timerModel = timerModel,
+                            databaseModel = databaseModel
+                        )
                     }
                 }
             },

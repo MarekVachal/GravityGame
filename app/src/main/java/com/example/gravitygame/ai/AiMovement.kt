@@ -46,18 +46,15 @@ class MCTS(private val iterations: Int, private val difficulty: Int) {
     ): Map<Int, GameState> = coroutineScope {
         val mapOfScoredState: MutableMap<Int, GameState> = mutableMapOf()
 
-        // Spustíme všechny iterace paralelně pomocí async
         val deferredResults = (1..iterate).map {
             async(Dispatchers.Default) {
                 val movedState = state.deepCopy()
                 movedState.generateTurnMove()
-                val (score, mapOfLost) = movedState.evaluateGameState(playerData = playerData)
-                movedState.applyAcceptableLost(mapOfLost)
+                val score = movedState.evaluateGameState(playerData = playerData)
                 score to movedState
             }
         }
 
-        // Počkáme, až všechny async operace skončí a přidáme výsledky do mapy
         val results = deferredResults.awaitAll()
 
         results.forEach { (score, movedState) ->
@@ -70,7 +67,7 @@ class MCTS(private val iterations: Int, private val difficulty: Int) {
 
 }
 
-private fun GameState.evaluateGameState(playerData: PlayerData): Pair<Int, Map<Int, Int>> {
+private fun GameState.evaluateGameState(playerData: PlayerData): Int {
     var score = 0
 
     //Move to enemy base
@@ -86,107 +83,50 @@ private fun GameState.evaluateGameState(playerData: PlayerData): Pair<Int, Map<I
     //Empty AI base remove score
     if(this.locationList[this.gameMap.player2Base].enemyShipList.isEmpty() &&
         this.locationList.any { location -> location.myShipList.any { ship -> ship.type == ShipType.WARPER } }){
-        score -= 10
+        score -= 20
     }
 
-    val (scoreFromSimulation, mapOfLost) = simulateBattle(
-        state = this,
-        playerData = playerData,
-        battleModel = battleModel
-    )
-    score += scoreFromSimulation
+    //Score according to battles plus improvement of AI acceptableLoss
+    score += simulateBattle(playerData = playerData)
 
+    if (this.isWinningState()) score += 30
+    if (this.isLostState()) score -= 40
 
-
-    return Pair(score, mapOfLost)
+    return score
 }
 
-private fun simulateBattle(
-    state: GameState,
+private fun GameState.simulateBattle(
     playerData: PlayerData,
-    battleModel: BattleViewModel
-): Pair<Int, Map<Int, Int>> {
-    val mapOfAcceptableLost: MutableMap<Int, Int> = mutableMapOf()
-    var score = 0
-    var incrementOfLost = 0
+): Int {
 
-    val battleState = state.deepCopy()
-    battleState.locationList.forEach { location ->
-        if(location.enemyShipList.isNotEmpty() && location.myShipList.isNotEmpty()){
-            val enemyShipsOnLocation = location.enemyShipList.size
-            val (player, _, _) = calculateBattle(
-                location = location,
-                playerData = playerData,
-                isSimulation = true,
-                battleModel = battleModel
-            )
-            when (player){
-                Players.PLAYER1 -> {
-                    var playerLost: Players
-                    var playerShipLost: Int
-                    var aiShipLost: Int
-                    var player2WinInLoop = false
+    this.locationList.forEach { location ->
+        if (location.myShipList.isNotEmpty() && location.enemyShipList.isNotEmpty()) {
+            val maxAcceptableLost = location.enemyShipList.size
+            var enemyAcceptableLost = location.enemyAcceptableLost.intValue
 
-                    do {
-                        val result = calculateBattle(
-                            location = location,
-                            playerData = playerData,
-                            isSimulation = true,
-                            battleModel = battleModel
-                        )
-                        playerLost = result.first
-                        playerShipLost = result.second.values.sum()
-                        aiShipLost = result.third.values.sum()
+            while (enemyAcceptableLost <= maxAcceptableLost) {
+                val (winningPlayer, _, _) = calculateBattle(
+                    location = location,
+                    playerData = playerData,
+                    isSimulation = true,
+                    battleModel = this.battleModel
+                )
 
-                        if(playerLost == Players.PLAYER2){
-                            player2WinInLoop = true
-                        }
-
-                        mapOfAcceptableLost[location.id] = location.enemyAcceptableLost.intValue++
-                        incrementOfLost++
-                        battleState.locationList[location.id].enemyAcceptableLost.intValue++
-                    } while (playerLost == Players.PLAYER2 || incrementOfLost == enemyShipsOnLocation)
-
-                    if (player2WinInLoop){
-                        score += 20
-                    } else if (aiShipLost < playerShipLost){
-                        score +=5
-                    } else if (playerShipLost < aiShipLost){
-                        score -=20
-                    }
+                if (winningPlayer == Players.PLAYER2) {
+                    location.enemyAcceptableLost.intValue = enemyAcceptableLost
+                    return 15  // AI wins battle
                 }
-                Players.PLAYER2 -> {
-                    mapOfAcceptableLost[location.id] = location.enemyAcceptableLost.intValue
-                    score += 30
-                }
-                Players.NONE -> {
-                    mapOfAcceptableLost[location.id] = location.enemyAcceptableLost.intValue++
-                    incrementOfLost++
-                    battleState.locationList[location.id].enemyAcceptableLost.intValue++
-                    val (playerDraw, playerLostDraw, aiLostDraw) = calculateBattle(
-                        location = location,
-                        playerData = playerData,
-                        isSimulation = true,
-                        battleModel = battleModel
-                    )
-                    when(playerDraw){
-                        Players.PLAYER1 -> {
-                            mapOfAcceptableLost[location.id] = location.enemyAcceptableLost.intValue--
-                            score -=10
-                        }
-                        Players.PLAYER2 -> {
-                            score += if(playerLostDraw.values.sum() > aiLostDraw.values.sum()) 20 else 10
-                        }
-                        Players.NONE -> score += if(playerLostDraw.values.sum() > aiLostDraw.values.sum()) 5 else 0
-                    }
-                }
+
+                enemyAcceptableLost++
             }
+            return -10  // AI lost battle
         }
     }
-    Log.d("Losts", "$mapOfAcceptableLost")
-    return Pair(score, mapOfAcceptableLost.toMap())
 
+    // No Battle
+    return 0
 }
+
 
 private fun getProximityScore(gameState: GameState): Int {
     var score = 0
@@ -210,11 +150,6 @@ private fun getProximityScore(gameState: GameState): Int {
     return score
 }
 
-@Suppress("Unused")
-private fun GameState.isWinningState(): Boolean{
-    return this.locationList[0].owner.value == Players.PLAYER2
-}
-
 private fun GameState.generateTurnMove(){
     val ships: MutableList<Ship> = mutableListOf()
     this.locationList.forEach {
@@ -235,23 +170,17 @@ private fun GameState.getPossibleLocations(ship: Ship): List<Int> {
 
     return when {
         ship.type == ShipType.WARPER && this.locationList[this.gameMap.player1Base].myShipList.isEmpty()
-            -> listOf(0)
+        -> listOf(0)
         currentLocation != null
-            -> {val connections = currentLocation.getConnectionsList().filter { targetId ->
-                val targetLocation = this.locationList[targetId]
-                    targetLocation.enemyShipList.size < battleLimit &&
+        -> {val connections = currentLocation.getConnectionsList().filter { targetId ->
+            val targetLocation = this.locationList[targetId]
+            targetLocation.enemyShipList.size < battleLimit &&
                     !(targetLocation.owner.value == Players.PLAYER1 && currentLocation.owner.value == Players.PLAYER1)
-                }
+        }
             val currentIsValid = currentLocation.enemyShipList.size < battleLimit
             connections + if (currentIsValid) listOf(currentLocation.id) else emptyList()
         }
         else -> emptyList()
-    }
-}
-
-private fun GameState.applyAcceptableLost(mapOfAcceptableLost: Map<Int, Int>){
-    mapOfAcceptableLost.forEach { (locationId, acceptableLost) ->
-        this.locationList[locationId].enemyAcceptableLost.intValue = acceptableLost
     }
 }
 
@@ -264,6 +193,16 @@ private fun GameState.applyMove(move: Move){
     targetLocation.enemyShipList.add(move.ship)
     move.ship.startingPosition = currentLocation.id
     move.ship.currentPosition = targetLocation.id
+}
+
+private fun GameState.isWinningState(): Boolean{
+    val player1Base = this.gameMap.player1Base
+    return this.locationList[player1Base].owner.value == Players.PLAYER2
+}
+
+private fun GameState.isLostState(): Boolean{
+    val player2Base = this.gameMap.player2Base
+    return this.locationList[player2Base].owner.value == Players.PLAYER1
 }
 
 @Suppress("Unused")
