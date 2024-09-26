@@ -1,6 +1,7 @@
 package com.example.gravitygame.ui.screens.mainMenuScreen
 
 import android.app.Activity
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,7 +40,8 @@ fun MainMenuScreen(
     mainMenuModel: MainMenuViewModel,
     onSettingClick: () -> Unit,
     onAccountClick: () -> Unit,
-    activity: Activity
+    activity: Activity,
+    context: Context
 ) {
 
     val mainMenuUiStates by mainMenuModel.mainMenuUiStates.collectAsState()
@@ -68,10 +70,17 @@ fun MainMenuScreen(
             Row (
                 horizontalArrangement = Arrangement.SpaceBetween
             ){
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = { mainMenuModel.openDiscord(context = context) }) {
                     Icon(
                         painter = painterResource(id = R.drawable.discord),
                         contentDescription = "Discord icon",
+                        tint = Color.Unspecified
+                    )
+                }
+                IconButton(onClick = { mainMenuModel.openEmail(context = context) }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.email),
+                        contentDescription = "Email icon",
                         tint = Color.Unspecified
                     )
                 }

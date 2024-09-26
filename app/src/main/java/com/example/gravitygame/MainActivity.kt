@@ -130,6 +130,7 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
                 onBattleButtonClick = {navController.navigate(Destinations.SELECTMAP.name)},
                 mainMenuModel = mainMenuModel,
                 activity = activity,
+                context = context,
                 onSettingClick = { navController.navigate(Destinations.SETTINGS.name) },
                 onAccountClick = { navController.navigate(Destinations.ACCOUNT.name) }
             )

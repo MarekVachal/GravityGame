@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Gravity Game</string>
+    <string name="discordInviteLink" translatable="false">https://discord.gg/H4hFa3vgvZ</string>
+    <string name="email" translatable="false">gravitygame2024@gmail.com</string>
+    <string name="errorToOpenLink">The link can not be open</string>
     <string name="destroyer">Destroyer</string>
     <string name="ghost">Ghost</string>
     <string name="sumArmy">Total units</string>
@@ -79,4 +82,5 @@
     <string name="battleResultOnLocation">"Last battle on the location you %1$s"</string>
     <string name="battleInfoTask">When a battle occur on a planet, you will see an explosion on it. You can long click on the planet to see, how the battle went.</string>
     <string name="battleInfoTaskTitle">Battle info</string>
+    <string name="errorToOpenMail">Your email app cannot be open</string>
 </resources>

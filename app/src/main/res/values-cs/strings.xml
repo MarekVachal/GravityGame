@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Gravity Game</string>
+    <string name="errorToOpenLink">Odkaz nelze otevřít</string>
     <string name="destroyer">Torbédoborec</string>
     <string name="ghost">Duch</string>
     <string name="sumArmy">Jednotek celkem</string>
@@ -76,4 +77,5 @@
     <string name="battleResultOnLocation">Poslední bitvu na této pozici jsi %1$s</string>
     <string name="battleInfoTask">Pokud byla svedena bitva na nějaké planětě, objeví se na ní symbol exploze. Můžeš na takovouto planetu dlouze kliknout pro zobrazení informací o průběhu bitvy.</string>
     <string name="battleInfoTaskTitle">Informace o bitvě</string>
+    <string name="errorToOpenMail">Vaše emailová aplikace nelze otevřít</string>
 </resources>
