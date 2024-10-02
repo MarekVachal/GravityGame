@@ -46,6 +46,13 @@ fun MainMenuScreen(
 
     val mainMenuUiStates by mainMenuModel.mainMenuUiStates.collectAsState()
 
+    InfoTextDialog(
+        mainMenuModel = mainMenuModel,
+        mainMenuUiStates = mainMenuUiStates,
+        toShow = mainMenuUiStates.showTextDialog,
+        context = context
+    )
+
     Image(
         painter = painterResource(id = R.drawable.main_menu_back),
         contentDescription = "Background for main menu",
@@ -170,6 +177,7 @@ fun IconButtonWithMenu(
                     )
                 },
                 onClick = {
+                    mainMenuModel.openTextDialog(text = Text.GAME_RULES, toShow = true)
                     mainMenuModel.showMenuList(false)
                 }
             )
@@ -180,6 +188,7 @@ fun IconButtonWithMenu(
                     )
                 },
                 onClick = {
+                    mainMenuModel.openTextDialog(text = Text.ABOUT_GAME, toShow = true)
                     mainMenuModel.showMenuList(false)
                 }
             )
@@ -190,16 +199,18 @@ fun IconButtonWithMenu(
                     )
                 },
                 onClick = {
+                    mainMenuModel.openTextDialog(text = Text.ABOUT_US, toShow = true)
                     mainMenuModel.showMenuList(false)
                 }
             )
             DropdownMenuItem(
                 text = {
                     Text(
-                        text = stringResource(id = R.string.donate)
+                        text = stringResource(id = R.string.donateTitle)
                     )
                 },
                 onClick = {
+                    mainMenuModel.openTextDialog(text = Text.DONATE, toShow = true)
                     mainMenuModel.showMenuList(false)
                 }
             )

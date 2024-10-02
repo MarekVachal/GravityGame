@@ -78,4 +78,40 @@
     <string name="battleInfoTask">Pokud byla svedena bitva na nějaké planětě, objeví se na ní symbol exploze. Můžeš na takovouto planetu dlouze kliknout pro zobrazení informací o průběhu bitvy.</string>
     <string name="battleInfoTaskTitle">Informace o bitvě</string>
     <string name="errorToOpenMail">Vaše emailová aplikace nelze otevřít</string>
+    <string name="aboutUsText">
+        Jsme dva chlapi, kterým hry v jejich životě hrajou podstatnou roli. Seznámili jsme se při hraní dnes již skončené online strategické hry Red Dragon a různé hry spolu hrajeme dodnes. Baví nás zkoumat různé nové mechanismy, které jsou dnes na herním poli přinášeny a ani my sami nejsme bez nápadů. Proto jsme se rozhodli také na toto polo přispět svou troškou. Vývoj našich her vždy začíná jejím hlavním mechanismem a při jeho zkoušení se začne přibalovat téma hry a případně další vedlejší mechanismy. Rádi bychom tak přinesli nové neotřelé herní mechanismy, případně unikátní spojení mechanismů již existujících. V neposlední řadě je také naší touhou dát lidem hry, které nejsou zatížené konceptem pay to win a možností hráče hrát naši hru, kdy on chce a ne, kdy si řekne hra. Jsme lidé, kteří nechtějí být ovládáni hrami, ale kteří hrajou hry ve svém zvoleném čase.\n\n
+        Marek Váchal\n
+        Má cesta k fantasy a hrám začala kolem šestého roku mého života, kdy jsem začal hrát dračí doupě se svým otcem. Dračí doupě, jiné stolní rpg hry a deskové hry hraju od té doby dodnes. Dnes již méně než dříve také hraji pc hry, převážně budovatelské strategie. Ve 14 letech jsem se poprvé setkal s indickou filosofií, což nadále určovalo můj intelektuální zájem. Po střední knihkupecké škole jsem nastoupil na vysokou školu na katedru religionistiky, samozřejmě se zaměřením na indické tradice. Paradoxně mě mé studium cizí kultury zavedlo zpět ke studiu kultury západní. Dnes mohu říci, že v pochopení cizích kultur jsme stále na začátku cestu. Ale již nyní bych rád své poznaky předal širší veřejnosti.\n\n
+        Marek Basovník\n
+    </string>
+    <string name="gameRulesText">
+        Pohyb\n
+        - Každý hráč má 11 jednotek. Ty přesouvá po polích. Všechny jednotky kromě Warpera se mohou přesunout o 1 pole za tah.\n
+        - Na jednom poli může být maximálně 6 jednotek hráče.\n
+        - Hráč nemůže přesunout své jednotky na pole obsazeném nepřítelem, pokud jsou jeho jednotky na poli také obsazeném nepřítelem.\n
+        - V jednom tahu může hráč přesunout všechny své jednotky, pokud splní podmínku 6 jednotek na poli.\n
+        - Poté, co oba hráči vykonají své pohyby nastává fáze bitev. Pokud jsou na jednom poli jednotky obou hráčů dojde k bitvě.\n\n
+        Jednotky\n
+        - Tři základní jednotky jsou:\n
+        - Křižník: palebná síla: 1, štíty: 10.\n
+        - Torpédoborec: palebná síla: 2, štíty: 10. Torpédoborci v boji mohou mít v součtu palebnou sílu nejvýše takovou, jako je počet jednotek soupeře na bojovém poli.\n
+        - Duch: palebná síla: 1, štíty: 5. Každý duch vyřadí ze souboje jednoho torpédoborce soupeře. Torpédoborec není zničen, ale neúčastní se souboje, dokud je duch naživu.\n
+        - A unikátní je:\n
+        - Warper: palebná síla: 2, štíty: 1. V pohybové fázi se může přesunout na libovolné pole.\n\n
+        Bitva\n
+        - Bitva probíhá kolově.\n
+        - Armády obou hráčů si vzájemně vyměňují zásahy, dokud armáda jednoho z hráčů neklesne na “maximální tolerované ztráty”. To je počet jednotek, který je ochoten hráč v bitvě ztratit.\n
+        - Palebná síla armády je součet palebných sil všech jednotek v armádě.\n
+        - Palebná síla se vždy soustředí do typu jednotek, kterých je v armádě zastoupeno nejvíce. V případě shody určuje cíl priorita.\n
+        - Cruiser > Destroyer > Ghost > Warper\n
+        - Každá armáda v každém kole zasáhne jednotku soupeře a odečte mu tolik bodů štítů, jaké je její palebná síla.\n
+        - Pokud v daném kole jednotka hráče ztratí všechny své štíty, tak přebytek palebné síly přejde v tom samém kole do následující jednotky podle priority. Zničená jednotka již nepřispívá svoji palebnou silou do dalšího kola. Stejně tak, pokud klesne počet soupeřových jednotek, může dojít k poklesu palebné síly u Destroyerů kvůli jejich limitu palebné síly.\n
+        - Po bitvě, pokud zůstane jakákoliv jednotka pouze zraněna, tak se opraví na své maximum.\n
+        - Pokud hráč na daném poli vyhrál bitvu, obsadí pole. Pokud dojde k čisté remíze, pole zůstává původnímu majiteli.\n
+        - Na obsazeném poli má hráč ve všech soubojích bonus +1 k palebné síle.\n\n
+        Vítězství\n
+        - Každý hráč má svou základnu. O toto pole nemůže nijak přijít (tedy trvale má zde bonus +1 k palebné síle). Pokud hráč prohraje bitvu na svém poli prohrál hru.\n
+    </string>
+    <string name="aboutGameText">nn</string>
+    <string name="donateText">Naši snahu s touto hrou můžete podpořit na stránkách platformy Buy me a coffee. Můžete nás zde podpořit jednorázově nebo nastavit měsíční podporu a stát se tak členem naší komunity. Stačí kliknout na tlačítko pod tímto textem. Za jakýkoliv dar vám moc děkujeme.</string>
 </resources>

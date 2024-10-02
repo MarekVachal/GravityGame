@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Gravity Game</string>
     <string name="discordInviteLink" translatable="false">https://discord.gg/H4hFa3vgvZ</string>
+    <string name="buyMeACoffeeLink" translatable="false">https://buymeacoffee.com/gravitygamp</string>
     <string name="email" translatable="false">gravitygame2024@gmail.com</string>
     <string name="errorToOpenLink">The link can not be open</string>
     <string name="destroyer">Destroyer</string>
@@ -59,7 +60,7 @@
     <string name="czech">Czech</string>
     <string name="showTutorial">Show tutorial</string>
     <string name="polish">Polish</string>
-    <string name="donate" translatable="false">Donate</string>
+    <string name="donateTitle" translatable="false">Donate</string>
     <string name="manyShipsOnBaseLocation">There is too many units on your base planet.</string>
     <string name="statisticTitle">Statistics</string>
     <string name="achievementsTitle" translatable="false">Achievements</string>
@@ -83,4 +84,40 @@
     <string name="battleInfoTask">When a battle occur on a planet, you will see an explosion on it. You can long click on the planet to see, how the battle went.</string>
     <string name="battleInfoTaskTitle">Battle info</string>
     <string name="errorToOpenMail">Your email app cannot be open</string>
+    <string name="aboutUsText">
+        We are two guys for whom games play a significant role in life. We met while playing the now-defunct online strategy game Red Dragon, and we still play various games together today. We enjoy exploring different new mechanisms that are being introduced in the gaming field, and we are not short on ideas ourselves. That’s why we decided to contribute our bit to this field as well. The development of our games always starts with their main mechanism, and as we test it, the game’s theme and any additional secondary mechanisms begin to take shape. Our goal is to bring new and original game mechanisms or unique combinations of existing ones. Last but not least, we aim to offer games that are not burdened by the pay-to-win concept and allow players to play when they want, not when the game dictates. We are people who do not want to be controlled by games, but who choose to play games in their own time.\n\n
+        Marek Vachal\n
+        My journey into fantasy and games began around the age of six when I started playing Dungeons &amp; Dragons with my father. I have been playing Dungeons &amp; Dragons, other tabletop RPGs, and board games ever since. I also play PC games, primarily building strategies, though less often than before. At the age of 14, I first encountered Indian philosophy, which subsequently shaped my intellectual interests. After high school focusing on bookseller, I enrolled at university in the Department of Comparative Study of Religions, naturally specializing in Indian traditions. Ironically, my study of a foreign culture led me back to exploring Western culture. Today, I can say that our understanding of foreign cultures is still in its early stages. In spite of it, I am already eager to share my insights with the wider public.\n\n
+        Marek Basovnik\n
+    </string>
+    <string name="gameRulesText">
+        Movement\n
+        - Each player has 11 units. They move units across tiles. All units except the Warper can move one tile per turn.\n
+        - A maximum of 6 units per player can occupy a single tile.\n
+        - A player cannot move their units onto a tile occupied by the enemy if their units are also on a tile occupied by the enemy.\n
+        - A player can move all their units in one turn as long as they meet the condition of having no more than 6 units per tile.\n
+        - After both players have completed their moves, the battle phase begins. If both players\' units are on the same tile, a battle ensues.\n\n
+        Units\n
+        - The three basic units are:\n
+        - Cruiser: Firepower: 1, Shields: 10.\n
+        - Destroyer: Firepower: 2, Shields: 10. Destroyers in combat can have a combined firepower no greater than the number of the opponent\'s units on the battlefield.\n
+        - Ghost: Firepower: 1, Shields: 5. Each Ghost neutralizes one of the opponent\'s Destroyers from combat. The Destroyer is not destroyed but does not participate in the battle as long as the Ghost is alive.\n
+        - The unique unit is:\n
+        - Warper: Firepower: 2, Shields: 1. In the movement phase, it can move to any tile.\n\n
+        Battle\n
+        - The battle proceeds in rounds.\n
+        - The armies of both players exchange attacks until one player\'s army reaches the "maximum tolerated losses," which is the number of units a player is willing to lose in the battle.\n
+        - The army\'s firepower is the sum of the firepower of all units in the army.\n
+        - Firepower is always focused on the type of units most represented in the army. In the case of a tie, the target is determined by priority:\n
+        - Cruiser > Destroyer > Ghost > Warper\n
+        - Each army hits an enemy unit each round, reducing its shields by the amount of its firepower.\n
+        - If a unit loses all its shields in a given round, the excess firepower is transferred to the next unit in line according to priority in the same round. A destroyed unit no longer contributes its firepower in subsequent rounds. Similarly, if the number of enemy units decreases, there may be a reduction in firepower for Destroyers due to their firepower limit.\n
+        - After a battle, any surviving but damaged units are repaired to their maximum.\n
+        - If a player wins the battle on a given tile, they occupy it. In the case of a draw, the tile remains to the original owner.\n
+        - On an occupied tile, the player has a +1 firepower bonus in all battles.\n\n
+        Victory\n
+        Each player has a base. This tile cannot be lost in any way (thus it always has a permanent +1 firepower bonus). If a player loses a battle on his base tile, he lose the game.
+    </string>
+    <string name="aboutGameText">nn</string>
+    <string name="donateText">You can support our efforts with this game on the Buy me a coffee platform. You can choose to support us with a one-time donation or set up a monthly contribution and become a member of our community. Just click the button. We are very grateful for any donation.</string>
 </resources>

@@ -37,6 +37,23 @@ class MainMenuViewModel : ViewModel() {
         }
     }
 
+    fun openBuyMeACoffeeLink(context: Context){
+        val buyMeACoffeeUrl = context.getString(R.string.buyMeACoffeeLink)
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(buyMeACoffeeUrl))
+
+        try {
+            intent.setPackage("app.buymeacoffee")
+            context.startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            try{
+                intent.setPackage(null)
+                context.startActivity(intent)
+            } catch (e: Exception){
+                Toast.makeText(context, context.getString(R.string.errorToOpenLink), Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
     fun openEmail(context: Context){
         val emailAddress = context.getString(R.string.email)
         val intent = Intent(Intent.ACTION_SENDTO).apply {
@@ -49,6 +66,12 @@ class MainMenuViewModel : ViewModel() {
         } catch (e: ActivityNotFoundException) {
             Toast.makeText(context, context.getString(R.string.errorToOpenMail), Toast.LENGTH_LONG).show()
         }
+    }
+
+    fun openTextDialog(text: Text? = null, toShow: Boolean){
+        _mainmenuUiState.value = _mainmenuUiState.value.copy(
+            showTextDialog = toShow,
+            textToShow = text)
     }
 
 }
