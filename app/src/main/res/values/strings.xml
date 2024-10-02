@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Gravity Game</string>
     <string name="discordInviteLink" translatable="false">https://discord.gg/H4hFa3vgvZ</string>
-    <string name="buyMeACoffeeLink" translatable="false">https://buymeacoffee.com/gravitygamp</string>
+    <string name="buyMeACoffeeLink" translatable="false">https://buymeacoffee.com/gravitygame</string>
     <string name="email" translatable="false">gravitygame2024@gmail.com</string>
     <string name="errorToOpenLink">The link can not be open</string>
     <string name="destroyer">Destroyer</string>
