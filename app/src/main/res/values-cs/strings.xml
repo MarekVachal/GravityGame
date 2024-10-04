@@ -17,6 +17,7 @@
     <string name="tinyMapName">Nejmenší mapa</string>
     <string name="maxLosses">Max ztráty</string>
     <string name="nextTurn">Nové kolo</string>
+    <string name="newTurn">NOVÉ KOLO</string>
     <string name="cruiserInfo">Palebná síla: 1\nŠtíty: 10\n\nZákladní jednotka bez žádných speciálních schopností.</string>
     <string name="destroyerInfo">Palebná síla: 2\nŠtíty: 10\n\nSoučet palebné síly torpédoborů je maximálně tak vysoký, jako součet počtu nepřátelských jednotek.</string>
     <string name="ghostInfo">Palená síla: 1\nŠtíty: 5\n\nKaždý duch v bitvě vyřadí jednoho nepřátelského torpédoborce z bitvy, dokud není duch zničen.</string>

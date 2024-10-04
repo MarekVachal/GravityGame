@@ -23,6 +23,7 @@ import com.example.gravitygame.ui.utils.Players
 import com.example.gravitygame.ui.utils.calculateBattle
 import com.example.gravitygame.ui.utils.MovementRecord
 import com.example.gravitygame.ui.screens.selectArmyScreen.SelectArmyUiState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,6 +40,13 @@ class BattleViewModel : ViewModel() {
     val playerData = PlayerData()
     private val mctsIterations = 500
     private val difficulty = 5
+
+    private fun showProgressIndicator(toShow: Boolean, inProgress: Boolean){
+        _movementUiState.value = _movementUiState.value.copy(
+            progressIndicatorShow = toShow,
+            progressIndicatorInProgress = inProgress
+        )
+    }
 
     fun writeDestroyedShips(isSimulation: Boolean, myLostShip: Int, enemyLostShip: Int){
         if (!isSimulation){
@@ -267,6 +275,7 @@ class BattleViewModel : ViewModel() {
     }
 
     suspend fun finishTurn(timerModel: TimerViewModel, databaseModel: DatabaseViewModel) {
+        showProgressIndicator(toShow = true, inProgress = true)
         timerModel.stopTimer()
         cleanBattleOnLocations()
         cleanHasMoved()
@@ -277,6 +286,9 @@ class BattleViewModel : ViewModel() {
         conductBattles()
         cleanEnemyAcceptableLost()
         checkEndCondition(thisPlayer = playerData.player)
+        showProgressIndicator(toShow = true, inProgress = false)
+        delay(1000)
+        showProgressIndicator(toShow = false, inProgress = false)
         if(!movementUiState.value.endOfGame){
             timerModel.resetTimer()
             timerModel.startTimer()

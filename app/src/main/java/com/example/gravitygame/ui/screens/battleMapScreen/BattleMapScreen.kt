@@ -39,6 +39,7 @@ import com.example.gravitygame.ui.screens.infoDialogsScreens.BattleInfoDialog
 import com.example.gravitygame.ui.screens.settingScreen.SettingViewModel
 import com.example.gravitygame.ui.utils.Players
 import androidx.compose.runtime.rememberCoroutineScope
+import com.example.gravitygame.ui.utils.ProgressIndicator
 import kotlinx.coroutines.launch
 
 @Composable
@@ -155,37 +156,38 @@ fun BattleMapScreen(
         }
     }
 
-    Row(
-        verticalAlignment = Alignment.Bottom,
-        horizontalArrangement = Arrangement.End
-    ) {
-        val baseLocation = if(battleModel.playerData.player == Players.PLAYER1){
-            battleModel.battleMap?.player1Base ?: return} else {battleModel.battleMap?.player2Base?: return}
-        FloatingActionButton(
-            onClick = {
-                if(!battleModel.checkShipLimitOnBase(baseLocation)){
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.manyShipsOnBaseLocation),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    coroutineScope.launch {
-                        battleModel.finishTurn(
-                            timerModel = timerModel,
-                            databaseModel = databaseModel
-                        )
-                    }
-                }
-            },
-            modifier.padding(end = 16.dp, bottom = 16.dp)
+    if(!movementUiState.progressIndicatorShow){
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.End
         ) {
-            Text(
-                text = stringResource(id = R.string.nextTurn),
-                modifier = modifier.padding(16.dp))
+            val baseLocation = if(battleModel.playerData.player == Players.PLAYER1){
+                battleModel.battleMap?.player1Base ?: return} else {battleModel.battleMap?.player2Base?: return}
+            FloatingActionButton(
+                onClick = {
+                    if(!battleModel.checkShipLimitOnBase(baseLocation)){
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.manyShipsOnBaseLocation),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        coroutineScope.launch {
+                            battleModel.finishTurn(
+                                timerModel = timerModel,
+                                databaseModel = databaseModel
+                            )
+                        }
+                    }
+                },
+                modifier.padding(end = 16.dp, bottom = 16.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.nextTurn),
+                    modifier = modifier.padding(16.dp))
+            }
         }
     }
-
 
     ArmyDialog(
         battleModel = battleModel,
@@ -195,6 +197,12 @@ fun BattleMapScreen(
         settingsModel = settingsModel,
         context = context
     )
+
+    ProgressIndicator(
+        toShow = movementUiState.progressIndicatorShow,
+        inProgress = movementUiState.progressIndicatorInProgress
+    )
+
 
 
 }

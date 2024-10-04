@@ -20,6 +20,7 @@
     <string name="tinyMapName">Tiny map</string>
     <string name="maxLosses">Max losses</string>
     <string name="nextTurn">Next turn</string>
+    <string name="newTurn">NEW TURN</string>
     <string name="cruiserInfo">Firepower: 1\nHit Points: 10\n\nThe basic unit with no extra ability.</string>
     <string name="destroyerInfo">Firepower: 2\nHit points: 10\n\nThe sum of firepower of all your destroyers is maximally as high as the sum of all enemy ships in the battle.</string>
     <string name="ghostInfo">Firepower: 1\nHit points: 5\n\nEvery ghost in the battle excludes one of the enemy destroyers from battle until the ghost is destroyed.</string>
