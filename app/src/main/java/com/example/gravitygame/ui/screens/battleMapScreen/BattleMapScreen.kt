@@ -14,6 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -37,7 +38,6 @@ import com.example.gravitygame.ui.screens.infoDialogsScreens.LocationInfoDialog
 import com.example.gravitygame.timer.TimerViewModel
 import com.example.gravitygame.ui.screens.infoDialogsScreens.BattleInfoDialog
 import com.example.gravitygame.ui.screens.settingScreen.SettingViewModel
-import com.example.gravitygame.ui.utils.Players
 import androidx.compose.runtime.rememberCoroutineScope
 import com.example.gravitygame.ui.utils.ProgressIndicator
 import kotlinx.coroutines.launch
@@ -67,13 +67,27 @@ fun BattleMapScreen(
         toShow = movementUiState.showEndOfGameDialog,
         onDismissRequest = endOfGame,
         confirmButton = endOfGame,
-        playerData = battleModel.playerData)
-    LocationInfoDialog(battleModel = battleModel, toShow = movementUiState.showLocationInfoDialog)
-    BattleInfoDialog(battleModel = battleModel, toShow = movementUiState.showBattleInfoOnLocation, location = movementUiState.battleLocationToShow)
+        battleModel = battleModel,
+        context = context
+    )
 
-    if (!movementUiState.isBattleScreenInitialized) {
-        val enemyShipList = battleModel.battleMap?.let { createAiArmy(battleMap = it, startLocation = locationListUiState.locationList.last().id) }
-        enemyShipList?.let { battleModel.initializeEnemyShipList(enemyShipList = it) }
+    LocationInfoDialog(
+        battleModel = battleModel,
+        toShow = movementUiState.showLocationInfoDialog
+    )
+
+    BattleInfoDialog(
+        battleModel = battleModel,
+        toShow = movementUiState.showBattleInfoOnLocation,
+        location = movementUiState.indexOfBattleLocationToShow,
+        context = context
+    )
+
+    LaunchedEffect (Unit){
+        if(!battleModel.playerData.isOnline){
+            val enemyShipList = createAiArmy(battleMap = battleModel.battleMap)
+            battleModel.initializeEnemyShipList(enemyShipList = enemyShipList)
+        }
         timerModel.makeTimer(
             CoroutineTimer(
                 timerModel = timerModel,
@@ -82,29 +96,54 @@ fun BattleMapScreen(
                         battleModel.finishTurn(timerModel = timerModel, databaseModel = databaseModel)
                     }
                 },
-                secondsForTurn = battleModel.battleMap?.secondsForTurn ?: 0
+                secondsForTurn = battleModel.battleMap.secondsForTurn
             )
         )
         battleModel.cleanEnemyRecord()
-        battleModel.changeBattleScreenInitialization(isInitialized = true)
     }
 
-    TutorialDialog(tutorialModel = tutorialModel, toShow = tutorialUiState.showTutorialDialog, timerModel = timerModel, settingsModel = settingsModel, context = context)
+    TutorialDialog(
+        tutorialModel = tutorialModel,
+        toShow = tutorialUiState.showTutorialDialog,
+        timerModel = timerModel,
+        settingsModel = settingsModel,
+        context = context
+    )
     if(settingsUiState.showTutorial){
         if(!tutorialUiState.battleOverviewTask){
-            tutorialModel.showTutorialDialog(toShow = true, task = Tasks.BATTLE_OVERVIEW, timerModel = timerModel)
+            tutorialModel.showTutorialDialog(
+                toShow = true,
+                task = Tasks.BATTLE_OVERVIEW,
+                timerModel = timerModel
+            )
         }
         if(!tutorialUiState.movementTask && tutorialUiState.battleOverviewTask){
-            tutorialModel.showTutorialDialog(toShow = true, task = Tasks.MOVEMENT, timerModel = timerModel)
+            tutorialModel.showTutorialDialog(
+                toShow = true,
+                task = Tasks.MOVEMENT,
+                timerModel = timerModel
+            )
         }
         if(!tutorialUiState.locationInfoTask && tutorialUiState.acceptableLostTask && !movementUiState.showArmyDialog){
-            tutorialModel.showTutorialDialog(toShow = true, task = Tasks.LOCATION_INFO, timerModel = timerModel)
+            tutorialModel.showTutorialDialog(
+                toShow = true,
+                task = Tasks.LOCATION_INFO,
+                timerModel = timerModel
+            )
         }
         if(!tutorialUiState.locationOwnerTask && movementUiState.turn == 2){
-            tutorialModel.showTutorialDialog(toShow = true, task = Tasks.LOCATION_OWNER, timerModel = timerModel)
+            tutorialModel.showTutorialDialog(
+                toShow = true,
+                task = Tasks.LOCATION_OWNER,
+                timerModel = timerModel
+            )
         }
         if(!tutorialUiState.battleInfoTask && locationListUiState.locationList.any { location -> location.wasBattleHere.value }){
-            tutorialModel.showTutorialDialog(toShow = true, task = Tasks.BATTLE_INFO, timerModel = timerModel)
+            tutorialModel.showTutorialDialog(
+                toShow = true,
+                task = Tasks.BATTLE_INFO,
+                timerModel = timerModel
+            )
         }
     }
 
@@ -121,13 +160,13 @@ fun BattleMapScreen(
         )
     }
 
-    battleModel.battleMap?.MapLayout(
+    battleModel.battleMap.MapLayout(
         modifier = modifier,
         battleModel = battleModel,
         record = movementRecord.movementRecordOfTurn,
         enemyRecord = movementRecord.enemyRecord,
         locationList = locationListUiState.locationList
-    ) ?: return
+    )
 
     Row(
         verticalAlignment = Alignment.Top,
@@ -156,16 +195,14 @@ fun BattleMapScreen(
         }
     }
 
-    if(!movementUiState.progressIndicatorShow){
+    if(!movementUiState.showProgressIndicator){
         Row(
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.End
         ) {
-            val baseLocation = if(battleModel.playerData.player == Players.PLAYER1){
-                battleModel.battleMap?.player1Base ?: return} else {battleModel.battleMap?.player2Base?: return}
             FloatingActionButton(
                 onClick = {
-                    if(!battleModel.checkShipLimitOnBase(baseLocation)){
+                    if(battleModel.hasExceededShipLimit(battleModel.findPlayerBaseLocation())){
                         Toast.makeText(
                             context,
                             context.getString(R.string.manyShipsOnBaseLocation),
@@ -192,15 +229,15 @@ fun BattleMapScreen(
     ArmyDialog(
         battleModel = battleModel,
         tutorialModel = tutorialModel,
-        show = movementUiState.showArmyDialog,
+        toShow = movementUiState.showArmyDialog,
         timerModel = timerModel,
         settingsModel = settingsModel,
         context = context
     )
 
     ProgressIndicator(
-        toShow = movementUiState.progressIndicatorShow,
-        inProgress = movementUiState.progressIndicatorInProgress
+        toShow = movementUiState.showProgressIndicator,
+        type = movementUiState.progressIndicatorType
     )
 
 

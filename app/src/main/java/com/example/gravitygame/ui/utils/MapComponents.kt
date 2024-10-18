@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.gravitygame.R
 import com.example.gravitygame.models.Location
+import com.example.gravitygame.models.Players
 import com.example.gravitygame.models.Ship
 import com.example.gravitygame.models.ShipType
 import com.example.gravitygame.ui.screens.battleMapScreen.BattleViewModel
@@ -93,7 +94,7 @@ fun MapBox(
                     battleModel.setLocationForInfo(location = location)
                 },
                 onLongClick = {
-                    battleModel.showBattleInfo(location = location, toShow = true)
+                    battleModel.checkToShowBattleInfo(location = location)
                 }
 
             )
@@ -154,25 +155,21 @@ fun MapBox(
         ArmyInfo(
             modifier = Modifier.align(Alignment.CenterEnd) /*if (battleModel.player1) Alignment.CenterEnd else Alignment.CenterStart*/,
             numberCruisers = battleModel.getNumberOfShip(
-                locationList = locationList,
                 location = location,
                 shipType = ShipType.CRUISER,
                 isForEnemy = true
             ),
             numberDestroyers = battleModel.getNumberOfShip(
-                locationList = locationList,
                 location = location,
                 shipType = ShipType.DESTROYER,
                 isForEnemy = true
             ),
             numberGhosts = battleModel.getNumberOfShip(
-                locationList = locationList,
                 location = location,
                 shipType = ShipType.GHOST,
                 isForEnemy = true
             ),
             numberWarpers = battleModel.getNumberOfShip(
-                locationList = locationList,
                 location = location,
                 shipType = ShipType.WARPER,
                 isForEnemy = true
@@ -186,25 +183,21 @@ fun MapBox(
         ArmyInfo(
             modifier = Modifier.align(Alignment.CenterStart),//if (battleModel.player1) Alignment.CenterStart else Alignment.CenterEnd
             numberCruisers = battleModel.getNumberOfShip(
-                locationList = locationList,
                 location = location,
                 shipType = ShipType.CRUISER,
                 isForEnemy = false
             ),
             numberDestroyers = battleModel.getNumberOfShip(
-                locationList = locationList,
                 location = location,
                 shipType = ShipType.DESTROYER,
                 isForEnemy = false
             ),
             numberGhosts = battleModel.getNumberOfShip(
-                locationList = locationList,
                 location = location,
                 shipType = ShipType.GHOST,
                 isForEnemy = false
             ),
             numberWarpers = battleModel.getNumberOfShip(
-                locationList = locationList,
                 location = location,
                 shipType = ShipType.WARPER,
                 isForEnemy = false

@@ -8,7 +8,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import com.example.gravitygame.ui.utils.Players
+import com.example.gravitygame.ui.utils.BattleResultEnum
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
@@ -25,16 +25,36 @@ data class Location(
     val owner: MutableState<Players> = mutableStateOf(Players.NONE),
     val wasBattleHere: MutableState<Boolean> = mutableStateOf(false),
 
-) {
+    ) {
     var accessible by mutableStateOf(false)
     val originalMyShipList: MutableMap<ShipType, Int> = mutableMapOf()
     val originalEnemyShipList: MutableMap<ShipType, Int> = mutableMapOf()
     val mapMyLost: MutableMap<ShipType, Int> = mutableMapOf()
     val mapEnemyLost: MutableMap<ShipType, Int> = mutableMapOf()
-    var lastBattleResult: String = ""
+    lateinit var lastBattleResult: BattleResultEnum
 
     fun getConnectionsList(): List<Int>{
-        return connections.toList()
+        return connections
+    }
+
+    fun countShipsByType(shipType: ShipType): Int {
+        return myShipList.count { ship -> ship.type == shipType }
+    }
+
+    fun countEnemyShipsByType(shipType: ShipType): Int {
+        return enemyShipList.count { ship -> ship.type == shipType }
+    }
+
+    fun countMovableShips(shipType: ShipType): Int {
+        return myShipList.count { ship -> ship.type == shipType && !ship.hasMoved }
+    }
+
+    fun hasExceededShipLimit(shipLimit: Int): Boolean {
+        return myShipList.size > shipLimit
+    }
+
+    fun canAddMoreShips(shipLimit: Int): Boolean {
+        return myShipList.size < shipLimit
     }
 }
 

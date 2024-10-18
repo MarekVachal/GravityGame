@@ -11,6 +11,5 @@ data class StatisticUiState (
     val countOfWins: Int = 0,
     val countOfLost: Int = 0,
     val countOfDraw: Int = 0,
-    val listBattleResult: List<BattleResult> = emptyList(),
-    val initialize: Boolean = false
+    val listBattleResult: List<BattleResult> = emptyList()
 )

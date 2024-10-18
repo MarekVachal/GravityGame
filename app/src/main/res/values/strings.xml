@@ -43,15 +43,15 @@
     <string name="movementTaskTitle">Moving with units</string>
     <string name="locationInfoTitle">Display location</string>
     <string name="locationOwnerTitle">Owner of location</string>
-    <string name="infoShipTask">Everywhere in the game, you can tap on a unit name to display information about it.</string>
-    <string name="numberShipsTask">Now, you are going to choose units for your army for an incoming battle. There are four units types, but one type is unique and you have one unit of the type in your army by default. You can choose from the remaining three units type to 10 units. It means you will fight with an army containing 11 units. When you select your units hit an OK button.</string>
+    <string name="infoShipTask">If you want to learn more information about the unit, click on its name.</string>
+    <string name="numberShipsTask">For the upcoming battle, you need to select units for your army. There are four types of units. One type is the unique Warper unit, which is assigned to the army by default. Therefore, you need to choose 10 out of the remaining 11 units. Once you have assembled your army, confirm your selection with the button.</string>
     <string name="battleOverviewTitle">Battle overview</string>
-    <string name="battleOverviewTask">Now, the battle starts. When you play against AI, always play for the blue player starting on the left side of the battle map. There is your home planet, where all your units are located. To win a battle you have to conquer an enemy base on his home planet, which is located on the right side of the battle map. On the contrary, when an opponent conquers your base, you lose the battle.</string>
-    <string name="movementTask">To move your units tap on a planet where you have at least one unit and move your finger on a planet you want to move your units. When you tap the planet you move from, planets you can move to will be highlighted by green round. At the beginning of the battle, all planets will be highlighted, because your warper can move everywhere, but the rest of your units can move only to adjustment planets. Try it.</string>
-    <string name="sendShipsTask">When you select a planet you move from and a planet you move to, you have to select units that will move. The first column displays enemy units on the planet you want to move to, the second column displays your units able to move in this turn on the planet you select to move from. The last column displays the overall number of units on the planet you move to. It means the last column displays units that are already on the planet plus units you choose to move there. You can\'t move an unlimited number of units on a planet. Every planet has a limit of 6 units.</string>
-    <string name="acceptableLossesTask">Aside from selecting units, you can also choose how many units you are willing to sacrifice when a battle with an enemy occurs on the planet. You do that by a slider and the number is a number of units. The battle runs in turns where units are firing at each other with their firepower and the battle ends when one army reaches its acceptable losses. When an army reaches this limit units withdraw from the battle. They stand on the planet and next turn you can choose what to do with them. The battle can end with a draw when both armies reach their acceptable losses at the same time.</string>
-    <string name="locationInfoTask">You can also check the details of every planet. You can just tap on the planet to open a table, where the numbers of units in both armies are. You can there also change your acceptable losses on that planet any time you want to.</string>
-    <string name="locationOwnerTask">Now you can see planets you move to are marked by flag in you color. It shows the planet is yours, which has impact in battle. When you fight on planet you posses your army has 1 firepower higher.</string>
+    <string name="battleOverviewTask">The battle begins now. If you are playing against AI, your army is blue. Your home planet with a base is on the left side of the battlefield, where your units are also positioned. To win the battle, you must conquer the enemy\’s home planet, which is on the right side of the battlefield. However, if the enemy conquers your home planet, you lose.</string>
+    <string name="movementTask">To move your units, place your finger on the planet where you have at least one unit and drag it to the planet you want to move to. When you place your finger on the planet from which you\'re moving, all available positions will be marked with a green circle. At the start of the battle, all planets will be marked this way, because the unique Warper unit can move anywhere. However, the remaining types of units can only move to adjacent planets.</string>
+    <string name="sendShipsTask">After selecting the movement from one planet to another, you also need to choose the number of units to move. The first column shows the number of enemy units on the selected planet. The second column shows the number of units you can move. The third column shows the total number of units that will be on the selected planet after the move, including both the units that were there from the previous round and the units you\'re moving. There can be no more than 6 units per player on a planet simultaneously.</string>
+    <string name="acceptableLossesTask">In addition to selecting units, you must also choose how many units you are willing to sacrifice in the battle. This is done using a slider, and the value represents the number of units. The battle itself takes place in rounds, where the units exchange shots, and it ends when one of the armies reaches its tolerated losses. When an army reaches its maximum tolerated losses, it withdraws from the battle. The withdrawn army remains on the planet, and the player can decide what to do with them in the next turn. The battle can also end in a draw if both armies reach their tolerated losses.</string>
+    <string name="locationInfoTask">If you want to view information about a planet, click directly on it. After clicking, you will see the number of units from both armies on the selected planet. In this window, you can also change your tolerated losses at any time.</string>
+    <string name="locationOwnerTask">The colour of the flag indicates the owner of the planet. If a blue flag is displayed next to the planet, it is under your control. If a battle takes place on a planet with the colour of your flag, the strength of your army is increased by 1.</string>
     <string name="gameRulesTitle">Game rules</string>
     <string name="aboutGameTitle">About game</string>
     <string name="aboutUsTitle">About us</string>
@@ -81,8 +81,14 @@
     <string name="enemyShipsLost">Enemy units lost</string>
     <string name="myShipsBeforeBattle">My units before battle</string>
     <string name="myShipsLost">My units lost</string>
-    <string name="battleResultOnLocation">"Last battle on the location you %1$s"</string>
-    <string name="battleInfoTask">When a battle occur on a planet, you will see an explosion on it. You can long click on the planet to see, how the battle went.</string>
+    <string name="battleResultOnLocation">"Last battle on the location you have %1$s"</string>
+    <string name="winBattleResultForBattleInfo">won</string>
+    <string name="lostBattleResultForBattleInfo">lost</string>
+    <string name="drawBattleResultForBattleInfo">drew></string>
+    <string name="winNominative">Win</string>
+    <string name="lostNominative">Lost</string>
+    <string name="drawNominative">Draw</string>
+    <string name="battleInfoTask">If a battle has taken place on a planet, an explosion symbol will appear on it. You can long-press on such a planet to view information about the battle\'s outcome.</string>
     <string name="battleInfoTaskTitle">Battle info</string>
     <string name="errorToOpenMail">Your email app cannot be open</string>
     <string name="aboutUsText">
@@ -121,4 +127,6 @@
     </string>
     <string name="aboutGameText">nn</string>
     <string name="donateText">You can support our efforts with this game on the Buy me a coffee platform. You can choose to support us with a one-time donation or set up a monthly contribution and become a member of our community. Just click the button. We are very grateful for any donation.</string>
+    <string name="aiCalculate">Calculating opponent move.</string>
+    <string name="waitingForPlayer">Waiting for opponent move</string>
 </resources>

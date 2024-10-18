@@ -1,6 +1,8 @@
 package com.example.gravitygame.ui.screens.battleMapScreen
 
 import androidx.compose.ui.geometry.Rect
+import com.example.gravitygame.models.ShipType
+import com.example.gravitygame.ui.utils.ProgressIndicatorType
 
 data class MovementUiState(
 
@@ -9,25 +11,20 @@ data class MovementUiState(
     val endPosition: Int? = null,
     val showArmyDialog: Boolean = false,
     val isWarperPresent: Boolean = false,
-    val showCruiserInfoDialog: Boolean = false,
-    val showDestroyerInfoDialog: Boolean = false,
-    val showGhostInfoDialog: Boolean = false,
-    val showWarperInfoDialog: Boolean = false,
+    val showShipInfoDialog: Boolean = false,
+    val shipTypeToShow: ShipType = ShipType.CRUISER,
     val showEndOfGameDialog: Boolean = false,
     val showLocationInfoDialog: Boolean = false,
     val locationForInfo : Int = 0,
     val mapBoxCoordinates: Map<Int, Rect> = mutableMapOf(),
-    val turn: Int = 1,
+    val turn: Int = 0,
     val endOfGame: Boolean = false,
-    val isArmyDialogInitialized: Boolean = false,
-    val isBattleScreenInitialized: Boolean = false,
-    val isLocationInfoInitialized: Boolean = false,
     val myLostShips: Int = 0,
     val enemyShipsDestroyed: Int = 0,
     val showBattleInfoOnLocation: Boolean = false,
-    val battleLocationToShow: Int = 0,
-    val progressIndicatorShow: Boolean = false,
-    val progressIndicatorInProgress: Boolean = false,
+    val indexOfBattleLocationToShow: Int = 0,
+    val showProgressIndicator: Boolean = false,
+    val progressIndicatorType: ProgressIndicatorType = ProgressIndicatorType.NEW_TURN,
 
     val cruiserOnPosition: Int = 0,
     val destroyerOnPosition: Int = 0,

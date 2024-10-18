@@ -8,7 +8,7 @@ import com.example.gravitygame.models.Ship
 import com.example.gravitygame.models.Warper
 import kotlin.random.Random
 
-fun createAiArmy(battleMap: BattleMap, startLocation: Int): List<Ship>{
+fun createAiArmy(battleMap: BattleMap): List<Ship>{
     val enemyArmy: MutableList<Ship> = mutableListOf(Warper(0))
     val maxUnits = battleMap.shipLimitOnMap - 1
     var cruisers: Int
@@ -26,11 +26,6 @@ fun createAiArmy(battleMap: BattleMap, startLocation: Int): List<Ship>{
         cruisers = cruisers,
         destroyers = destroyers,
         ghosts = ghosts)
-
-    enemyArmy.forEach { ship ->
-        ship.currentPosition = startLocation
-        ship.startingPosition = startLocation
-    }
     return enemyArmy.toList()
 }
 

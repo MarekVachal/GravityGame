@@ -23,10 +23,6 @@ class DatabaseViewModel (
         _statisticsUiState.value = _statisticsUiState.value.copy(battleResult = null)
     }
 
-    fun changeInitializeState(isInitialized: Boolean){
-        _statisticsUiState.value = _statisticsUiState.value.copy(initialize = isInitialized)
-    }
-
     fun loadStatistic(){
         getTotalBattles()
         getAverageTurn()
@@ -36,7 +32,6 @@ class DatabaseViewModel (
         getCountOfLost()
         getCountOfWins()
         getAllResults()
-        changeInitializeState(true)
     }
 
     fun insertBattleResult(battleResult: BattleResult){

@@ -6,10 +6,10 @@ import com.example.gravitygame.models.Location
 import com.example.gravitygame.models.Ship
 import com.example.gravitygame.models.ShipType
 import com.example.gravitygame.models.deepCopy
-import com.example.gravitygame.ui.utils.Players
+import com.example.gravitygame.models.Players
 import com.example.gravitygame.ui.utils.calculateBattle
 import com.example.gravitygame.ui.screens.battleMapScreen.BattleViewModel
-import com.example.gravitygame.ui.utils.PlayerData
+import com.example.gravitygame.models.PlayerData
 import kotlinx.coroutines.*
 
 data class GameState(

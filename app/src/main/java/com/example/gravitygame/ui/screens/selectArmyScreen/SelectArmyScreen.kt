@@ -62,18 +62,23 @@ fun SelectArmyScreen(
     val buttonWeight = 1f
     val column3Weight = 0.5f
 
-    if (!selectArmyUiState.initialized) {
-        selectArmyModel.cleanUiStates()
-        selectArmyModel.initialization(true)
-    }
-    TutorialDialog(tutorialModel = tutorialModel, toShow = tutorialUiState.showTutorialDialog, timerModel = null, settingsModel = settingsModel, context = context)
-    if(!tutorialUiState.infoShipTask && tutorialUiState.numberShipsTask && settingsUiState.showTutorial){
-        tutorialModel.showTutorialDialog(toShow = true, task = Tasks.INFO_SHIP)
+    TutorialDialog(
+        tutorialModel = tutorialModel,
+        toShow = tutorialUiState.showTutorialDialog,
+        timerModel = null,
+        settingsModel = settingsModel,
+        context = context
+    )
+
+    if(settingsUiState.showTutorial){
+        if(!tutorialUiState.infoShipTask && tutorialUiState.numberShipsTask){
+            tutorialModel.showTutorialDialog(toShow = true, task = Tasks.INFO_SHIP)
+        }
+        if(!tutorialUiState.numberShipsTask){
+            tutorialModel.showTutorialDialog(true, Tasks.NUMBER_SHIPS)
+        }
     }
 
-    if(!tutorialUiState.numberShipsTask && settingsUiState.showTutorial){
-        tutorialModel.showTutorialDialog(true, Tasks.NUMBER_SHIPS)
-    }
 
     ShipInfoDialog(
         shipType = selectArmyUiState.shipType,
@@ -222,8 +227,11 @@ fun SelectArmyScreen(
         FloatingActionButton(
             onClick = {
                 if (selectArmyModel.checkArmySize(battleModel)) {
-                    battleModel.createArmyList(selectArmyUiState = selectArmyModel.selectArmyUiState.value)
+                    battleModel.createArmyList(
+                        selectArmyUiState = selectArmyModel.selectArmyUiState.value
+                    )
                     onNextButtonClicked()
+                    selectArmyModel.cleanUiStates()
                 } else {
                     Toast.makeText(
                         context,

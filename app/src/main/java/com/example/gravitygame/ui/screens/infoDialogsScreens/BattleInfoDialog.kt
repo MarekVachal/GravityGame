@@ -1,5 +1,6 @@
 package com.example.gravitygame.ui.screens.infoDialogsScreens
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +45,7 @@ fun BattleInfoDialog(
     battleModel: BattleViewModel,
     toShow: Boolean,
     location: Int,
+    context: Context,
     onDismissRequest: () -> Unit = { battleModel.showBattleInfo(location = location, toShow = false) }
 ) {
     val movementUiState by battleModel.movementUiState.collectAsState()
@@ -79,7 +81,8 @@ fun BattleInfoDialog(
                         ){
                             Text(text = stringResource(
                                 id = R.string.battleResultOnLocation,
-                                locationListUiState.locationList[location].lastBattleResult
+                                battleModel.callBattleResultInBattleInfo(locationListUiState.locationList[location].lastBattleResult, context)
+
                             ))
                         }
                         HorizontalDivider()
@@ -222,28 +225,29 @@ private fun BattleInfoRow(
                 textAlign = TextAlign.Start,
                 modifier = Modifier
                     .clickable {
-                        battleModel.showShipInfoDialog(true, shipType)
+                        battleModel.changeShipTypeToShow(shipType = shipType)
+                        battleModel.showShipInfoDialog(true)
                     }
             )
         }
         Text(
-            text = locationList[movementUiState.battleLocationToShow].originalEnemyShipList[shipType].toString(),
+            text = locationList[movementUiState.indexOfBattleLocationToShow].originalEnemyShipList[shipType].toString(),
             textAlign = TextAlign.Center,
             modifier = modifier.weight(weightOfNumbers)
         )
         Text(
-            text = locationList[movementUiState.battleLocationToShow].mapEnemyLost[shipType].toString(),
+            text = locationList[movementUiState.indexOfBattleLocationToShow].mapEnemyLost[shipType].toString(),
             textAlign = TextAlign.Center,
             modifier = modifier.weight(weightOfNumbers)
         )
         VerticalDivider()
         Text(
-            text = locationList[movementUiState.battleLocationToShow].originalMyShipList[shipType].toString(),
+            text = locationList[movementUiState.indexOfBattleLocationToShow].originalMyShipList[shipType].toString(),
             textAlign = TextAlign.Center,
             modifier = modifier.weight(weightOfNumbers)
         )
         Text(
-            text = locationList[movementUiState.battleLocationToShow].mapMyLost[shipType].toString(),
+            text = locationList[movementUiState.indexOfBattleLocationToShow].mapMyLost[shipType].toString(),
             textAlign = TextAlign.Center,
             modifier = modifier.weight(weightOfNumbers)
         )

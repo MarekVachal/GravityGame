@@ -2,6 +2,8 @@ package com.example.gravitygame.ui.utils
 
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.example.gravitygame.models.Location
+import com.example.gravitygame.models.PlayerData
+import com.example.gravitygame.models.Players
 import com.example.gravitygame.models.Ship
 import com.example.gravitygame.models.ShipType
 import com.example.gravitygame.models.deepCopy

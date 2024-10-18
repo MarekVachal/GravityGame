@@ -3,6 +3,7 @@ package com.example.gravitygame.database
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import com.example.gravitygame.ui.utils.BattleResultEnum
 
 @Dao
 interface BattleResultDao {
@@ -25,13 +26,13 @@ interface BattleResultDao {
     suspend fun getTotalBattleResults(): Int
 
     @Query("SELECT COUNT(*) FROM battle_results WHERE result = :resultType")
-    suspend fun getCountOfWins(resultType: String = "win"): Int
+    suspend fun getCountOfWins(resultType: BattleResultEnum = BattleResultEnum.WIN): Int
 
     @Query("SELECT COUNT(*) FROM battle_results WHERE result = :resultType")
-    suspend fun getCountOfLost(resultType: String = "lost"): Int
+    suspend fun getCountOfLost(resultType: BattleResultEnum = BattleResultEnum.LOSE): Int
 
     @Query("SELECT COUNT(*) FROM battle_results WHERE result = :resultType")
-    suspend fun getCountOfDraw(resultType: String = "draw"): Int
+    suspend fun getCountOfDraw(resultType: BattleResultEnum = BattleResultEnum.DRAW): Int
 
 
 }

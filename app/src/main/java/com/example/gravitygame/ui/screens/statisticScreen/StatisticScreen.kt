@@ -1,5 +1,6 @@
 package com.example.gravitygame.ui.screens.statisticScreen
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +22,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -39,12 +41,16 @@ import com.example.gravitygame.ui.utils.formatDate
 fun StatisticScreen(
     modifier: Modifier = Modifier,
     databaseModel: DatabaseViewModel,
+    statisticModel: StatisticViewModel,
+    context: Context,
     onBackButtonClick: () -> Unit
 ) {
     
     val statisticUiState by databaseModel.statisticUiState.collectAsState()
 
-    if(!statisticUiState.initialize) databaseModel.loadStatistic()
+    LaunchedEffect(Unit) {
+        databaseModel.loadStatistic()
+    }
 
     Image(
         painter = painterResource(id = R.drawable.main_menu_back),
@@ -62,8 +68,8 @@ fun StatisticScreen(
             onClick = { onBackButtonClick() }
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.logout),
-                contentDescription = "Logout icon",
+                painter = painterResource(id = R.drawable.check),
+                contentDescription = "Check icon",
                 tint = Color.Unspecified)
         }
     }
@@ -82,7 +88,7 @@ fun StatisticScreen(
                     contentPadding = PaddingValues(8.dp)
                 ){
                     items(statisticUiState.listBattleResult.reversed()) { item ->
-                        BattleResultItem(battleResult = item, onClick = { databaseModel.onItemClick(battleResult = item) })
+                        BattleResultItem(battleResult = item, onClick = { databaseModel.onItemClick(battleResult = item) }, statisticModel = statisticModel, context = context)
                     }
                 }
             }
@@ -98,7 +104,11 @@ fun StatisticScreen(
                     statisticUiState.battleResult?.let {
                         DetailStatistics(
                             battleResult = it,
-                            onDetailStatisticButtonClick = {databaseModel.nullBattleResult()})}
+                            onDetailStatisticButtonClick = {databaseModel.nullBattleResult()},
+                            statisticModel = statisticModel,
+                            context = context
+                        )
+                    }
                 }
             }
         }
@@ -109,6 +119,8 @@ fun StatisticScreen(
 private fun BattleResultItem(
     battleResult: BattleResult,
     modifier: Modifier = Modifier,
+    statisticModel: StatisticViewModel,
+    context: Context,
     onClick: () -> Unit
 ){
     Column (
@@ -118,7 +130,7 @@ private fun BattleResultItem(
             .width(IntrinsicSize.Max)
     ){
         Text(text = stringResource(id = R.string.date, formatDate(battleResult.timestamp)))
-        Text(text = stringResource(id = R.string.battleResult, battleResult.result))
+        Text(text = stringResource(id = R.string.battleResult, statisticModel.callBattleResultForStatistic(battleResult.result, context)))
         HorizontalDivider()
     }
 }
@@ -127,6 +139,8 @@ private fun BattleResultItem(
 private fun DetailStatistics(
     modifier: Modifier = Modifier,
     battleResult: BattleResult,
+    statisticModel: StatisticViewModel,
+    context: Context,
     onDetailStatisticButtonClick: () -> Unit
 ){
     Column (
@@ -150,7 +164,7 @@ private fun DetailStatistics(
             }
         }
         HorizontalDivider()
-        Text(text = stringResource(id = R.string.battleResult, battleResult.result))
+        Text(text = stringResource(id = R.string.battleResult, statisticModel.callBattleResultForStatistic(battleResult.result, context)))
         Text(text = stringResource(id = R.string.turns, battleResult.turn))
         Text(text = stringResource(id = R.string.myShipLost, battleResult.myShipLost))
         Text(text = stringResource(id = R.string.enemyShipDestroyed, battleResult.enemyShipDestroyed))

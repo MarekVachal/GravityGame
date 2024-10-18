@@ -1,5 +1,6 @@
 package com.example.gravitygame.ui.screens.infoDialogsScreens
 
+import android.content.Context
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -7,16 +8,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.example.gravitygame.R
-import com.example.gravitygame.ui.utils.PlayerData
+import com.example.gravitygame.ui.screens.battleMapScreen.BattleViewModel
 
 @Composable
 fun EndOfGameDialog(
     toShow: Boolean,
-    playerData: PlayerData,
     modifier: Modifier = Modifier,
+    battleModel: BattleViewModel,
+    context: Context,
     onDismissRequest: () -> Unit,
     confirmButton: () -> Unit
 ){
@@ -33,24 +34,13 @@ fun EndOfGameDialog(
             },
             title = {
                 Text(
-                    text = if (playerData.lost) {
-                        stringResource(id = R.string.titleLostGame)
-                    } else if (playerData.win) {
-                        stringResource(id = R.string.titleWinGame)
-                    } else {
-                        stringResource(id = R.string.titleDrawGame)
-                    }
+                    text = battleModel.setEndOfGameText(isTitle = true, context = context),
+                    textAlign = TextAlign.Center
                 )
             },
             text = {
                 Text(
-                    text = if (playerData.lost) {
-                        stringResource(id = R.string.lostGame)
-                    } else if (playerData.win) {
-                        stringResource(id = R.string.winGame)
-                    } else {
-                        stringResource(id = R.string.drawGame)
-                    },
+                    text = battleModel.setEndOfGameText(isTitle = false, context = context),
                     textAlign = TextAlign.Justify
                 )
             },

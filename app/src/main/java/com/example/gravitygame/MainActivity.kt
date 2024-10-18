@@ -42,6 +42,7 @@ import com.example.gravitygame.ui.screens.selectMapScreen.SelectMapScreen
 import com.example.gravitygame.ui.screens.settingScreen.SettingScreen
 import com.example.gravitygame.ui.screens.settingScreen.SettingViewModel
 import com.example.gravitygame.ui.screens.statisticScreen.StatisticScreen
+import com.example.gravitygame.ui.screens.statisticScreen.StatisticViewModel
 import com.example.gravitygame.ui.theme.GravityGameTheme
 
 class MainActivity : ComponentActivity() {
@@ -73,14 +74,16 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
 
     val navController: NavHostController = rememberNavController()
     val repository = BattleRepository(database.battleResultDao())
-    val databaseModel: DatabaseViewModel = ViewModelProvider(owner,
-        ViewModelFactory(repository))[DatabaseViewModel::class.java]
+    val databaseModel: DatabaseViewModel = ViewModelProvider(
+        owner, ViewModelFactory(repository)
+    )[DatabaseViewModel::class.java]
     val battleModel: BattleViewModel = viewModel()
     val selectArmyModel: SelectArmyViewModel = viewModel()
     val timerModel: TimerViewModel = viewModel()
     val tutorialModel: TutorialViewModel = viewModel()
     val settingModel: SettingViewModel = viewModel()
     val mainMenuModel: MainMenuViewModel = viewModel()
+    val statisticModel: StatisticViewModel = viewModel()
     val context = LocalContext.current
     loadSettings(context = context, settingsModel = settingModel)
 
@@ -90,7 +93,6 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
             SelectArmyScreen(
                 onNextButtonClicked = {
                     navController.navigate(Destinations.BATTLEMAP.name)
-                    battleModel.changeBattleScreenInitialization(isInitialized = false)
                 },
                 battleModel = battleModel,
                 selectArmyModel = selectArmyModel,
@@ -99,6 +101,7 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
                 settingsModel = settingModel
             )
         }
+
         composable(route = Destinations.BATTLEMAP.name) {
             BattleMapScreen(
                 battleModel = battleModel,
@@ -115,16 +118,16 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
                 databaseModel = databaseModel
             )
         }
+
         composable(route = Destinations.SELECTMAP.name) {
             SelectMapScreen(
                 battleModel = battleModel,
                 onNextButtonClicked = {
                     navController.navigate(Destinations.SELECTARMY.name)
-                    selectArmyModel.initialization(false)
                 }
             )
-
         }
+
         composable(route = Destinations.MAINMENU.name){
             MainMenuScreen(
                 onBattleButtonClick = {navController.navigate(Destinations.SELECTMAP.name)},
@@ -135,6 +138,7 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
                 onAccountClick = { navController.navigate(Destinations.ACCOUNT.name) }
             )
         }
+
         composable(route = Destinations.SETTINGS.name){
             SettingScreen(
                 context = context,
@@ -142,23 +146,27 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
                 settingModel = settingModel
             )
         }
+
         composable(route = Destinations.ACCOUNT.name){
             AccountScreen(
                 onStatisticButtonClick = { navController.navigate(Destinations.STATISTICS.name) },
                 onAchievementsButtonClick = { navController.navigate(Destinations.ACHIEVEMENTS.name) }
             )
         }
+
         composable(route = Destinations.STATISTICS.name){
             StatisticScreen(
                 databaseModel = databaseModel,
                 onBackButtonClick = {
                     navController.navigate(Destinations.MAINMENU.name)
-                    databaseModel.changeInitializeState(false)
-                }
+                },
+                statisticModel = statisticModel,
+                context = context
             )
         }
     }
 }
+
 @Suppress("DEPRECATION")
 private fun closeAndroidBars(window: Window){
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {

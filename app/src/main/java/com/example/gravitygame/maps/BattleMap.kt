@@ -29,3 +29,7 @@ abstract class BattleMap {
         locationList: List<Location>
     )
 }
+
+enum class BattleMapEnum{
+    TINY
+}

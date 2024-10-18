@@ -2,12 +2,12 @@ package com.example.gravitygame.database
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.Date
+import com.example.gravitygame.ui.utils.BattleResultEnum
 
 @Entity(tableName = "battle_results")
 data class BattleResult(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val result: String,
+    val result: BattleResultEnum,
     val timestamp: Long,
     val myShipLost: Int,
     val enemyShipDestroyed: Int,

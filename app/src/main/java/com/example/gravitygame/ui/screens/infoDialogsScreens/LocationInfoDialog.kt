@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -43,39 +44,20 @@ fun LocationInfoDialog(
     toShow: Boolean,
     onDismissRequest: () -> Unit = { battleModel.closeLocationInfoDialog() },
     closeShipInfoDialog: () -> Unit = {
-        battleModel.showShipInfoDialog(false, ShipType.CRUISER)
+        battleModel.showShipInfoDialog(false)
 
     }
 
 ) {
     val movementUiState by battleModel.movementUiState.collectAsState()
-    val locationListUiState by battleModel.locationListUiState.collectAsState()
     val weightOfName = 0.3f
     val weightOfNumbers = 0.2f
     val weightOfButtons = 0.1f
     val padding = 16.dp
 
     ShipInfoDialog(
-        shipType = ShipType.CRUISER,
-        toShow = movementUiState.showCruiserInfoDialog,
-        onDismissRequest = closeShipInfoDialog,
-        confirmButton = closeShipInfoDialog
-    )
-    ShipInfoDialog(
-        shipType = ShipType.DESTROYER,
-        toShow = movementUiState.showDestroyerInfoDialog,
-        onDismissRequest = closeShipInfoDialog,
-        confirmButton = closeShipInfoDialog
-    )
-    ShipInfoDialog(
-        shipType = ShipType.GHOST,
-        toShow = movementUiState.showGhostInfoDialog,
-        onDismissRequest = closeShipInfoDialog,
-        confirmButton = closeShipInfoDialog
-    )
-    ShipInfoDialog(
-        shipType = ShipType.WARPER,
-        toShow = movementUiState.showWarperInfoDialog,
+        shipType = movementUiState.shipTypeToShow,
+        toShow = movementUiState.showShipInfoDialog,
         onDismissRequest = closeShipInfoDialog,
         confirmButton = closeShipInfoDialog
     )
@@ -85,10 +67,11 @@ fun LocationInfoDialog(
             onDismissRequest = onDismissRequest,
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            if (!movementUiState.isLocationInfoInitialized) {
+
+            LaunchedEffect (Unit) {
                 battleModel.initializeLocationDialogValues()
-                battleModel.changeLocationInfoInitialization(isInitialized = true)
             }
+
             Card(
                 modifier = modifier
                     .verticalScroll(rememberScrollState())
@@ -137,7 +120,6 @@ fun LocationInfoDialog(
                                 startLocation = movementUiState.locationForInfo,
                                 endLocation = movementUiState.locationForInfo,
                                 isWarperPresent = movementUiState.isWarperPresent,
-                                locationList = locationListUiState.locationList,
                                 battleModel = battleModel,
                                 movementUiState = movementUiState,
                                 weightOfName = weightOfName,
@@ -155,7 +137,6 @@ fun LocationInfoDialog(
                                 startLocation = movementUiState.locationForInfo,
                                 endLocation = movementUiState.locationForInfo,
                                 isWarperPresent = movementUiState.isWarperPresent,
-                                locationList = locationListUiState.locationList,
                                 battleModel = battleModel,
                                 movementUiState = movementUiState,
                                 weightOfName = weightOfName,
@@ -173,7 +154,6 @@ fun LocationInfoDialog(
                                 startLocation = movementUiState.locationForInfo,
                                 endLocation = movementUiState.locationForInfo,
                                 isWarperPresent = movementUiState.isWarperPresent,
-                                locationList = locationListUiState.locationList,
                                 battleModel = battleModel,
                                 movementUiState = movementUiState,
                                 weightOfName = weightOfName,
@@ -191,7 +171,6 @@ fun LocationInfoDialog(
                                 startLocation = movementUiState.locationForInfo,
                                 endLocation = movementUiState.locationForInfo,
                                 isWarperPresent = movementUiState.isWarperPresent,
-                                locationList = locationListUiState.locationList,
                                 battleModel = battleModel,
                                 movementUiState = movementUiState,
                                 weightOfName = weightOfName,

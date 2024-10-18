@@ -1,10 +1,13 @@
 package com.example.gravitygame.ui.utils
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -20,9 +23,9 @@ import com.example.gravitygame.R
 
 @Composable
 fun ProgressIndicator(
+    modifier: Modifier = Modifier,
     toShow: Boolean,
-    inProgress: Boolean,
-    modifier: Modifier = Modifier
+    type: ProgressIndicatorType
 ) {
     if (toShow) {
         Row(
@@ -41,17 +44,46 @@ fun ProgressIndicator(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ){
-                    if (inProgress){
-                        CircularProgressIndicator(
-                            modifier = modifier.size(96.dp),
-                            color = Color.Black,
-                            trackColor = Color.Red
-                        )
-                    } else {
-                        Text(text = stringResource(id = R.string.newTurn))
+                    when(type) {
+                        ProgressIndicatorType.AI_CALCULATE -> {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ){
+                                MyProgressIndicator()
+                                Spacer(modifier = modifier.height(4.dp))
+                                Text(text = stringResource(id = R.string.aiCalculate))
+                            }
+                        }
+                        ProgressIndicatorType.NEW_TURN -> {
+                            Text(text = stringResource(id = R.string.newTurn))
+                        }
+                        ProgressIndicatorType.WAITING_FOR_PLAYER -> {
+                            Column{
+                                MyProgressIndicator()
+                                Spacer(modifier = modifier.height(4.dp))
+                                Text(text = stringResource(id = R.string.waitingForPlayer))
+                            }
+                        }
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun MyProgressIndicator(
+    modifier: Modifier = Modifier
+) {
+    CircularProgressIndicator(
+        modifier = modifier.size(96.dp),
+        color = Color.Black,
+        trackColor = Color.Red
+    )
+}
+
+enum class ProgressIndicatorType{
+    AI_CALCULATE,
+    NEW_TURN,
+    WAITING_FOR_PLAYER
 }

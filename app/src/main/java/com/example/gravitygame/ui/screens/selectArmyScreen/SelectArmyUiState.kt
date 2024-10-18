@@ -7,6 +7,5 @@ data class SelectArmyUiState(
     val numberDestroyers: Int = 0,
     val numberGhosts: Int = 0,
     val showShipInfoDialog: Boolean = false,
-    val shipType: ShipType = ShipType.CRUISER,
-    val initialized: Boolean = false
+    val shipType: ShipType = ShipType.CRUISER
 )

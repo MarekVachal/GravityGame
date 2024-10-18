@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -39,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.gravitygame.R
-import com.example.gravitygame.models.Location
 import com.example.gravitygame.models.ShipType
 import com.example.gravitygame.models.mapOfShips
 import com.example.gravitygame.tutorial.Tasks
@@ -58,15 +58,14 @@ fun ArmyDialog(
     tutorialModel: TutorialViewModel,
     settingsModel: SettingViewModel,
     timerModel: TimerViewModel,
-    show: Boolean,
+    toShow: Boolean,
     context: Context,
     onDismissRequest: () -> Unit = { battleModel.cleanMovementValues() },
     onConfirmation: () -> Unit = { battleModel.attack() },
     onCancel: () -> Unit = { battleModel.cleanMovementValues() },
-    closeShipInfoDialog: () -> Unit = { battleModel.showShipInfoDialog(false, ShipType.CRUISER) }
+    closeShipInfoDialog: () -> Unit = { battleModel.showShipInfoDialog(false) }
 ) {
     val movementUiState by battleModel.movementUiState.collectAsState()
-    val locationListUiState by battleModel.locationListUiState.collectAsState()
     val tutorialUiState by tutorialModel.tutorialUiState.collectAsState()
     val settingsUiState by settingsModel.settingUiState.collectAsState()
     val weightOfName = 0.20f
@@ -75,26 +74,8 @@ fun ArmyDialog(
     val padding = 16.dp
 
     ShipInfoDialog(
-        shipType = ShipType.CRUISER,
-        toShow = movementUiState.showCruiserInfoDialog,
-        onDismissRequest = closeShipInfoDialog,
-        confirmButton = closeShipInfoDialog
-    )
-    ShipInfoDialog(
-        shipType = ShipType.DESTROYER,
-        toShow = movementUiState.showDestroyerInfoDialog,
-        onDismissRequest = closeShipInfoDialog,
-        confirmButton = closeShipInfoDialog
-    )
-    ShipInfoDialog(
-        shipType = ShipType.GHOST,
-        toShow = movementUiState.showGhostInfoDialog,
-        onDismissRequest = closeShipInfoDialog,
-        confirmButton = closeShipInfoDialog
-    )
-    ShipInfoDialog(
-        shipType = ShipType.WARPER,
-        toShow = movementUiState.showWarperInfoDialog,
+        shipType = movementUiState.shipTypeToShow,
+        toShow = movementUiState.showShipInfoDialog,
         onDismissRequest = closeShipInfoDialog,
         confirmButton = closeShipInfoDialog
     )
@@ -124,15 +105,16 @@ fun ArmyDialog(
     }
 
 
-    if (show) {
+    if (toShow) {
         Dialog(
             onDismissRequest = onDismissRequest,
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            if (!movementUiState.isArmyDialogInitialized) {
+
+            LaunchedEffect(Unit) {
                 battleModel.initializeArmyDialogValues()
-                battleModel.changeArmyDialogInitialization(isInitialized = true)
             }
+
             Card(
                 modifier = modifier
                     .verticalScroll(rememberScrollState())
@@ -202,7 +184,6 @@ fun ArmyDialog(
                                 startLocation = movementUiState.startPosition,
                                 endLocation = movementUiState.endPosition,
                                 isWarperPresent = movementUiState.isWarperPresent,
-                                locationList = locationListUiState.locationList,
                                 battleModel = battleModel,
                                 movementUiState = movementUiState,
                                 weightOfName = weightOfName,
@@ -220,7 +201,6 @@ fun ArmyDialog(
                                 startLocation = movementUiState.startPosition,
                                 endLocation = movementUiState.endPosition,
                                 isWarperPresent = movementUiState.isWarperPresent,
-                                locationList = locationListUiState.locationList,
                                 battleModel = battleModel,
                                 movementUiState = movementUiState,
                                 weightOfName = weightOfName,
@@ -236,7 +216,6 @@ fun ArmyDialog(
                                 startLocation = movementUiState.startPosition,
                                 endLocation = movementUiState.endPosition,
                                 isWarperPresent = movementUiState.isWarperPresent,
-                                locationList = locationListUiState.locationList,
                                 battleModel = battleModel,
                                 movementUiState = movementUiState,
                                 weightOfName = weightOfName,
@@ -252,7 +231,6 @@ fun ArmyDialog(
                                 startLocation = movementUiState.startPosition,
                                 endLocation = movementUiState.endPosition,
                                 isWarperPresent = movementUiState.isWarperPresent,
-                                locationList = locationListUiState.locationList,
                                 battleModel = battleModel,
                                 movementUiState = movementUiState,
                                 weightOfName = weightOfName,
@@ -331,7 +309,6 @@ fun ArmyDialogRow(
     startLocation: Int?,
     endLocation: Int?,
     isWarperPresent: Boolean,
-    locationList: List<Location>,
     movementUiState: MovementUiState,
     weightOfNumbers: Float,
     weightOfName: Float,
@@ -364,13 +341,18 @@ fun ArmyDialogRow(
                 textAlign = TextAlign.Start,
                 modifier = Modifier
                     .clickable {
-                        battleModel.showShipInfoDialog(true, shipType)
+                        battleModel.showShipInfoDialog(true)
+                        battleModel.changeShipTypeToShow(shipType = shipType)
                     }
             )
         }
 
         Text(
-            text = battleModel.getNumberOfShip(locationList = locationList, location = endLocation, shipType = shipType, isForEnemy = true).toString(),
+            text = battleModel.getNumberOfShip(
+                location = endLocation,
+                shipType = shipType,
+                isForEnemy = true
+            ).toString(),
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .weight(weightOfNumbers)
@@ -378,12 +360,10 @@ fun ArmyDialogRow(
 
         if (!isInfo) {
             Text(
-                text = when (shipType) {
-                    ShipType.CRUISER -> movementUiState.cruiserToMove.toString()
-                    ShipType.DESTROYER -> movementUiState.destroyerToMove.toString()
-                    ShipType.GHOST -> movementUiState.ghostToMove.toString()
-                    ShipType.WARPER -> movementUiState.warperToMove.toString()
-                },
+                text = battleModel.setShipsToMoveString(
+                    shipType = shipType,
+                    movementUiState = movementUiState
+                ),
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .weight(weightOfNumbers)
@@ -392,12 +372,10 @@ fun ArmyDialogRow(
 
 
         Text(
-            text = when (shipType) {
-                ShipType.CRUISER -> movementUiState.cruiserOnPosition.toString()
-                ShipType.DESTROYER -> movementUiState.destroyerOnPosition.toString()
-                ShipType.GHOST -> movementUiState.ghostOnPosition.toString()
-                ShipType.WARPER -> movementUiState.warperOnPosition.toString()
-            },
+            text = battleModel.setShipsOnPositionString(
+                shipType = shipType,
+                movementUiState = movementUiState
+            ),
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .weight(weightOfNumbers)
@@ -425,7 +403,6 @@ fun ArmyDialogRow(
                     isWarperPresent = isWarperPresent,
                     shipType = shipType,
                     startLocation = startLocation,
-                    locationList = locationList,
                     endLocation = endLocation
                 ),
                 modifier = Modifier

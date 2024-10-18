@@ -14,7 +14,7 @@ class SelectArmyViewModel : ViewModel() {
     fun checkArmySize(
         battleModel: BattleViewModel
     ): Boolean {
-        val shipLimit = battleModel.battleMap?.shipLimitOnMap ?: 0
+        val shipLimit = battleModel.battleMap.shipLimitOnMap
         return countArmySize() == shipLimit
     }
 
@@ -29,10 +29,6 @@ class SelectArmyViewModel : ViewModel() {
 
     fun changeShipType(shipType: ShipType){
         _selectArmyUiState.value = _selectArmyUiState.value.copy(shipType = shipType)
-    }
-
-    fun initialization(isInitialized: Boolean){
-        _selectArmyUiState.value = _selectArmyUiState.value.copy(initialized = isInitialized)
     }
 
     fun addShip(ship: ShipType){
@@ -72,11 +68,7 @@ class SelectArmyViewModel : ViewModel() {
     }
 
     fun showShipInfoDialog(toShow: Boolean){
-        if (toShow) {
-            _selectArmyUiState.value = _selectArmyUiState.value.copy(showShipInfoDialog = true)
-        } else {
-            _selectArmyUiState.value = _selectArmyUiState.value.copy(showShipInfoDialog = false)
-        }
+        _selectArmyUiState.value = _selectArmyUiState.value.copy(showShipInfoDialog = toShow)
     }
 
     fun cleanUiStates(){
