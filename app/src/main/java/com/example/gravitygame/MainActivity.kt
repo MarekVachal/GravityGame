@@ -44,6 +44,7 @@ import com.example.gravitygame.ui.screens.settingScreen.SettingViewModel
 import com.example.gravitygame.ui.screens.statisticScreen.StatisticScreen
 import com.example.gravitygame.ui.screens.statisticScreen.StatisticViewModel
 import com.example.gravitygame.ui.theme.GravityGameTheme
+import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,6 +67,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        FirebaseApp.initializeApp(this)
     }
 }
 

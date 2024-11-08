@@ -16,6 +16,24 @@ class MainMenuViewModel : ViewModel() {
     private val _mainmenuUiState = MutableStateFlow(MainMenuUiStates())
     val mainMenuUiStates: StateFlow<MainMenuUiStates> = _mainmenuUiState.asStateFlow()
 
+    fun setTextTitle(context: Context): String{
+        return when(mainMenuUiStates.value.textToShow){
+            Text.ABOUT_US -> context.getString(R.string.aboutUsTitle)
+            Text.GAME_RULES -> context.getString(R.string.gameRulesTitle)
+            Text.ABOUT_GAME -> context.getString(R.string.aboutGameTitle)
+            Text.DONATE -> context.getString(R.string.donateTitle)
+        }
+    }
+
+    fun setText(context: Context): String{
+        return when(mainMenuUiStates.value.textToShow){
+            Text.ABOUT_US -> context.getString(R.string.aboutUsText)
+            Text.GAME_RULES -> context.getString(R.string.gameRulesText)
+            Text.ABOUT_GAME -> context.getString(R.string.aboutGameText)
+            Text.DONATE -> context.getString(R.string.donateText)
+        }
+    }
+
     fun showMenuList(toShow: Boolean){
         _mainmenuUiState.value = _mainmenuUiState.value.copy(showMenuList = toShow)
     }
@@ -68,7 +86,7 @@ class MainMenuViewModel : ViewModel() {
         }
     }
 
-    fun openTextDialog(text: Text? = null, toShow: Boolean){
+    fun openTextDialog(text: Text = Text.ABOUT_GAME, toShow: Boolean){
         _mainmenuUiState.value = _mainmenuUiState.value.copy(
             showTextDialog = toShow,
             textToShow = text)

@@ -417,7 +417,7 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.planet1,
+                planetImage = R.drawable.blue_planet,
                 explosionSize = explosionSize
             )
 
@@ -435,7 +435,7 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.moon2,
+                planetImage = R.drawable.yellow_planet,
                 explosionSize = explosionSize
             )
 
@@ -453,7 +453,7 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.moon2,
+                planetImage = R.drawable.yellow_planet,
                 explosionSize = explosionSize
             )
 
@@ -471,7 +471,7 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.moon2,
+                planetImage = R.drawable.yellow_planet,
                 explosionSize = explosionSize
             )
 
@@ -489,7 +489,7 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.moon2,
+                planetImage = R.drawable.yellow_planet,
                 explosionSize = explosionSize
             )
 
@@ -507,7 +507,7 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.moon2,
+                planetImage = R.drawable.yellow_planet,
                 explosionSize = explosionSize
             )
 
@@ -525,7 +525,7 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.moon2,
+                planetImage = R.drawable.yellow_planet,
                 explosionSize = explosionSize
             )
 
@@ -543,7 +543,7 @@ class TinyMap : BattleMap() {
                 planetSize = planetSize,
                 flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.planet2,
+                planetImage = R.drawable.red_planet,
                 explosionSize = explosionSize
             )
         }

@@ -47,7 +47,7 @@
     <string name="numberShipsTask">For the upcoming battle, you need to select units for your army. There are four types of units. One type is the unique Warper unit, which is assigned to the army by default. Therefore, you need to choose 10 out of the remaining 11 units. Once you have assembled your army, confirm your selection with the button.</string>
     <string name="battleOverviewTitle">Battle overview</string>
     <string name="battleOverviewTask">The battle begins now. If you are playing against AI, your army is blue. Your home planet with a base is on the left side of the battlefield, where your units are also positioned. To win the battle, you must conquer the enemy\’s home planet, which is on the right side of the battlefield. However, if the enemy conquers your home planet, you lose.</string>
-    <string name="movementTask">To move your units, place your finger on the planet where you have at least one unit and drag it to the planet you want to move to. When you place your finger on the planet from which you\'re moving, all available positions will be marked with a green circle. At the start of the battle, all planets will be marked this way, because the unique Warper unit can move anywhere. However, the remaining types of units can only move to adjacent planets.</string>
+    <string name="movementTask">To move your units, place your finger on the planet where you have at least one unit and drag it to the planet you want to move to. When you place your finger on the planet from which you\'re moving and move the finger, all available positions will be marked with a green circle. At the start of the battle, all planets will be marked this way, because the unique Warper unit can move anywhere. However, the remaining types of units can only move to adjacent planets.</string>
     <string name="sendShipsTask">After selecting the movement from one planet to another, you also need to choose the number of units to move. The first column shows the number of enemy units on the selected planet. The second column shows the number of units you can move. The third column shows the total number of units that will be on the selected planet after the move, including both the units that were there from the previous round and the units you\'re moving. There can be no more than 6 units per player on a planet simultaneously.</string>
     <string name="acceptableLossesTask">In addition to selecting units, you must also choose how many units you are willing to sacrifice in the battle. This is done using a slider, and the value represents the number of units. The battle itself takes place in rounds, where the units exchange shots, and it ends when one of the armies reaches its tolerated losses. When an army reaches its maximum tolerated losses, it withdraws from the battle. The withdrawn army remains on the planet, and the player can decide what to do with them in the next turn. The battle can also end in a draw if both armies reach their tolerated losses.</string>
     <string name="locationInfoTask">If you want to view information about a planet, click directly on it. After clicking, you will see the number of units from both armies on the selected planet. In this window, you can also change your tolerated losses at any time.</string>
@@ -92,41 +92,92 @@
     <string name="battleInfoTaskTitle">Battle info</string>
     <string name="errorToOpenMail">Your email app cannot be open</string>
     <string name="aboutUsText">
-        We are two guys for whom games play a significant role in life. We met while playing the now-defunct online strategy game Red Dragon, and we still play various games together today. We enjoy exploring different new mechanisms that are being introduced in the gaming field, and we are not short on ideas ourselves. That’s why we decided to contribute our bit to this field as well. The development of our games always starts with their main mechanism, and as we test it, the game’s theme and any additional secondary mechanisms begin to take shape. Our goal is to bring new and original game mechanisms or unique combinations of existing ones. Last but not least, we aim to offer games that are not burdened by the pay-to-win concept and allow players to play when they want, not when the game dictates. We are people who do not want to be controlled by games, but who choose to play games in their own time.\n\n
-        Marek Vachal\n
-        My journey into fantasy and games began around the age of six when I started playing Dungeons &amp; Dragons with my father. I have been playing Dungeons &amp; Dragons, other tabletop RPGs, and board games ever since. I also play PC games, primarily building strategies, though less often than before. At the age of 14, I first encountered Indian philosophy, which subsequently shaped my intellectual interests. After high school focusing on bookseller, I enrolled at university in the Department of Comparative Study of Religions, naturally specializing in Indian traditions. Ironically, my study of a foreign culture led me back to exploring Western culture. Today, I can say that our understanding of foreign cultures is still in its early stages. In spite of it, I am already eager to share my insights with the wider public.\n\n
+        We are two friends united by a love for both board and computer games. Both of us started as young boys with Dungeons &amp; Dragons and later crossed paths in the online strategy game Red Dragon, to which we eventually contributed as creators. Alongside our experience as passionate players, we both developed an interest in going beyond just playing games, exploring how games are created.\n
+        Our games usually begin with game mechanics, where we draw inspiration from well-known models but joyfully rewrite or adapt them into original forms. We have high standards for our games and adhere to the principle that players control the game, not the other way around. We avoid methods that unethically compete for your attention.\n\n
         Marek Basovnik\n
+        Since childhood, I have been fascinated by puzzles, though I still can\’t solve a Rubik\’s Cube—I challenge myself to learn without a guide and without the cube itself. I enjoyed mathematics as a young boy and later studied theoretical physics at the Faculty of Mathematics and Physics, where I explored the horizons of black holes. As a theoretical physicist, I realized that understanding the real world makes it easier to navigate any imaginary one, including game worlds. If you want to go from being a user to a creator, the key lies in grasping principles far deeper than you may have ever heard of.\n\n
+        Marek Vachal\n
+        My journey into fantasy and gaming began when I was six. At fourteen, I encountered Indian philosophy, which shaped my intellectual path. After high school, where I studied bookselling, I continued at the Faculty of Arts, specializing in Indian traditions at the Department of Comparative Study of Religions. Ironically, studying this distant culture led me to delve deeper into Western culture, showing me that the fantasy world can be far more fantastical than one might imagine.\n
     </string>
     <string name="gameRulesText">
-        Movement\n
-        - Each player has 11 units. They move units across tiles. All units except the Warper can move one tile per turn.\n
-        - A maximum of 6 units per player can occupy a single tile.\n
-        - A player cannot move their units onto a tile occupied by the enemy if their units are also on a tile occupied by the enemy.\n
-        - A player can move all their units in one turn as long as they meet the condition of having no more than 6 units per tile.\n
-        - After both players have completed their moves, the battle phase begins. If both players\' units are on the same tile, a battle ensues.\n\n
+        Introduction\n
+            Each game represents a single battle and is turn-based. Each round consists of two phases:\n
+                1. Fleet movement of both players\n
+                2. Fleet encounters\n
+            Each fleet consists of spaceships, referred to as units.\n\n
+
         Units\n
-        - The three basic units are:\n
-        - Cruiser: Firepower: 1, Shields: 10.\n
-        - Destroyer: Firepower: 2, Shields: 10. Destroyers in combat can have a combined firepower no greater than the number of the opponent\'s units on the battlefield.\n
-        - Ghost: Firepower: 1, Shields: 5. Each Ghost neutralizes one of the opponent\'s Destroyers from combat. The Destroyer is not destroyed but does not participate in the battle as long as the Ghost is alive.\n
-        - The unique unit is:\n
-        - Warper: Firepower: 2, Shields: 1. In the movement phase, it can move to any tile.\n\n
-        Battle\n
-        - The battle proceeds in rounds.\n
-        - The armies of both players exchange attacks until one player\'s army reaches the "maximum tolerated losses," which is the number of units a player is willing to lose in the battle.\n
-        - The army\'s firepower is the sum of the firepower of all units in the army.\n
-        - Firepower is always focused on the type of units most represented in the army. In the case of a tie, the target is determined by priority:\n
-        - Cruiser > Destroyer > Ghost > Warper\n
-        - Each army hits an enemy unit each round, reducing its shields by the amount of its firepower.\n
-        - If a unit loses all its shields in a given round, the excess firepower is transferred to the next unit in line according to priority in the same round. A destroyed unit no longer contributes its firepower in subsequent rounds. Similarly, if the number of enemy units decreases, there may be a reduction in firepower for Destroyers due to their firepower limit.\n
-        - After a battle, any surviving but damaged units are repaired to their maximum.\n
-        - If a player wins the battle on a given tile, they occupy it. In the case of a draw, the tile remains to the original owner.\n
-        - On an occupied tile, the player has a +1 firepower bonus in all battles.\n\n
+            There are four types of units in the game:\n
+                1. Cruiser\n
+                    - Firepower: 1\n
+                    - Shields: 10\n
+                2. Destroyer\n
+                    - Firepower: 2\n
+                    - Shields: 10\n
+                    - Ability: The total firepower of destroyers cannot exceed the number of enemy units on the battlefield.\n
+                3. Ghost\n
+                    - Firepower: 1\n
+                    - Shields: 5\n
+                    - Ability: Each Ghost disables one enemy Destroyer. The Destroyer is not destroyed but does not participate in combat as long as the Ghost is alive.\n
+                4. Warper\n
+                    - Firepower: 2\n
+                    - Shields: 1\n
+                    - Ability: Can move to any field during the movement phase.\n\n
+
+        Movement\n
+            - Each player has a total of 11 units.\n
+            - Units move across fields, one field per turn, except for the Warper, which can move anywhere.\n
+            - A maximum of 6 units from one player can occupy a single field, so up to 12 units (6 from each player) can be on one field.\n
+            - Units on a field controlled by the enemy cannot move to another enemy-controlled field.\n
+            - After both players complete their moves, the encounter phase begins.\n\n
+
+        Fleet Encounter\n
+            If units from both players are on the same field, a fleet encounter occurs. Encounters proceed in rounds.\n\n
+
+            1. Maximum Tolerable Losses\n
+                - When moving fleets, each player sets a \"maximum tolerable loss\" for the encounter. This value represents the number of units the player is willing to lose in the encounter.\n
+                - The encounter ends when one player\'s fleet reaches this limit. The player who reaches their tolerable losses loses the encounter.\n\n
+
+            2. Fleet Firepower\n
+                - Fleet firepower is the sum of the firepower of all units in the fleet.\n
+                - Firepower targets the unit type that is most numerous in the fleet. If there is a tie, the following priority is used:\n
+                Cruiser > Destroyer > Ghost > Warper\n\n
+
+            3. Attack\n
+                - Each round, the fleet hits the enemy units, dealing damage equal to the fleet\'s firepower.\n
+                - Damage is deducted from the unit\’s shields. If a unit loses all its shields, any remaining damage is transferred to the next unit according to the priority.\n
+                - Destroyed units no longer contribute to the fleet\'s firepower.\n\n
+
+            4. Firepower Reduction\n
+                - Reducing the number of enemy units may decrease the fleet\’s total firepower, especially for Destroyers, whose firepower depends on the number of units on the battlefield.\n\n
+
+        After the Encounter\n
+            - After the encounter, all surviving units are restored to their maximum shield values.\n
+            - If a player wins the encounter, they gain control of the field. In the case of a draw, the field remains under the control of the original owner.\n\n
+
+        Controlled Field Bonus\n
+            - A player who controls a field receives a +1 bonus to firepower in all subsequent encounters on that field.\n\n
+
         Victory\n
-        Each player has a base. This tile cannot be lost in any way (thus it always has a permanent +1 firepower bonus). If a player loses a battle on his base tile, he lose the game.
+            - Each player begins on their base. If a player loses an encounter on their base field and the opponent gains control of the base, the player loses the game.
+
     </string>
-    <string name="aboutGameText">nn</string>
+    <string name="aboutGameText">
+        <b>Introduction</b>\n
+        What you see today is the first step toward creating an MMORTS set in a future where humanity is capable of space travel. Each player will start with a single home planet and a few spacecraft and begin building their own stellar empire.\n\n
+
+        <b>Current State</b>\n
+        In the first phase, we are showcasing only a \“mini-game,\” which will later become part of a large building game and focuses solely on PvP combat. Our goal is to develop this part of our strategy game to the point where it stands on its own as a full-featured experience.\n
+        In the game, you will choose the structure of your fleet and attempt to capture your opponent\’s base before they do the same to you. A complete player battle is estimated to last around 10 minutes. It is a turn-based strategy game, where both players plan their move, and once confirmed by both, the plans are executed simultaneously. The game includes different types of ships, each effective in various situations. Its originality lies in a unique decision-making element where players must choose when to strategically retreat or fight to the last ship.\n
+        Based on your feedback, we plan to create more developed battle maps and potentially adjust some ship types according to how they are used by real players.\n\n
+
+        <b>Future State</b>\n
+        The mini-game presented here will be only a part of a larger building game, starting as an economic game. As the empire grows, it will become increasingly challenging to expand economically, and with greater size, the motivation to expand by force will increase.\n
+        Our game will differ from classic online building strategy games in the following ways:\n
+        - The game will contain a small number of resources, but they will be realistic commodities. Money will not just be a number generated by gold mines but will adhere to sophisticated, yet player-friendly, economic principles.\n
+        - There will be no \“daily tasks\” mechanics forcing you to stay online constantly. We want to design the game so that players can return after any length of time without feeling they missed out on something. The game will encourage you to come back rather than prevent you from leaving.\n
+        - The game will contain no \“pay-to-win\” concept at any level.</string>
     <string name="donateText">You can support our efforts with this game on the Buy me a coffee platform. You can choose to support us with a one-time donation or set up a monthly contribution and become a member of our community. Just click the button. We are very grateful for any donation.</string>
     <string name="aiCalculate">Calculating opponent move.</string>
-    <string name="waitingForPlayer">Waiting for opponent move</string>
+    <string name="waitingForPlayer">Waiting for opponent move.</string>
 </resources>

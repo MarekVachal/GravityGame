@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "232456830551",
+    "project_id": "gravity-game-e16df",
+    "storage_bucket": "gravity-game-e16df.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:232456830551:android:d9ca6e1fd07c3409412d12",
+        "android_client_info": {
+          "package_name": "com.example.gravitygame"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_WDh-Nqna0XBYxt3qGQde4NRySWUUHeI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

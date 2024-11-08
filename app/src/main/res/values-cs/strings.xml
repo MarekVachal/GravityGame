@@ -43,8 +43,8 @@
     <string name="infoShipTask">Pokud se chceš dozvědět informace o jednotce, klikni na její jméno.</string>
     <string name="numberShipsTask">Pro následující bitvu, je třeba si do své armády vybrat jednotky. Existují čtyři typy jednotek. Jeden typ je unikátní jednotka Warper, která je přidělena do armády již v základu. Je tedy nutné vybrat následujících 10 jednotek z 11. Jakmile budeš mít sestavenou armádu, potvrď výběr tlačítkem.</string>
     <string name="battleOverviewTitle">Bitva</string>
-    <string name="battleOverviewTask">Nyní začíná bitva. Pokud hraješ proti AI, tvá armáda je modré barvy. Tvá domovská planeta se základnou je na levé straně bojiště, kde jsou i umístěny tvé jednotky. Abys vyhrál bitvu, je nutné dobít domovskou planety nepřítele, která je na pravé straně bojiště. Pokud ale nepřítel dobije tvou domovskou planetu, prohrál jsi.</string>
-    <string name="movementTask">Pro pohyb jednotek umísti prst na planetu, kde máš alespoň jednu jednotku a posuň prst na planetu, kam se chceš pohnout. Ve chvíli, kdy umístíš prst na planetu, odkud se budeš hýbat, všechny dostupné pozice budou označeny zeleným kruhem. Na počátku bitvy se takto všechny planetu označí, protože unikátní jednotka Warper se může pohnout kamkoliv. Zbývající typy jednotek se však mohou přesunout pouze na sousední planetu.</string>
+    <string name="battleOverviewTask">Nyní začíná bitva. Pokud hraješ proti AI, tvá armáda je modré barvy. Tvá domovská planeta se základnou je na levé straně bojiště, kde jsou i umístěny tvé jednotky. Abys vyhrál bitvu, je nutné dobýt domovskou planetu nepřítele, která je na pravé straně bojiště. Pokud ale nepřítel dobyje tvou domovskou planetu, prohrál jsi.</string>
+    <string name="movementTask">Pro pohyb jednotek umísti prst na planetu, kde máš alespoň jednu jednotku a posuň prst na planetu, kam se chceš pohnout. Ve chvíli, kdy umístíš prst na planetu, odkud se budeš hýbat a pohneš jím, všechny dostupné pozice budou označeny zeleným kruhem. Na počátku bitvy se takto označí všechny planety, protože unikátní jednotka Warper se může pohnout kamkoliv. Zbývající typy jednotek se však mohou přesunout pouze na sousední planetu.</string>
     <string name="sendShipsTask">Po výběru pohybu z planety na planetu, je potřeba také zvolit, počet jednotek k přesunu. První sloupec zobrazuje počet nepřátelských jednotek na zvolené planetě. Druhý sloupec zobrazuje počet jednotek, které můžeš přemístit. Třetí sloupec zobrazuje celkový počet jednotek, které budou na zvolené planetě po přesunu. To znamená, jak jednotky, které tam jsou od minulého kola, tak také jednotky, které tam právě přesouváš. Na každé planetě nemůže být více než 6 jednotek jednoho hráče současně.</string>
     <string name="acceptableLossesTask">Mimo výběru jednotek musíš také zvolit, kolik jednotek jsi ochoten v bitvě obětovat. To se dělá pomocí posuvníku a hodnota je počet jednotek. Samotná bitva probíhá v kolech, kdy si jednotky navzájem vyměnují výstřely a končí ve chvíli, kdy jedna z armád dosáne svých tolerovaných ztrát. Když armáda dosáhne svého maxima tolerovaných ztrát, stáhne se z bitvy. Stažená armáda zůstává na planetě a hráč se v dalším tahu může rozhodnout, co s nimi bude dělat. Bitva může také skončit remízou, kdy obě armády dosáhnou svých tolerovaných ztrát.</string>
     <string name="locationInfoTask">Pokud se chceš podívat na informace o planetě, klikni přímo na ni. Po kliknutí se ti zobrazí počty jednotek obou armád na vybrané planetě. V tomto okně lze také kdykoli změnit své tolerované ztráty.</string>
@@ -85,40 +85,92 @@
     <string name="battleInfoTaskTitle">Informace o bitvě</string>
     <string name="errorToOpenMail">Vaše emailová aplikace nelze otevřít</string>
     <string name="aboutUsText">
-        Jsme dva chlapi, kterým hry v jejich životě hrajou podstatnou roli. Seznámili jsme se při hraní dnes již skončené online strategické hry Red Dragon a různé hry spolu hrajeme dodnes. Baví nás zkoumat různé nové mechanismy, které jsou dnes na herním poli přinášeny a ani my sami nejsme bez nápadů. Proto jsme se rozhodli také na toto polo přispět svou troškou. Vývoj našich her vždy začíná jejím hlavním mechanismem a při jeho zkoušení se začne přibalovat téma hry a případně další vedlejší mechanismy. Rádi bychom tak přinesli nové neotřelé herní mechanismy, případně unikátní spojení mechanismů již existujících. V neposlední řadě je také naší touhou dát lidem hry, které nejsou zatížené konceptem pay to win a možností hráče hrát naši hru, kdy on chce a ne, kdy si řekne hra. Jsme lidé, kteří nechtějí být ovládáni hrami, ale kteří hrajou hry ve svém zvoleném čase.\n\n
-        Marek Váchal\n
-        Má cesta k fantasy a hrám začala kolem šestého roku mého života, kdy jsem začal hrát dračí doupě se svým otcem. Dračí doupě, jiné stolní rpg hry a deskové hry hraju od té doby dodnes. Dnes již méně než dříve také hraji pc hry, převážně budovatelské strategie. Ve 14 letech jsem se poprvé setkal s indickou filosofií, což nadále určovalo můj intelektuální zájem. Po střední knihkupecké škole jsem nastoupil na vysokou školu na katedru religionistiky, samozřejmě se zaměřením na indické tradice. Paradoxně mě mé studium cizí kultury zavedlo zpět ke studiu kultury západní. Dnes mohu říci, že v pochopení cizích kultur jsme stále na začátku cestu. Ale již nyní bych rád své poznaky předal širší veřejnosti.\n\n
-        Marek Basovník\n
+        Jsme dva kamarádi, které spojuje láska k deskovým i počítačovým hrám. Oba jsme jako malí kluci začínali na Dračím Doupěti a později se setkali u online strategické hry Red Dragon, ke které jsme později přispěli i jako tvůrci. Kromě zkušeností nadšených hráčů, jsme si oba našli zálibu jít za hranici hraní a začali zkoumat, jak samotné hry vznikají.\n
+        Naše hry obvykle začínají od herních mechanismů, kde se inspirujeme od známých modelů, ovšem s radostí je přepisujeme nebo upravujeme do originálních forem. Pro své hry máme vysoké nároky. Držíme se hesla, že hráč ovládá hru, nikoli ona jeho. Vyhýbáme se metodám, které neetickým způsobem soupeří o vaši pozornost.\n\n
+        <b>Marek Basovník</b>\n
+        Od malička mě fascinovaly hlavolamy, i když Rubikovu kostku stále skládat neumím – mám výzvu naučit se to bez návodu i bez kostky. Už jako malého kluka mě bavila matematika a později jsem studoval teoretickou fyziku na matfyzu, kde jsem zkoumal horizonty černých děr. Jako teoretický fyzik jsem si uvědomil, že pochopení skutečného světa usnadňuje orientaci i v libovolném imaginárním světě, třeba herním. A pokud chcete přejít od uživatele k tvůrci, klíčem je pochopení mnohem hlubších principů, než o jakých jste kdy slyšeli.\n\n
+        <b>Marek Váchal</b>\n
+        Má cesta k fantasy a hrám začala už v šesti letech. Ve čtrnácti jsem se poprvé setkal s indickou filosofií, která ovlivnila můj intelektuální směr. Po střední knihkupecké škole jsem pokračoval na filozofickou fakultu, kde jsem se na katedře religionistiky specializoval na indické tradice. Paradoxně mě studium této vzdálené kultury přivedlo k hlubšímu zkoumání západní kultury a ukázalo mi, že svět fantasy může být mnohem fantasktnější, než si dovedete představit.
     </string>
     <string name="gameRulesText">
-        Pohyb\n
-        - Každý hráč má 11 jednotek. Ty přesouvá po polích. Všechny jednotky kromě Warpera se mohou přesunout o 1 pole za tah.\n
-        - Na jednom poli může být maximálně 6 jednotek hráče.\n
-        - Hráč nemůže přesunout své jednotky na pole obsazeném nepřítelem, pokud jsou jeho jednotky na poli také obsazeném nepřítelem.\n
-        - V jednom tahu může hráč přesunout všechny své jednotky, pokud splní podmínku 6 jednotek na poli.\n
-        - Poté, co oba hráči vykonají své pohyby nastává fáze bitev. Pokud jsou na jednom poli jednotky obou hráčů dojde k bitvě.\n\n
+        Úvod\n
+            Každá hra představuje jednu bitvu a probíhá tahově. Každé kolo se skládá ze dvou fází:\n
+	            1. Pohyb flotil obou hráčů\n
+	            2. Střet flotil\n
+            Každá flotila se skládá z vesmírných lodí, označovaných jako jednotky.\n\n
+
         Jednotky\n
-        - Tři základní jednotky jsou:\n
-        - Křižník: palebná síla: 1, štíty: 10.\n
-        - Torpédoborec: palebná síla: 2, štíty: 10. Torpédoborci v boji mohou mít v součtu palebnou sílu nejvýše takovou, jako je počet jednotek soupeře na bojovém poli.\n
-        - Duch: palebná síla: 1, štíty: 5. Každý duch vyřadí ze souboje jednoho torpédoborce soupeře. Torpédoborec není zničen, ale neúčastní se souboje, dokud je duch naživu.\n
-        - A unikátní je:\n
-        - Warper: palebná síla: 2, štíty: 1. V pohybové fázi se může přesunout na libovolné pole.\n\n
-        Bitva\n
-        - Bitva probíhá kolově.\n
-        - Armády obou hráčů si vzájemně vyměňují zásahy, dokud armáda jednoho z hráčů neklesne na “maximální tolerované ztráty”. To je počet jednotek, který je ochoten hráč v bitvě ztratit.\n
-        - Palebná síla armády je součet palebných sil všech jednotek v armádě.\n
-        - Palebná síla se vždy soustředí do typu jednotek, kterých je v armádě zastoupeno nejvíce. V případě shody určuje cíl priorita.\n
-        - Cruiser > Destroyer > Ghost > Warper\n
-        - Každá armáda v každém kole zasáhne jednotku soupeře a odečte mu tolik bodů štítů, jaké je její palebná síla.\n
-        - Pokud v daném kole jednotka hráče ztratí všechny své štíty, tak přebytek palebné síly přejde v tom samém kole do následující jednotky podle priority. Zničená jednotka již nepřispívá svoji palebnou silou do dalšího kola. Stejně tak, pokud klesne počet soupeřových jednotek, může dojít k poklesu palebné síly u Destroyerů kvůli jejich limitu palebné síly.\n
-        - Po bitvě, pokud zůstane jakákoliv jednotka pouze zraněna, tak se opraví na své maximum.\n
-        - Pokud hráč na daném poli vyhrál bitvu, obsadí pole. Pokud dojde k čisté remíze, pole zůstává původnímu majiteli.\n
-        - Na obsazeném poli má hráč ve všech soubojích bonus +1 k palebné síle.\n\n
+            Ve hře jsou čtyři typy jednotek:\n
+                1. Křižník\n
+                    - Palebná síla: 1\n
+                    - Štíty: 10\n
+                2. Torpédoborec\n
+                    - Palebná síla: 2\n
+                    - Štíty: 10\n
+                    - Schopnost: Celková palebná síla torpédoborců nemůže překročit počet jednotek soupeře na bojišti.\n
+                3. Duch\n
+                    - Palebná síla: 1\n
+                    - Štíty: 5\n
+                    - Schopnost: Každý duch vyřadí ze souboje jednoho torpédoborce soupeře. Torpédoborec není zničen, ale neúčastní se souboje, dokud je duch naživu.\n
+                4. Warper\n
+                    - Palebná síla: 2\n
+                    - Štíty: 1\n
+                    - Schopnost: Může se v pohybové fázi přesunout na libovolné pole.\n\n
+
+        Pohyb\n
+            - Každý hráč má celkem 11 jednotek.\n
+            - Jednotky se pohybují po polích o jedno pole za tah, s výjimkou Warpera, který se může přesunout kamkoliv.\n
+            - Na jednom poli může být maximálně 6 jednotek od jednoho hráče, což znamená, že na poli může být až 12 jednotek (6 od každého hráče).\n
+            - Pokud jsou jednotky na poli kontrolovaném nepřítelem, nemohou se přesunout na další pole pod nepřátelskou kontrolou.\n
+            - Po dokončení pohybu obou hráčů následuje fáze střetnutí.\n\n
+
+        Střet flotil\n
+            Pokud jsou na jednom poli jednotky obou hráčů, dojde ke střetu flotil. Střet probíhá kolově.\n\n
+
+            1. Maximální tolerované ztráty\n
+                - Při pohybu flotil si každý hráč určuje \"maximální tolerované ztráty\" pro střet. Tato hodnota vyjadřuje počet jednotek, které je ochoten ve střetu ztratit.\n
+                - Střet končí, jakmile flotila jednoho z hráčů dosáhne této hranice. Hráč, který dosáhne svých tolerovaných ztrát, prohrává střet\n\n.
+
+            2. Palebná síla flotily\n
+                - Palebná síla flotily je součet palebných sil všech jednotek flotily.\n
+                - Palba se zaměřuje na jednotky typu, kterých je ve flotile nejvíce. Pokud je počet jednotek shodný, použije se následující priorita:\n
+                Křižník > Torpédoborec > Duch > Warper\n\n
+
+            3. Útok\n
+                - V každém kole flotila zasáhne soupeřovy jednotky a způsobí poškození odpovídající palebné síle své flotily.\n
+                - Poškození se odečítá od štítů jednotky. Pokud jednotka ztratí všechny štíty, zbývající poškození se přenáší na další jednotku podle priority.\n
+                - Zničené jednotky už dále nepřispívají k palebné síle flotily.\n\n
+
+            4. Pokles palebné síly\n
+                - Se snižováním počtu soupeřových jednotek může klesat celková palebná síla, především u Torpédoborců, jejichž síla je omezená počtem jednotek na bojišti.\n\n
+
+        Po střetu\n
+            - Po střetnutí se všechny přeživší jednotky obnoví na maximální hodnoty štítů.\n
+            - Pokud hráč vyhraje střet, získá kontrolu nad polem. Při remíze zůstává pole pod kontrolou původního majitele.\n\
+
+        Bonus za kontrolované pole\n
+            - Hráč, který kontroluje pole, získává v dalších střetnutích na tomto poli bonus +1 k palebné síle.\n\n
+
         Vítězství\n
-        - Každý hráč má svou základnu. O toto pole nemůže nijak přijít (tedy trvale má zde bonus +1 k palebné síle). Pokud hráč prohraje bitvu na svém poli prohrál hru.\n
+            - Každý hráč začíná na své základně. Pokud hráč prohraje střet na poli své základny a soupeř získá kontrolu nad základnou, hráč prohrává hru.
     </string>
-    <string name="aboutGameText">nn</string>
+    <string name="aboutGameText">
+        <b>Úvod</b>\n
+        To, co dnes vidíte, je prvním krokem k vytvoření MMORTS odehrávající se v budoucnosti, kdy lidstvo je schopno cestovat vesmírem. Každý z hráčů bude začínat s jednou domovskou planetou a několika kusy vesmírných lodí a začne budovat své vlastní hvězdné impérium.\n
+
+        <b>Současný stav</b>\n
+        V první fázi předvádíme pouze \“minihru\”, která bude později součástí velké budovatelské hry a týká se pouze soubojů jednotlivých hráčů mezi sebou. Náš cíl je dovést tuto část naší strategické hry do fáze, kdy sama o sobě bude plnohodnotnou.\n
+        Ve hře si zvolíte strukturu vaší flotily a s ní se pokusíte dobýt soupeřovu základnu dříve, než totéž provede vám. Jeden kompletní souboj hráčů je odhadován na 10 minut. Jde o tahovou strategii, při které oba hráči plánují svůj tah a po potvrzení obou hráčů se provedou plány obou současně. Hra obsahuje různé typy lodí efektivních pro různé situace. Originální je díky specifickému prvku rozhodování, v kterých případech je lepší se strategicky stáhnout a nebo bojovat do posledního přeživšího.\n
+        Na základě vaší zpětné vazby plánujeme vytvořit rozvinutější bojové mapy a případně upravit některé typy lodí na základě toho, jak jsou využívány skutečnými hráči.\n
+
+        <b>Budoucí stav</b>\n
+        Minihra zde prezentovaná bude pouze součást větší budovatelské hry, která začínat jako ekonomické hra. Impérium s rostoucí velikostí bude stále náročnější rozšiřovat ekonomickou cestou a s větší velikostí bude sílit motivaci rozšiřovat se nadále silou. Naše hra se bude od klasické online budovatelské strategie odlišovat zejména v bodech:\n
+        - Hra bude obsahovat malé množství druhů, ale za to realistických komodit. Peníze nebudou pouze číslem, které tečou ze zlatých dolů, ale budou podléhat sofistikovaným, avšak pro hráče srozumitelným ekonomickým principům.\n
+        - Hra nebude obsahovat tzv. \"daily tasks\" mechaniky, které vás budou udržovat neustále online. Chceme hru vytvořit na principu, že je možné se k ní vrátit po libovolně dlouhé době bez pocitu, že vám něco uniklo. Hra bude spíše motivovat se k ní vrátit, než-li k tomu ji neopouštět.\n
+        - Hra nebude na žádné své úrovni obsahovat \“pay to win\” koncept.
+</string>
     <string name="donateText">Naši snahu s touto hrou můžete podpořit na stránkách platformy Buy me a coffee. Můžete nás zde podpořit jednorázově nebo nastavit měsíční podporu a stát se tak členem naší komunity. Stačí kliknout na tlačítko pod tímto textem. Za jakýkoliv dar vám moc děkujeme.</string>
     <string name="drawNominative">Remíza</string>
+    <string name="aiCalculate">Vypočítávám soupeřův tah.</string>
+    <string name="waitingForPlayer">Čekám na soupeřův tah.</string>
 </resources>
