@@ -173,4 +173,6 @@
     <string name="drawNominative">Remíza</string>
     <string name="aiCalculate">Vypočítávám soupeřův tah.</string>
     <string name="waitingForPlayer">Čekám na soupeřův tah.</string>
+    <string name="keepScreenOn">Nezamykat obrazovku</string>
+    <string name="showMap">Ukaž mapu</string>
 </resources>

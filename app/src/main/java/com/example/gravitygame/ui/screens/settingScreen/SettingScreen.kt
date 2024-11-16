@@ -59,8 +59,18 @@ fun SettingScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(text = stringResource(id = R.string.showTutorial))
+                Spacer(modifier = Modifier.width(16.dp))
+                Switch(
+                    checked = settingUiState.keepScreenOn,
+                    onCheckedChange = { isChecked ->
+                        settingModel.changeKeepScreenOn(enabled = isChecked, context = context)
+                    }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = stringResource(id = R.string.keepScreenOn))
             }
         }
+
         Button(
             onClick = {
                 settingModel.saveTutorialSettings(

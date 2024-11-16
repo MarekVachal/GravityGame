@@ -23,7 +23,7 @@ import com.example.gravitygame.timer.TimerViewModel
 import com.example.gravitygame.models.PlayerData
 import com.example.gravitygame.models.Players
 import com.example.gravitygame.ui.utils.calculateBattle
-import com.example.gravitygame.ui.utils.MovementRecord
+import com.example.gravitygame.models.MovementRecord
 import com.example.gravitygame.ui.screens.selectArmyScreen.SelectArmyUiState
 import com.example.gravitygame.ui.utils.BattleResultEnum
 import com.example.gravitygame.ui.utils.ProgressIndicatorType
@@ -310,7 +310,7 @@ class BattleViewModel : ViewModel() {
                 cleanEnemyAcceptableLost()
             }
         }
-        checkEndCondition()
+        checkEndCondition(timerModel = timerModel)
         showProgressIndicator(toShow = true, progressIndicatorType = ProgressIndicatorType.NEW_TURN)
         delay(1000)
         showProgressIndicator(toShow = false, progressIndicatorType = ProgressIndicatorType.NEW_TURN)
@@ -363,7 +363,8 @@ class BattleViewModel : ViewModel() {
             playerData = playerData
         )
         updateUIWithBestMove(bestMove)
-        updateEnemyRecord(bestMove)
+        // Function to show enemy movement between planets
+        //updateEnemyRecord(bestMove)
     }
 
     fun cleanEnemyRecord(){
@@ -387,7 +388,7 @@ class BattleViewModel : ViewModel() {
             _locationListUiState.value.copy(locationList = state.locationList)
     }
 
-    private fun checkEndCondition() {
+    private fun checkEndCondition(timerModel: TimerViewModel) {
         val player1Base = battleMap.player1Base
         val player2Base = battleMap.player2Base
         val locationList = locationListUiState.value.locationList
@@ -396,7 +397,7 @@ class BattleViewModel : ViewModel() {
             locationList[player2Base].owner.value == Players.PLAYER1
             ){
             playerData.playerBattleResult = BattleResultEnum.DRAW
-            endOfGame()
+            endOfGame(timerModel = timerModel)
         } else if (locationList[player1Base].owner.value == Players.PLAYER2 ||
             locationList.all { it.myShipList.isEmpty() }
             ) {
@@ -405,7 +406,7 @@ class BattleViewModel : ViewModel() {
                 Players.PLAYER2 -> playerData.playerBattleResult = BattleResultEnum.WIN
                 Players.NONE -> playerData.playerBattleResult = BattleResultEnum.DRAW
             }
-            endOfGame()
+            endOfGame(timerModel = timerModel)
         } else if (locationList[player2Base].owner.value == Players.PLAYER1 ||
             locationList.all { it.enemyShipList.isEmpty() }
             ) {
@@ -414,13 +415,14 @@ class BattleViewModel : ViewModel() {
                 Players.PLAYER2 -> playerData.playerBattleResult = BattleResultEnum.LOSE
                 Players.NONE -> playerData.playerBattleResult = BattleResultEnum.DRAW
             }
-            endOfGame()
+            endOfGame(timerModel = timerModel)
         }
     }
 
-    private fun endOfGame() {
+    private fun endOfGame(timerModel: TimerViewModel) {
         showEndOfGameDialog(true)
         changeEndOfGameState(true)
+        timerModel.cancelTimer()
     }
 
     fun changeEndOfGameState(isEnd: Boolean){

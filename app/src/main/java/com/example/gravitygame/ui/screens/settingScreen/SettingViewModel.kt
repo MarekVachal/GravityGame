@@ -2,7 +2,6 @@ package com.example.gravitygame.ui.screens.settingScreen
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,22 +21,21 @@ class SettingViewModel : ViewModel() {
         }
     }
 
+    fun changeKeepScreenOn(enabled: Boolean, context: Context){
+        _settingUiState.value = _settingUiState.value.copy(keepScreenOn = enabled)
+        saveTutorialSettings(context = context)
+    }
+
     fun changeShowTutorial(toShow: Boolean, context: Context){
-        Log.d("Switch", "Switch on beginning: ${settingUiState.value.showTutorial}")
-        if(toShow){
-            _settingUiState.value = _settingUiState.value.copy(showTutorial = true)
-            saveTutorialSettings(context = context)
-        } else {
-            _settingUiState.value = _settingUiState.value.copy(showTutorial = false)
-            saveTutorialSettings(context = context)
-        }
-        Log.d("Switch", "Switch on end: ${settingUiState.value.showTutorial}")
+        _settingUiState.value = _settingUiState.value.copy(showTutorial = toShow)
+        saveTutorialSettings(context = context)
     }
 
     fun saveTutorialSettings(context: Context){
         val sharedPreferences: SharedPreferences = context.getSharedPreferences("AppSettings", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.putBoolean("ShowTutorial", settingUiState.value.showTutorial)
+        editor.putBoolean("keepScreenOn", settingUiState.value.keepScreenOn)
         editor.apply()
     }
 

@@ -6,6 +6,7 @@
         id("com.google.devtools.ksp")
         id("androidx.room")
         id("com.google.gms.google-services")
+        id("io.sentry.android.gradle") version "4.13.0"
 }
 
 android {
@@ -32,6 +33,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -58,17 +60,18 @@ android {
 }
 
 dependencies {
-    val composeBomVersion = "2024.10.01"
+    val composeBomVersion = "2024.11.00"
     val roomVersion = "2.6.1"
 
+    implementation ("io.sentry:sentry-android:6.31.0")
     implementation("androidx.databinding:databinding-adapters:8.7.2")
     implementation("com.google.firebase:firebase-common-ktx:21.0.0")
-    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+    implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
     // Add the dependencies for Firebase products you want to use
     // When using the BoM, don't specify versions in Firebase dependencies
     implementation("com.google.firebase:firebase-analytics")
     // Add the dependencies for any other desired Firebase products
-    implementation("androidx.navigation:navigation-compose:2.8.3")
+    implementation("androidx.navigation:navigation-compose:2.8.4")
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.activity:activity-compose:1.9.3")

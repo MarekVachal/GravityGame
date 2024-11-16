@@ -51,7 +51,8 @@ fun BattleMapScreen(
     settingsModel: SettingViewModel,
     databaseModel: DatabaseViewModel,
     context: Context,
-    endOfGame: () -> Unit
+    endOfGame: () -> Unit,
+    showBattleResultMap: () -> Unit
 
 
 ) {
@@ -67,6 +68,7 @@ fun BattleMapScreen(
         toShow = movementUiState.showEndOfGameDialog,
         onDismissRequest = endOfGame,
         confirmButton = endOfGame,
+        dismissButton = showBattleResultMap,
         battleModel = battleModel,
         context = context
     )
@@ -195,7 +197,7 @@ fun BattleMapScreen(
         }
     }
 
-    if(!movementUiState.showProgressIndicator){
+    if(!movementUiState.showProgressIndicator && !movementUiState.endOfGame){
         Row(
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.End
@@ -221,6 +223,24 @@ fun BattleMapScreen(
             ) {
                 Text(
                     text = stringResource(id = R.string.nextTurn),
+                    modifier = modifier.padding(16.dp))
+            }
+        }
+    }
+
+    if(movementUiState.endOfGame){
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.End
+        ) {
+            FloatingActionButton(
+                onClick = {
+                    endOfGame()
+                },
+                modifier.padding(end = 16.dp, bottom = 16.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.exit),
                     modifier = modifier.padding(16.dp))
             }
         }

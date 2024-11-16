@@ -180,4 +180,7 @@
     <string name="donateText">You can support our efforts with this game on the Buy me a coffee platform. You can choose to support us with a one-time donation or set up a monthly contribution and become a member of our community. Just click the button. We are very grateful for any donation.</string>
     <string name="aiCalculate">Calculating opponent move.</string>
     <string name="waitingForPlayer">Waiting for opponent move.</string>
+    <string name="keepScreenOn">Keep screen on</string>
+    <string name="exit" translatable="false">Exit</string>
+    <string name="showMap">Show map</string>
 </resources>

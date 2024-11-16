@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.Window
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -45,10 +46,15 @@ import com.example.gravitygame.ui.screens.statisticScreen.StatisticScreen
 import com.example.gravitygame.ui.screens.statisticScreen.StatisticViewModel
 import com.example.gravitygame.ui.theme.GravityGameTheme
 import com.google.firebase.FirebaseApp
+import io.sentry.Sentry
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Sentry.init { options ->
+            options.dsn = "https://888fc31a43d3d4b98897dcca0347f76b@o4508309623275520.ingest.de.sentry.io/4508309644902480"
+            options.tracesSampleRate = 1.0
+        }
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         closeAndroidBars(window = window)
         val database = Room.databaseBuilder(
@@ -63,7 +69,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ScreenSetup(activity = this, database = database, owner = this)
+                    ScreenSetup(activity = this, database = database, owner = this, window = window)
                 }
             }
         }
@@ -72,7 +78,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStoreOwner) {
+fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStoreOwner, window: Window) {
 
     val navController: NavHostController = rememberNavController()
     val repository = BattleRepository(database.battleResultDao())
@@ -87,7 +93,7 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
     val mainMenuModel: MainMenuViewModel = viewModel()
     val statisticModel: StatisticViewModel = viewModel()
     val context = LocalContext.current
-    loadSettings(context = context, settingsModel = settingModel)
+    loadSettings(context = context, settingsModel = settingModel, window = window)
 
 
     NavHost(navController = navController, startDestination = Destinations.MAINMENU.name) {
@@ -112,8 +118,10 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
                 endOfGame = {
                     navController.navigate(Destinations.MAINMENU.name)
                     battleModel.showEndOfGameDialog(false)
-                    timerModel.cancelTimer()
                     battleModel.changeEndOfGameState(false)
+                },
+                showBattleResultMap = {
+                    battleModel.showEndOfGameDialog(false)
                 },
                 settingsModel = settingModel,
                 context = context,
@@ -197,13 +205,23 @@ private fun closeAndroidBars(window: Window){
     }
 }
 
-
-private fun loadSettings(context: Context, settingsModel: SettingViewModel) {
+private fun loadSettings(context: Context, settingsModel: SettingViewModel, window: Window) {
     val sharedPreferences: SharedPreferences = context.getSharedPreferences(
         "AppSettings", Context.MODE_PRIVATE)
     val showTutorial = sharedPreferences.getBoolean("ShowTutorial", true)
     val language = sharedPreferences.getString("language", "en")?: ""
+    val keepScreenOn = sharedPreferences.getBoolean("keepScreenOn", true)
     settingsModel.changeShowTutorial(toShow = showTutorial, context = context)
     settingsModel.setLanguage(context = context, language = language)
     settingsModel.setChosenLanguage(language = language)
+    settingsModel.changeKeepScreenOn(enabled = keepScreenOn, context = context)
+    setScreenOn(enabled = keepScreenOn, window = window)
+}
+
+private fun setScreenOn(enabled: Boolean, window: Window){
+    if(enabled){
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    } else {
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
 }

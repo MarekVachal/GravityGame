@@ -1,5 +1,7 @@
 package com.example.gravitygame.ui.utils
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
@@ -24,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +38,7 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.gravitygame.R
 import com.example.gravitygame.models.Location
@@ -41,6 +46,7 @@ import com.example.gravitygame.models.Players
 import com.example.gravitygame.models.Ship
 import com.example.gravitygame.models.ShipType
 import com.example.gravitygame.ui.screens.battleMapScreen.BattleViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -56,12 +62,23 @@ fun MapBox(
     explosionSize: Dp
 ) {
     var lastTouchPosition: Offset? by remember { mutableStateOf(null) }
+    val draggingIconVisible = remember { mutableStateOf(false) }
+    val iconPositionX = remember { Animatable(0f) }
+    val iconPositionY = remember { Animatable(0f) }
+    val iconSize = boxSize.value/2
+    val coroutineScope = rememberCoroutineScope()
+
     Box(
         modifier = modifier
             .size(boxSize)
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = { offset ->
+                        draggingIconVisible.value = true
+                        coroutineScope.launch {
+                            iconPositionX.snapTo(offset.x - iconSize)
+                            iconPositionY.snapTo(offset.y - iconSize)
+                        }
                         battleModel.setStartLocationMovementOrder(location)
                         lastTouchPosition = offset
                     },
@@ -75,12 +92,31 @@ fun MapBox(
                                 touchPositionInWindow,
                                 battleModel.movementUiState.value.mapBoxCoordinates
                             )
-                            endLocation?.let { battleModel.setEndLocationMovementOrder(it) }
-                                ?: battleModel.cleanAfterUnsuccessfulMovement()
+                            if(endLocation != null){
+                                battleModel.setEndLocationMovementOrder(endLocation)
+                                draggingIconVisible.value = false
+                            } else {
+                                draggingIconVisible.value = false
+                                coroutineScope.launch {
+                                    iconPositionX.snapTo(0f)
+                                    iconPositionY.snapTo(0f)
+                                }
+                                battleModel.cleanAfterUnsuccessfulMovement()
+                            }
                         }
                     },
                     onDrag = { change, _ ->
                         lastTouchPosition = change.position
+                        coroutineScope.launch {
+                            iconPositionX.animateTo(
+                                targetValue = change.position.x - iconSize,
+                                animationSpec = tween(100)
+                            )
+                            iconPositionY.animateTo(
+                                targetValue = change.position.y - iconSize,
+                                animationSpec = tween(100)
+                            )
+                        }
                         change.consume()
                     }
                 )
@@ -113,6 +149,7 @@ fun MapBox(
                 ), shape = CircleShape
             )
     ) {
+
 
         PlanetImage(
             image = planetImage,
@@ -207,6 +244,18 @@ fun MapBox(
             isForEnemy = false,
             battleModel = battleModel
         )
+
+        if (draggingIconVisible.value) {
+            Image(
+                painter = painterResource(id = R.drawable.fleet_icon),
+                contentDescription = null,
+                modifier = Modifier
+                    .size((boxSize.value/1.5).dp)
+                    .offset {
+                        IntOffset(iconPositionX.value.toInt(), iconPositionY.value.toInt())
+                    }
+            )
+        }
     }
 }
 

@@ -3,11 +3,10 @@ package com.example.gravitygame.ui.screens.infoDialogsScreens
 import android.content.Context
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.example.gravitygame.R
 import com.example.gravitygame.ui.screens.battleMapScreen.BattleViewModel
@@ -19,16 +18,23 @@ fun EndOfGameDialog(
     battleModel: BattleViewModel,
     context: Context,
     onDismissRequest: () -> Unit,
-    confirmButton: () -> Unit
+    confirmButton: () -> Unit,
+    dismissButton: () -> Unit
 ){
     if(toShow){
         AlertDialog(
             onDismissRequest = onDismissRequest,
             confirmButton = {
                 Button(onClick = confirmButton) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.check),
-                        contentDescription = "Check icon"
+                    Text(
+                        text = stringResource(R.string.exit)
+                    )
+                }
+            },
+            dismissButton = {
+                Button(onClick = dismissButton) {
+                    Text(
+                        text = stringResource(R.string.showMap)
                     )
                 }
             },
