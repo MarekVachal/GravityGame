@@ -46,15 +46,10 @@ import com.example.gravitygame.ui.screens.statisticScreen.StatisticScreen
 import com.example.gravitygame.ui.screens.statisticScreen.StatisticViewModel
 import com.example.gravitygame.ui.theme.GravityGameTheme
 import com.google.firebase.FirebaseApp
-import io.sentry.Sentry
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Sentry.init { options ->
-            options.dsn = "https://888fc31a43d3d4b98897dcca0347f76b@o4508309623275520.ingest.de.sentry.io/4508309644902480"
-            options.tracesSampleRate = 1.0
-        }
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         closeAndroidBars(window = window)
         val database = Room.databaseBuilder(
@@ -106,7 +101,8 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
                 selectArmyModel = selectArmyModel,
                 tutorialModel = tutorialModel,
                 context = context,
-                settingsModel = settingModel
+                settingsModel = settingModel,
+                onBackButtonClick = { navController.navigate(Destinations.MAINMENU.name) },
             )
         }
 
@@ -117,8 +113,6 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
                 tutorialModel = tutorialModel,
                 endOfGame = {
                     navController.navigate(Destinations.MAINMENU.name)
-                    battleModel.showEndOfGameDialog(false)
-                    battleModel.changeEndOfGameState(false)
                 },
                 showBattleResultMap = {
                     battleModel.showEndOfGameDialog(false)
@@ -160,7 +154,8 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
         composable(route = Destinations.ACCOUNT.name){
             AccountScreen(
                 onStatisticButtonClick = { navController.navigate(Destinations.STATISTICS.name) },
-                onAchievementsButtonClick = { navController.navigate(Destinations.ACHIEVEMENTS.name) }
+                onAchievementsButtonClick = { navController.navigate(Destinations.ACHIEVEMENTS.name) },
+                onBackButtonClick = { navController.navigate(Destinations.MAINMENU.name) }
             )
         }
 

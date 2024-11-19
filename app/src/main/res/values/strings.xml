@@ -183,4 +183,6 @@
     <string name="keepScreenOn">Keep screen on</string>
     <string name="exit" translatable="false">Exit</string>
     <string name="showMap">Show map</string>
+    <string name="capitulate">Capitulate</string>
+    <string name="capitulateInfoText">Do you really want to capitulate? The game ends and you will lose it.</string>
 </resources>

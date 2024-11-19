@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -266,26 +265,27 @@ fun MovementRecordOnLine(
     location1: Int,
     location2: Int,
     myRecord: List<Map<Ship, Int>>,
-    enemyRecord: List<Ship>
+    //enemyRecord: List<Ship>
 ){
-    val enemyCruisers = battleModel.getNumberShipsForRecord(shipType = ShipType.CRUISER, location1 = location1, location2 = location2, isMyRecord = false)
-    val enemyDestroyers = battleModel.getNumberShipsForRecord(shipType = ShipType.DESTROYER, location1 = location1, location2 = location2, isMyRecord = false)
-    val enemyGhost = battleModel.getNumberShipsForRecord(shipType = ShipType.GHOST, location1 = location1, location2 = location2, isMyRecord = false)
-    val enemyWarper = battleModel.getNumberShipsForRecord(shipType = ShipType.WARPER, location1 = location1, location2 = location2, isMyRecord = false)
+    //val enemyCruisers = battleModel.getNumberShipsForRecord(shipType = ShipType.CRUISER, location1 = location1, location2 = location2, isMyRecord = false)
+    //val enemyDestroyers = battleModel.getNumberShipsForRecord(shipType = ShipType.DESTROYER, location1 = location1, location2 = location2, isMyRecord = false)
+    //val enemyGhost = battleModel.getNumberShipsForRecord(shipType = ShipType.GHOST, location1 = location1, location2 = location2, isMyRecord = false)
+    //val enemyWarper = battleModel.getNumberShipsForRecord(shipType = ShipType.WARPER, location1 = location1, location2 = location2, isMyRecord = false)
 
     val cruisers = battleModel.getNumberShipsForRecord(shipType = ShipType.CRUISER, location1 = location1, location2 = location2, isMyRecord = true)
     val destroyers = battleModel.getNumberShipsForRecord(shipType = ShipType.DESTROYER, location1 = location1, location2 = location2, isMyRecord = true)
     val ghost = battleModel.getNumberShipsForRecord(shipType = ShipType.GHOST, location1 = location1, location2 = location2, isMyRecord = true)
     val warper = battleModel.getNumberShipsForRecord(shipType = ShipType.WARPER, location1 = location1, location2 = location2, isMyRecord = true)
+
     val myRecordBoolean = myRecord.any { map -> map.any { (it.key.startingPosition == location1 && it.key.currentPosition == location2) || (it.key.startingPosition == location2 && it.key.currentPosition == location1) } }
-    val enemyRecordBoolean = enemyRecord.any { (it.startingPosition == location1 && it.currentPosition == location2) || (it.startingPosition == location2 && it.currentPosition == location1)}
-    if(myRecordBoolean || enemyRecordBoolean){
+    //val enemyRecordBoolean = enemyRecord.any { (it.startingPosition == location1 && it.currentPosition == location2) || (it.startingPosition == location2 && it.currentPosition == location1)}
+    if(myRecordBoolean /*|| enemyRecordBoolean */ ){
         Row(
             modifier = modifier.wrapContentSize(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ){
-            if (myRecordBoolean){
+            //if (myRecordBoolean){
                 Card(
                     modifier = modifier,
                     colors = CardDefaults.cardColors(
@@ -302,7 +302,8 @@ fun MovementRecordOnLine(
                         if(warper != 0) ArmyInfoRow(shipNumber = warper, shipType = ShipType.WARPER, battleModel = battleModel)
                     }
                 }
-            }
+            //}
+            /*
             if(myRecordBoolean && enemyRecordBoolean){
                 Spacer(modifier = Modifier.size(4.dp))
             }
@@ -324,6 +325,8 @@ fun MovementRecordOnLine(
                     }
                 }
             }
+
+             */
         }
 
     }

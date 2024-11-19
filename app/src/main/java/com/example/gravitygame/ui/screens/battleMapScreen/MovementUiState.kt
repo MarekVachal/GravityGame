@@ -15,6 +15,7 @@ data class MovementUiState(
     val shipTypeToShow: ShipType = ShipType.CRUISER,
     val showEndOfGameDialog: Boolean = false,
     val showLocationInfoDialog: Boolean = false,
+    val showCapitulateInfoDialog: Boolean = false,
     val locationForInfo : Int = 0,
     val mapBoxCoordinates: Map<Int, Rect> = mutableMapOf(),
     val turn: Int = 0,

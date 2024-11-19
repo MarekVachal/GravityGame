@@ -1,6 +1,7 @@
 package com.example.gravitygame.ui.screens.battleMapScreen
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.ui.geometry.Rect
 import androidx.lifecycle.ViewModel
 import com.example.gravitygame.R
@@ -58,6 +59,10 @@ class BattleViewModel : ViewModel() {
             showProgressIndicator = toShow,
             progressIndicatorType = progressIndicatorType
         )
+    }
+
+    fun showCapitulateInfoDialog(toShow: Boolean){
+        _movementUiState.value = _movementUiState.value.copy(showCapitulateInfoDialog = toShow)
     }
 
     fun writeDestroyedShips(isSimulation: Boolean, myLostShip: Int, enemyLostShip: Int){
@@ -175,7 +180,7 @@ class BattleViewModel : ViewModel() {
         _locationListUiState.value = _locationListUiState.value.copy(locationList = newLocationList)
     }
 
-    fun findPlayerBaseLocation(): Int {
+    private fun findPlayerBaseLocation(): Int {
         return if (playerData.player == Players.PLAYER1){
             battleMap.player1Base
         } else {
@@ -292,6 +297,37 @@ class BattleViewModel : ViewModel() {
         _locationListUiState.value = _locationListUiState.value.copy(locationList = newLocationList.toList())
     }
 
+    suspend fun setOnClickButtonNextTurn(navigateToMainMenuScreen: () -> Unit, context: Context, timerModel: TimerViewModel, databaseModel: DatabaseViewModel){
+        if(!movementUiState.value.endOfGame){
+            if(hasExceededShipLimit(findPlayerBaseLocation())){
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.manyShipsOnBaseLocation),
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                finishTurn(
+                    timerModel = timerModel,
+                    databaseModel = databaseModel
+                )
+
+            }
+        } else {
+            navigateToMainMenuScreen()
+            showEndOfGameDialog(false)
+            changeEndOfGameState(false)
+            showCapitulateInfoDialog(false)
+        }
+    }
+
+    fun setOnClickButtonNextTurnText(context: Context): String{
+        return if(!movementUiState.value.endOfGame){
+            context.getString(R.string.nextTurn)
+        } else {
+            context.getString(R.string.exit)
+        }
+    }
+
     suspend fun finishTurn(timerModel: TimerViewModel, databaseModel: DatabaseViewModel) {
         timerModel.stopTimer()
         cleanBattleOnLocations()
@@ -318,22 +354,21 @@ class BattleViewModel : ViewModel() {
             timerModel.resetTimer()
             timerModel.startTimer()
         } else {
-            databaseModel.insertBattleResult(
-                BattleResult(
-                    result = playerData.playerBattleResult,
-                    timestamp = System.currentTimeMillis(),
-                    enemyShipDestroyed = movementUiState.value.enemyShipsDestroyed,
-                    myShipLost = movementUiState.value.myLostShips,
-                    turn = movementUiState.value.turn
-                )
-            )
-            cleanBattleResult()
+            writeDataToDatabase(databaseModel = databaseModel)
         }
-        /*
-        val gameData = GameData()
-        gameData.updateLocationList(locationListTrue = locationList, armyList = armyList)
-        val jsonData = Json.encodeToString(gameData)
-        */
+    }
+
+    private fun writeDataToDatabase(databaseModel: DatabaseViewModel){
+        databaseModel.insertBattleResult(
+            BattleResult(
+                result = playerData.playerBattleResult,
+                timestamp = System.currentTimeMillis(),
+                enemyShipDestroyed = movementUiState.value.enemyShipsDestroyed,
+                myShipLost = movementUiState.value.myLostShips,
+                turn = movementUiState.value.turn
+            )
+        )
+        cleanBattleResult()
     }
 
     private fun cleanBattleResult(){
@@ -363,8 +398,7 @@ class BattleViewModel : ViewModel() {
             playerData = playerData
         )
         updateUIWithBestMove(bestMove)
-        // Function to show enemy movement between planets
-        //updateEnemyRecord(bestMove)
+        updateEnemyRecord(bestMove)
     }
 
     fun cleanEnemyRecord(){
@@ -419,13 +453,20 @@ class BattleViewModel : ViewModel() {
         }
     }
 
+    fun capitulate(timerModel: TimerViewModel, databaseModel: DatabaseViewModel){
+        playerData.playerBattleResult = BattleResultEnum.LOSE
+        changeEndOfGameState(true)
+        timerModel.cancelTimer()
+        writeDataToDatabase(databaseModel = databaseModel)
+    }
+
     private fun endOfGame(timerModel: TimerViewModel) {
         showEndOfGameDialog(true)
         changeEndOfGameState(true)
         timerModel.cancelTimer()
     }
 
-    fun changeEndOfGameState(isEnd: Boolean){
+    private fun changeEndOfGameState(isEnd: Boolean){
         _movementUiState.value = _movementUiState.value.copy(endOfGame = isEnd)
     }
 
@@ -882,7 +923,7 @@ class BattleViewModel : ViewModel() {
         } ?: false
     }
     
-    fun hasExceededShipLimit(location: Int?): Boolean{
+    private fun hasExceededShipLimit(location: Int?): Boolean{
         return location?.let { 
             val locationInstance = locationListUiState.value.locationList[it]
             locationInstance.hasExceededShipLimit(battleMap.shipLimitOnPosition)

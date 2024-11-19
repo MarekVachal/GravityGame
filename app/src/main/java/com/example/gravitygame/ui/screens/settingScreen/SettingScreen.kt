@@ -36,38 +36,48 @@ fun SettingScreen(
     Box(
         modifier = modifier
     ) {
-        Row(
+        Column (
             modifier = modifier
                 .fillMaxWidth()
                 .align(Alignment.Center),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            LanguageSelection(
-                context = context,
-                settingUiState = settingUiState,
-                settingModel = settingModel
-            )
+            verticalArrangement = Arrangement.SpaceAround,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
             Row(
+                modifier = modifier,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Switch(
-                    checked = settingUiState.showTutorial,
-                    onCheckedChange = { isChecked ->
-                        settingModel.changeShowTutorial(toShow = isChecked, context = context)
-                    }
+                LanguageSelection(
+                    context = context,
+                    settingUiState = settingUiState,
+                    settingModel = settingModel
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = stringResource(id = R.string.showTutorial))
+            }
+            Column (
+                modifier = modifier,
+                verticalArrangement = Arrangement.Center
+            ){
+                Row {
+                    Switch(
+                        checked = settingUiState.showTutorial,
+                        onCheckedChange = { isChecked ->
+                            settingModel.changeShowTutorial(toShow = isChecked, context = context)
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = stringResource(id = R.string.showTutorial))
+                }
                 Spacer(modifier = Modifier.width(16.dp))
-                Switch(
-                    checked = settingUiState.keepScreenOn,
-                    onCheckedChange = { isChecked ->
-                        settingModel.changeKeepScreenOn(enabled = isChecked, context = context)
-                    }
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = stringResource(id = R.string.keepScreenOn))
+                Row {
+                    Switch(
+                        checked = settingUiState.keepScreenOn,
+                        onCheckedChange = { isChecked ->
+                            settingModel.changeKeepScreenOn(enabled = isChecked, context = context)
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = stringResource(id = R.string.keepScreenOn))
+                }
             }
         }
 

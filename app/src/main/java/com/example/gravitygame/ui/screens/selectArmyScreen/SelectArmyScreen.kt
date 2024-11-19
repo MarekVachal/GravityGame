@@ -22,6 +22,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +30,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -53,7 +55,8 @@ fun SelectArmyScreen(
     tutorialModel: TutorialViewModel,
     context: Context,
     onDismissRequest: () -> Unit = { selectArmyModel.showShipInfoDialog(false) },
-    isEnabled: Boolean = !selectArmyModel.checkArmySize(battleModel)
+    isEnabled: Boolean = !selectArmyModel.checkArmySize(battleModel),
+    onBackButtonClick: () -> Unit
 ) {
     val selectArmyUiState by selectArmyModel.selectArmyUiState.collectAsState()
     val tutorialUiState by tutorialModel.tutorialUiState.collectAsState()
@@ -224,30 +227,48 @@ fun SelectArmyScreen(
             }
         }
 
-        FloatingActionButton(
-            onClick = {
-                if (selectArmyModel.checkArmySize(battleModel)) {
-                    battleModel.createArmyList(
-                        selectArmyUiState = selectArmyModel.selectArmyUiState.value
-                    )
-                    onNextButtonClicked()
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp, start = 16.dp, end = 16.dp)
+                .align(alignment = Alignment.BottomCenter),
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            IconButton(
+                onClick = {
+                    onBackButtonClick()
                     selectArmyModel.cleanUiStates()
-                } else {
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.exactArmySize),
-                        Toast.LENGTH_SHORT
-                    ).show()
                 }
-            },
-            modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 16.dp)
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.check),
-                contentDescription = "Check icon"
-            )
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.undo),
+                    contentDescription = "Undo icon",
+                    tint = Color.Unspecified)
+            }
+            FloatingActionButton(
+                onClick = {
+                    if (selectArmyModel.checkArmySize(battleModel)) {
+                        battleModel.createArmyList(
+                            selectArmyUiState = selectArmyModel.selectArmyUiState.value
+                        )
+                        onNextButtonClicked()
+                        selectArmyModel.cleanUiStates()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.exactArmySize),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                },
+                modifier
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.check),
+                    contentDescription = "Check icon"
+                )
+            }
         }
 
     }

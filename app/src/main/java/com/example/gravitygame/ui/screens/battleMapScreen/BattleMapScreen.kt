@@ -1,13 +1,14 @@
 package com.example.gravitygame.ui.screens.battleMapScreen
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -39,6 +40,7 @@ import com.example.gravitygame.timer.TimerViewModel
 import com.example.gravitygame.ui.screens.infoDialogsScreens.BattleInfoDialog
 import com.example.gravitygame.ui.screens.settingScreen.SettingViewModel
 import androidx.compose.runtime.rememberCoroutineScope
+import com.example.gravitygame.ui.screens.infoDialogsScreens.CapitulateInfoDialog
 import com.example.gravitygame.ui.utils.ProgressIndicator
 import kotlinx.coroutines.launch
 
@@ -71,6 +73,15 @@ fun BattleMapScreen(
         dismissButton = showBattleResultMap,
         battleModel = battleModel,
         context = context
+    )
+
+    CapitulateInfoDialog(
+        toShow = movementUiState.showCapitulateInfoDialog,
+        onCapitulateButtonClick = {
+            battleModel.capitulate(timerModel = timerModel, databaseModel = databaseModel)
+            endOfGame()
+        },
+        onDismissRequest = { battleModel.showCapitulateInfoDialog(toShow = false) }
     )
 
     LocationInfoDialog(
@@ -197,51 +208,41 @@ fun BattleMapScreen(
         }
     }
 
-    if(!movementUiState.showProgressIndicator && !movementUiState.endOfGame){
+    if(!movementUiState.showProgressIndicator){
         Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, bottom = 16.dp, end = 16.dp),
             verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.End
+            horizontalArrangement = if(!movementUiState.endOfGame)Arrangement.SpaceBetween else Arrangement.End
         ) {
-            FloatingActionButton(
-                onClick = {
-                    if(battleModel.hasExceededShipLimit(battleModel.findPlayerBaseLocation())){
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.manyShipsOnBaseLocation),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } else {
-                        coroutineScope.launch {
-                            battleModel.finishTurn(
-                                timerModel = timerModel,
-                                databaseModel = databaseModel
-                            )
-                        }
-                    }
-                },
-                modifier.padding(end = 16.dp, bottom = 16.dp)
-            ) {
-                Text(
-                    text = stringResource(id = R.string.nextTurn),
-                    modifier = modifier.padding(16.dp))
+            if(!movementUiState.endOfGame){
+                Button(
+                    onClick = { battleModel.showCapitulateInfoDialog(toShow = true) }
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.capitulate)
+                    )
+                }
             }
-        }
-    }
 
-    if(movementUiState.endOfGame){
-        Row(
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.End
-        ) {
             FloatingActionButton(
+                modifier = modifier,
                 onClick = {
-                    endOfGame()
-                },
-                modifier.padding(end = 16.dp, bottom = 16.dp)
+                    coroutineScope.launch {
+                        battleModel.setOnClickButtonNextTurn(
+                            context = context,
+                            timerModel = timerModel,
+                            databaseModel = databaseModel,
+                            navigateToMainMenuScreen = endOfGame
+                        )
+                    }
+                }
             ) {
                 Text(
-                    text = stringResource(id = R.string.exit),
-                    modifier = modifier.padding(16.dp))
+                    text = battleModel.setOnClickButtonNextTurnText(context = context),
+                    modifier = modifier.padding(16.dp)
+                )
             }
         }
     }

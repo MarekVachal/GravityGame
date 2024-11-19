@@ -90,7 +90,7 @@ class TinyMap : BattleMap() {
                 location1 = 0,
                 location2 = 1,
                 myRecord = record,
-                enemyRecord = enemyRecord,
+                //enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec0){
                         centerVerticallyTo(route0)
@@ -117,7 +117,7 @@ class TinyMap : BattleMap() {
                 location1 = 0,
                 location2 = 3,
                 myRecord = record,
-                enemyRecord = enemyRecord,
+                //enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec1){
                         centerVerticallyTo(route1)
@@ -145,7 +145,7 @@ class TinyMap : BattleMap() {
                 location1 = 0,
                 location2 = 2,
                 myRecord = record,
-                enemyRecord = enemyRecord,
+                //enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec2){
                         centerVerticallyTo(route2)
@@ -172,7 +172,7 @@ class TinyMap : BattleMap() {
                 location1 = 1,
                 location2 = 4,
                 myRecord = record,
-                enemyRecord = enemyRecord,
+                //enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec3){
                         centerVerticallyTo(route3)
@@ -200,7 +200,7 @@ class TinyMap : BattleMap() {
                 location1 = 1,
                 location2 = 5,
                 myRecord = record,
-                enemyRecord = enemyRecord,
+                //enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec4){
                         centerVerticallyTo(route4)
@@ -228,7 +228,7 @@ class TinyMap : BattleMap() {
                 location1 = 3,
                 location2 = 4,
                 myRecord = record,
-                enemyRecord = enemyRecord,
+                //enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec5){
                         centerVerticallyTo(route5)
@@ -256,7 +256,7 @@ class TinyMap : BattleMap() {
                 location1 = 3,
                 location2 = 6,
                 myRecord = record,
-                enemyRecord = enemyRecord,
+                //enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec6){
                         centerVerticallyTo(route6)
@@ -283,7 +283,7 @@ class TinyMap : BattleMap() {
                 location1 = 2,
                 location2 = 6,
                 myRecord = record,
-                enemyRecord = enemyRecord,
+                //enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec7){
                         centerVerticallyTo(route7)
@@ -311,7 +311,7 @@ class TinyMap : BattleMap() {
                 location1 = 2,
                 location2 = 5,
                 myRecord = record,
-                enemyRecord = enemyRecord,
+                //enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec8){
                         centerVerticallyTo(route8)
@@ -339,7 +339,7 @@ class TinyMap : BattleMap() {
                 location1 = 7,
                 location2 = 4,
                 myRecord = record,
-                enemyRecord = enemyRecord,
+                //enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec9){
                         centerVerticallyTo(route9)
@@ -366,7 +366,7 @@ class TinyMap : BattleMap() {
                 location1 = 7,
                 location2 = 5,
                 myRecord = record,
-                enemyRecord = enemyRecord,
+                //enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec10){
                         centerVerticallyTo(route10)
@@ -394,7 +394,7 @@ class TinyMap : BattleMap() {
                 location1 = 7,
                 location2 = 6,
                 myRecord = record,
-                enemyRecord = enemyRecord,
+                //enemyRecord = enemyRecord,
                 modifier = modifier
                     .constrainAs(rec11){
                         centerVerticallyTo(route11)

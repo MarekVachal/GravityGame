@@ -175,4 +175,6 @@
     <string name="waitingForPlayer">Čekám na soupeřův tah.</string>
     <string name="keepScreenOn">Nezamykat obrazovku</string>
     <string name="showMap">Ukaž mapu</string>
+    <string name="capitulate">Kapitulovat</string>
+    <string name="capitulateInfoText">Opravdu chceš kapitulovat? Hra skončí tvou prohrou.</string>
 </resources>
