@@ -107,14 +107,18 @@ fun MapBox(
                     onDrag = { change, _ ->
                         lastTouchPosition = change.position
                         coroutineScope.launch {
-                            iconPositionX.animateTo(
-                                targetValue = change.position.x - iconSize,
-                                animationSpec = tween(100)
-                            )
-                            iconPositionY.animateTo(
-                                targetValue = change.position.y - iconSize,
-                                animationSpec = tween(100)
-                            )
+                            launch {
+                                iconPositionX.animateTo(
+                                    targetValue = change.position.x - iconSize,
+                                    animationSpec = tween(100)
+                                )
+                            }
+                            launch {
+                                iconPositionY.animateTo(
+                                    targetValue = change.position.y - iconSize,
+                                    animationSpec = tween(100)
+                                )
+                            }
                         }
                         change.consume()
                     }
@@ -148,6 +152,18 @@ fun MapBox(
                 ), shape = CircleShape
             )
     ) {
+
+        if (draggingIconVisible.value) {
+            Image(
+                painter = painterResource(id = R.drawable.fleet_icon),
+                contentDescription = null,
+                modifier = Modifier
+                    .size((boxSize.value/1.5).dp)
+                    .offset {
+                        IntOffset(iconPositionX.value.toInt(), iconPositionY.value.toInt())
+                    }
+            )
+        }
 
 
         PlanetImage(
@@ -243,18 +259,6 @@ fun MapBox(
             isForEnemy = false,
             battleModel = battleModel
         )
-
-        if (draggingIconVisible.value) {
-            Image(
-                painter = painterResource(id = R.drawable.fleet_icon),
-                contentDescription = null,
-                modifier = Modifier
-                    .size((boxSize.value/1.5).dp)
-                    .offset {
-                        IntOffset(iconPositionX.value.toInt(), iconPositionY.value.toInt())
-                    }
-            )
-        }
     }
 }
 
