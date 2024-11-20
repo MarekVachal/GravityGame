@@ -54,8 +54,6 @@
     <string name="aboutGameTitle">O hře</string>
     <string name="aboutUsTitle">O nás</string>
     <string name="selectLanguage">Vyber jazyk</string>
-    <string name="english">Angličtina</string>
-    <string name="czech">Čestina</string>
     <string name="showTutorial">Zobraz tutoriál</string>
     <string name="polish">Polština</string>
     <string name="manyShipsOnBaseLocation">Máš příliš mnoho jednotek na své domovské planetě.</string>

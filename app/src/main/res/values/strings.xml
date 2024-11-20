@@ -57,8 +57,8 @@
     <string name="aboutUsTitle">About us</string>
     <string name="settingsTitle">Settings</string>
     <string name="selectLanguage">Select language</string>
-    <string name="english">English</string>
-    <string name="czech">Czech</string>
+    <string name="english" translatable="false">English</string>
+    <string name="czech" translatable="false">Čeština</string>
     <string name="showTutorial">Show tutorial</string>
     <string name="polish">Polish</string>
     <string name="donateTitle" translatable="false">Donate</string>

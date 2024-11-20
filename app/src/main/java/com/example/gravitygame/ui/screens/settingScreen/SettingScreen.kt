@@ -15,7 +15,8 @@ import androidx.compose.ui.unit.dp
 import com.example.gravitygame.R
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -30,22 +31,22 @@ fun SettingScreen(
     context: Context,
     onBackButtonClick: () -> Unit,
     settingModel: SettingViewModel
-){
+) {
     val settingUiState by settingModel.settingUiState.collectAsState()
 
     Box(
         modifier = modifier
     ) {
-        Column (
+
+        Row(
             modifier = modifier
-                .fillMaxWidth()
-                .align(Alignment.Center),
-            verticalArrangement = Arrangement.SpaceAround,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            Row(
-                modifier = modifier,
-                verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .align(alignment = Alignment.Center),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            Column(
+                modifier = modifier
             ) {
                 LanguageSelection(
                     context = context,
@@ -53,11 +54,13 @@ fun SettingScreen(
                     settingModel = settingModel
                 )
             }
-            Column (
+            Column(
                 modifier = modifier,
                 verticalArrangement = Arrangement.Center
-            ){
-                Row {
+            ) {
+                Row (
+                    verticalAlignment = Alignment.CenterVertically
+                ){
                     Switch(
                         checked = settingUiState.showTutorial,
                         onCheckedChange = { isChecked ->
@@ -67,8 +70,10 @@ fun SettingScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = stringResource(id = R.string.showTutorial))
                 }
-                Spacer(modifier = Modifier.width(16.dp))
-                Row {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                   verticalAlignment = Alignment.CenterVertically
+                ){
                     Switch(
                         checked = settingUiState.keepScreenOn,
                         onCheckedChange = { isChecked ->
