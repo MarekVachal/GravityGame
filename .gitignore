@@ -3,7 +3,7 @@ Thumbs.db
 .idea/
 *.iml
 /build
-/release
+/release/
 .gradle
 .caches/
 *.log

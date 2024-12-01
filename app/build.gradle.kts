@@ -6,15 +6,15 @@
         id("com.google.devtools.ksp")
         id("androidx.room")
         id("com.google.gms.google-services")
-        id("io.sentry.android.gradle") version "4.13.0"
+        id("io.sentry.android.gradle") version "4.14.1"
 }
 
 android {
-    namespace = "com.example.gravitygame"
+    namespace = "com.marks2games.gravitygame"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.gravitygame"
+        applicationId = "com.marks2games.gravitygame"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -63,7 +63,7 @@ dependencies {
     val composeBomVersion = "2024.11.00"
     val roomVersion = "2.6.1"
 
-    implementation ("io.sentry:sentry-android:6.31.0")
+    implementation ("io.sentry:sentry-android:7.18.1")
     implementation("androidx.databinding:databinding-adapters:8.7.2")
     implementation("com.google.firebase:firebase-common-ktx:21.0.0")
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))

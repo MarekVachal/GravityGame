@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:232456830551:android:d9ca6e1fd07c3409412d12",
+        "mobilesdk_app_id": "1:232456830551:android:094c2535b1de5fc2412d12",
         "android_client_info": {
-          "package_name": "com.example.gravitygame"
+          "package_name": "com.marks2games.gravitygame"
         }
       },
       "oauth_client": [],
