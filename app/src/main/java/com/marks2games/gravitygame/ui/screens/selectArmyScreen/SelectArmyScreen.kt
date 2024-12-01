@@ -298,7 +298,7 @@ private fun ShipRow(
 
         Image(
             painter = painterResource(id = image),
-            contentDescription = "Cruiser icon",
+            contentDescription = "Ship icon",
             modifier = Modifier
                 .weight(column3Weight)
                 .size(48.dp)
@@ -322,7 +322,7 @@ private fun ShipRow(
             modifier = Modifier
                 .weight(buttonWeight)
         ) {
-            Icon(painter = painterResource(id = R.drawable.remove), contentDescription = "Remove icon")
+            Icon(painter = painterResource(id = R.drawable.remove), contentDescription = "Remove $shipName")
         }
 
         Text(
@@ -338,7 +338,7 @@ private fun ShipRow(
             modifier = Modifier
                 .weight(buttonWeight)
         ) {
-            Icon(painter = painterResource(id = R.drawable.add), contentDescription = "Add icon")
+            Icon(painter = painterResource(id = R.drawable.add), contentDescription = "Add $shipName")
         }
     }
 }

@@ -142,10 +142,6 @@ fun MapBox(
                     2.dp,
                     if (locationList[location].accessible) {
                         Color.Green
-                    } else if (location == (battleModel.movementUiState.value.startPosition
-                            ?: 100)
-                    ) {
-                        Color.Red
                     } else {
                         Color.Unspecified
                     }

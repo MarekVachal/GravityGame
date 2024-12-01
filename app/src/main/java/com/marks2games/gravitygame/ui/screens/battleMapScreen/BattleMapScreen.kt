@@ -97,10 +97,12 @@ fun BattleMapScreen(
     )
 
     LaunchedEffect (Unit){
-        if(!battleModel.playerData.isOnline){
+        battleModel.cleanAfterCapitulate()
+        if(!battleModel.playerData.isOnline && locationListUiState.locationList[battleModel.findOpponentBaseLocation()].enemyShipList.isEmpty()){
             val enemyShipList = createAiArmy(battleMap = battleModel.battleMap)
             battleModel.initializeEnemyShipList(enemyShipList = enemyShipList)
         }
+        timerModel.stopTimer()
         timerModel.makeTimer(
             CoroutineTimer(
                 timerModel = timerModel,

@@ -188,7 +188,7 @@ class BattleViewModel : ViewModel() {
         }
     }
 
-    private fun findOpponentBaseLocation(): Int{
+    fun findOpponentBaseLocation(): Int{
         return if (playerData.opponent == Players.PLAYER1){
             battleMap.player1Base
         } else {
@@ -318,6 +318,12 @@ class BattleViewModel : ViewModel() {
             changeEndOfGameState(false)
             showCapitulateInfoDialog(false)
         }
+    }
+
+    fun cleanAfterCapitulate(){
+        showEndOfGameDialog(false)
+        changeEndOfGameState(false)
+        showCapitulateInfoDialog(false)
     }
 
     fun setOnClickButtonNextTurnText(context: Context): String{
