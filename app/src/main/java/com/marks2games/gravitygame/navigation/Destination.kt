@@ -33,9 +33,11 @@ object Statistics: Destination{
     override val route = "Statistics"
 }
 
+/*
 object Achievements: Destination{
     override val route = "Achievements"
 }
+*/
 
 object Matchmaking: Destination{
     override val route = "Matchmaking"

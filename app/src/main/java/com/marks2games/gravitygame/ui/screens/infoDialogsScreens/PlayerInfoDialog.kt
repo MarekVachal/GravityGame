@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.models.Players
 import com.marks2games.gravitygame.ui.screens.battleMapScreen.BattleViewModel
 
 @Composable

@@ -13,7 +13,6 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.marks2games.gravitygame.MainActivity
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.navigation.Destinations
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

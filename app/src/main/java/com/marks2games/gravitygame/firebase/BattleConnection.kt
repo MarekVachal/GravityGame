@@ -8,9 +8,6 @@ import com.google.firebase.database.ValueEventListener
 import com.marks2games.gravitygame.models.Location
 import com.marks2games.gravitygame.models.Players
 import io.sentry.Sentry
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
