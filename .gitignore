@@ -9,13 +9,6 @@ Thumbs.db
 *.log
 *.apk
 *.ap_
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
 /captures
 .externalNativeBuild
 .cxx
@@ -27,3 +20,7 @@ wrapper/
 .tmp/
 native/
 kotlin-profile/
+service-account.json
+sentry.properties
+google-services.json
+gradle.properties

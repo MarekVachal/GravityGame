@@ -1,5 +1,6 @@
 package com.marks2games.gravitygame.timer
 
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -8,7 +9,7 @@ import kotlinx.coroutines.launch
 
 class CoroutineTimer(
     private val timerModel: TimerViewModel,
-    private val finishTurn: suspend () -> Unit,
+    private val onFinishTimer: suspend () -> Unit,
     secondsForTurn: Int
 ) {
     private var timeLeftInMillis: Long = secondsForTurn.times(1000).toLong()
@@ -30,9 +31,10 @@ class CoroutineTimer(
                 delay(1000L)
             }
             stopTimer()
-            finishTurn()
-            resetTimer()
-            startTimer()
+            Log.d("Timer", "Timer comes to end")
+            onFinishTimer()
+            //resetTimer()
+            //startTimer()
         }
     }
 

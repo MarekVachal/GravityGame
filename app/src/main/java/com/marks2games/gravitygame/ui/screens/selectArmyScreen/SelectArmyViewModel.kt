@@ -6,6 +6,7 @@ import com.marks2games.gravitygame.ui.screens.battleMapScreen.BattleViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class SelectArmyViewModel : ViewModel() {
     private val _selectArmyUiState = MutableStateFlow(SelectArmyUiState())
@@ -28,22 +29,30 @@ class SelectArmyViewModel : ViewModel() {
     }
 
     fun changeShipType(shipType: ShipType){
-        _selectArmyUiState.value = _selectArmyUiState.value.copy(shipType = shipType)
+        _selectArmyUiState.update { state ->
+            state.copy(shipType = shipType)
+        }
     }
 
     fun addShip(ship: ShipType){
         when(ship){
             ShipType.CRUISER -> {
                 val numberShips = selectArmyUiState.value.numberCruisers.inc()
-                _selectArmyUiState.value = _selectArmyUiState.value.copy(numberCruisers = numberShips)
+                _selectArmyUiState.update { state ->
+                    state.copy(numberCruisers = numberShips)
+                }
             }
             ShipType.DESTROYER -> {
                 val numberShips = selectArmyUiState.value.numberDestroyers.inc()
-                _selectArmyUiState.value = _selectArmyUiState.value.copy(numberDestroyers = numberShips)
+                _selectArmyUiState.update { state ->
+                    state.copy(numberDestroyers = numberShips)
+                }
             }
             ShipType.GHOST -> {
                 val numberShips = selectArmyUiState.value.numberGhosts.inc()
-                _selectArmyUiState.value = _selectArmyUiState.value.copy(numberGhosts = numberShips)
+                _selectArmyUiState.update { state ->
+                    state.copy(numberGhosts = numberShips)
+                }
             }
             else -> {}
         }
@@ -53,29 +62,39 @@ class SelectArmyViewModel : ViewModel() {
         when(ship){
             ShipType.CRUISER -> {
                 val numberShips = selectArmyUiState.value.numberCruisers.dec()
-                _selectArmyUiState.value = _selectArmyUiState.value.copy(numberCruisers = numberShips)
+                _selectArmyUiState.update { state ->
+                    state.copy(numberCruisers = numberShips)
+                }
             }
             ShipType.DESTROYER -> {
                 val numberShips = selectArmyUiState.value.numberDestroyers.dec()
-                _selectArmyUiState.value = _selectArmyUiState.value.copy(numberDestroyers = numberShips)
+                _selectArmyUiState.update { state ->
+                    state.copy(numberDestroyers = numberShips)
+                }
             }
             ShipType.GHOST -> {
                 val numberShips = selectArmyUiState.value.numberGhosts.dec()
-                _selectArmyUiState.value = _selectArmyUiState.value.copy(numberGhosts = numberShips)
+                _selectArmyUiState.update { state ->
+                    state.copy(numberGhosts = numberShips)
+                }
             }
             else -> {}
         }
     }
 
     fun showShipInfoDialog(toShow: Boolean){
-        _selectArmyUiState.value = _selectArmyUiState.value.copy(showShipInfoDialog = toShow)
+        _selectArmyUiState.update { state ->
+            state.copy(showShipInfoDialog = toShow)
+        }
     }
 
     fun cleanUiStates(){
-        _selectArmyUiState.value = _selectArmyUiState.value.copy(
-            numberCruisers = 0,
-            numberDestroyers = 0,
-            numberGhosts = 0
-        )
+        _selectArmyUiState.update { state ->
+            state.copy(
+                numberCruisers = 0,
+                numberDestroyers = 0,
+                numberGhosts = 0
+            )
+        }
     }
 }

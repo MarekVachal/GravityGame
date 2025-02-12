@@ -21,7 +21,7 @@ class TinyMap : BattleMap() {
     override val planetSize = 54.dp
     override val explosionSize = 24.dp
     override val flagSize = 24.dp
-    override val secondsForTurn = 301
+    override val secondsForTurn = 80
     override val shipLimitOnPosition = 6
     override val shipLimitOnMap = 11
     private val location0 = Location(0, listOf(1, 2, 3))
@@ -413,12 +413,8 @@ class TinyMap : BattleMap() {
                         end.linkTo(startGuideline)
                         bottom.linkTo(centerHorizontalGuideline)
                     },
-                boxSize = boxSize,
-                planetSize = planetSize,
-                flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.blue_planet,
-                explosionSize = explosionSize
+                planetImage = R.drawable.blue_planet
             )
 
             MapBox(
@@ -431,12 +427,8 @@ class TinyMap : BattleMap() {
                         end.linkTo(middleLeftVerticalGuideline)
                         bottom.linkTo(topGuideline)
                     },
-                boxSize = boxSize,
-                planetSize = planetSize,
-                flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.yellow_planet,
-                explosionSize = explosionSize
+                planetImage = R.drawable.yellow_planet
             )
 
             MapBox(
@@ -449,12 +441,8 @@ class TinyMap : BattleMap() {
                         end.linkTo(middleLeftVerticalGuideline)
                         bottom.linkTo(bottomGuideline)
                     },
-                boxSize = boxSize,
-                planetSize = planetSize,
-                flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.yellow_planet,
-                explosionSize = explosionSize
+                planetImage = R.drawable.yellow_planet
             )
 
             MapBox(
@@ -467,12 +455,8 @@ class TinyMap : BattleMap() {
                         end.linkTo(centerLeftVerticalGuideline)
                         bottom.linkTo(centerHorizontalGuideline)
                     },
-                boxSize = boxSize,
-                planetSize = planetSize,
-                flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.yellow_planet,
-                explosionSize = explosionSize
+                planetImage = R.drawable.yellow_planet
             )
 
             MapBox(
@@ -485,12 +469,8 @@ class TinyMap : BattleMap() {
                         end.linkTo(middleRightVerticalGuideline)
                         bottom.linkTo(topGuideline)
                     },
-                boxSize = boxSize,
-                planetSize = planetSize,
-                flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.yellow_planet,
-                explosionSize = explosionSize
+                planetImage = R.drawable.yellow_planet
             )
 
             MapBox(
@@ -503,12 +483,8 @@ class TinyMap : BattleMap() {
                         end.linkTo(centerRightVerticalGuideline)
                         bottom.linkTo(centerHorizontalGuideline)
                     },
-                boxSize = boxSize,
-                planetSize = planetSize,
-                flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.yellow_planet,
-                explosionSize = explosionSize
+                planetImage = R.drawable.yellow_planet
             )
 
             MapBox(
@@ -521,12 +497,8 @@ class TinyMap : BattleMap() {
                         end.linkTo(middleRightVerticalGuideline)
                         bottom.linkTo(bottomGuideline)
                     },
-                boxSize = boxSize,
-                planetSize = planetSize,
-                flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.yellow_planet,
-                explosionSize = explosionSize
+                planetImage = R.drawable.yellow_planet
             )
 
             MapBox(
@@ -539,12 +511,8 @@ class TinyMap : BattleMap() {
                         end.linkTo(endGuideline)
                         bottom.linkTo(centerHorizontalGuideline)
                     },
-                boxSize = boxSize,
-                planetSize = planetSize,
-                flagSize = flagSize,
                 locationList = locationList,
-                planetImage = R.drawable.red_planet,
-                explosionSize = explosionSize
+                planetImage = R.drawable.red_planet
             )
         }
     }

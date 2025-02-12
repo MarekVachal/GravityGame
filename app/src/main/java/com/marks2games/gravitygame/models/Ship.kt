@@ -4,9 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.marks2games.gravitygame.R
-import kotlinx.serialization.Serializable
 
-@Serializable
 abstract class Ship(open val id: Int){
     abstract val name: String
     abstract val nameId: Int

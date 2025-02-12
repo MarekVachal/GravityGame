@@ -2,12 +2,16 @@ package com.marks2games.gravitygame
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.Window
+import android.view.WindowInsets
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,15 +19,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.room.Room
 import com.marks2games.gravitygame.database.AppDatabase
 import com.marks2games.gravitygame.database.BattleRepository
@@ -45,17 +54,48 @@ import com.marks2games.gravitygame.ui.screens.settingScreen.SettingViewModel
 import com.marks2games.gravitygame.ui.screens.statisticScreen.StatisticScreen
 import com.marks2games.gravitygame.ui.screens.statisticScreen.StatisticViewModel
 import com.marks2games.gravitygame.ui.theme.GravityGameTheme
-import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.FirebaseFirestore
+import com.marks2games.gravitygame.firebase.FcmToken
+import com.marks2games.gravitygame.firebase.Notification
+import com.marks2games.gravitygame.navigation.Matchmaking
+import com.marks2games.gravitygame.signIn.GoogleSign
+import com.marks2games.gravitygame.ui.screens.accountScreen.AccountViewModel
+import com.marks2games.gravitygame.ui.screens.matchmakingScreen.MatchmakingScreen
+import com.marks2games.gravitygame.ui.screens.matchmakingScreen.MatchmakingViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var auth: FirebaseAuth
+    @Inject
+    lateinit var database: FirebaseDatabase
+    @Inject
+    lateinit var firestore: FirebaseFirestore
+    @Inject
+    lateinit var fcmToken: FcmToken
+    @Inject
+    lateinit var notification: Notification
+    private lateinit var navController: NavHostController
+    private lateinit var googleSign: GoogleSign
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         closeAndroidBars(window = window)
-        val database = Room.databaseBuilder(
+        requestNotificationPermission()
+        val roomDatabase = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "battle_results.db"
         ).build()
+        notification.createNotificationChannel(this)
+        googleSign = GoogleSign(context = this, auth = auth)
+        fcmToken.retrieveAndSaveFcmToken()
+
 
         setContent {
             GravityGameTheme {
@@ -64,18 +104,70 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ScreenSetup(activity = this, database = database, owner = this, window = window)
+
+                    navController = rememberNavController()
+                    ScreenSetup(
+                        activity = this,
+                        database = roomDatabase,
+                        owner = this,
+                        window = window,
+                        navController = navController,
+                        googleSign = googleSign
+                    )
+                    handleIntent(intent)
                 }
             }
         }
-        FirebaseApp.initializeApp(this)
+    }
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val hasPermission = ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if(!hasPermission){
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    0
+                )
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        Log.d("FCM", "Intent: $intent")
+            val roomId = intent?.getStringExtra("roomId")
+            Log.d("FCM", "Room Id in Extra: $roomId")
+            val route = if (!roomId.isNullOrEmpty()) {
+                "${Matchmaking.route}?roomId=$roomId"
+            } else {
+                Destinations.MAINMENU.name
+            }
+        Log.d("FCM", "Route: $route")
+        navController.navigate(route)
     }
 }
 
-@Composable
-fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStoreOwner, window: Window) {
 
-    val navController: NavHostController = rememberNavController()
+
+@Composable
+fun ScreenSetup(
+    activity: Activity,
+    database: AppDatabase,
+    owner: ViewModelStoreOwner,
+    window: Window,
+    navController: NavHostController,
+    googleSign: GoogleSign
+) {
+    val context = LocalContext.current
     val repository = BattleRepository(database.battleResultDao())
     val databaseModel: DatabaseViewModel = ViewModelProvider(
         owner, ViewModelFactory(repository)
@@ -87,16 +179,41 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
     val settingModel: SettingViewModel = viewModel()
     val mainMenuModel: MainMenuViewModel = viewModel()
     val statisticModel: StatisticViewModel = viewModel()
-    val context = LocalContext.current
-    loadSettings(context = context, settingsModel = settingModel, window = window)
+    val matchmakingModel: MatchmakingViewModel = viewModel()
+    val accountModel: AccountViewModel = viewModel()
 
+    LaunchedEffect(Unit) {
+        loadSettings(
+            context = context,
+            settingsModel = settingModel,
+            window = window
+        )
+    }
 
     NavHost(navController = navController, startDestination = Destinations.MAINMENU.name) {
+        composable(route = "${Destinations.MATCHMAKING.name}?roomId={roomId}",
+            arguments = listOf(navArgument(Matchmaking.ROOM_ID_ARG) { nullable = true })
+        ) { backStackEntry ->
+            MatchmakingScreen(
+                matchmakingModel = matchmakingModel,
+                onMatchConfirmed = {
+                    navController.navigate(Destinations.BATTLEMAP.name)
+                    Log.d("Player", "Player: ${battleModel.playerData.value.player}")
+                },
+                timerModel = timerModel,
+                onBackMainMenuScreen = {
+                    navController.navigate(Destinations.MAINMENU.name)
+                    matchmakingModel.showSignInDialog(false)
+                },
+                context = context,
+                googleSign = googleSign,
+                roomId = backStackEntry.arguments?.getString(Matchmaking.ROOM_ID_ARG)
+            )
+        }
         composable(route = Destinations.SELECTARMY.name) {
             SelectArmyScreen(
-                onNextButtonClicked = {
-                    navController.navigate(Destinations.BATTLEMAP.name)
-                },
+                onOfflineButtonClicked = { navController.navigate(Destinations.BATTLEMAP.name) },
+                onOnlineButtonClicked = { navController.navigate(Destinations.MATCHMAKING.name) },
                 battleModel = battleModel,
                 selectArmyModel = selectArmyModel,
                 tutorialModel = tutorialModel,
@@ -116,10 +233,12 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
                 },
                 showBattleResultMap = {
                     battleModel.showEndOfGameDialog(false)
+                    battleModel.showEndOfGameViaCapitulationDialog(false)
                 },
                 settingsModel = settingModel,
                 context = context,
-                databaseModel = databaseModel
+                databaseModel = databaseModel,
+                selectArmyModel = selectArmyModel
             )
         }
 
@@ -139,7 +258,9 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
                 activity = activity,
                 context = context,
                 onSettingClick = { navController.navigate(Destinations.SETTINGS.name) },
-                onAccountClick = { navController.navigate(Destinations.ACCOUNT.name) }
+                onAccountClick = { navController.navigate(Destinations.ACCOUNT.name) },
+                battleModel = battleModel,
+                googleSign = googleSign
             )
         }
 
@@ -154,8 +275,11 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
         composable(route = Destinations.ACCOUNT.name){
             AccountScreen(
                 onStatisticButtonClick = { navController.navigate(Destinations.STATISTICS.name) },
-                onAchievementsButtonClick = { navController.navigate(Destinations.ACHIEVEMENTS.name) },
-                onBackButtonClick = { navController.navigate(Destinations.MAINMENU.name) }
+                //onAchievementsButtonClick = { navController.navigate(Destinations.ACHIEVEMENTS.name) },
+                onBackButtonClick = { navController.navigate(Destinations.MAINMENU.name) },
+                accountModel = accountModel,
+                context = context,
+                googleSign = googleSign
             )
         }
 
@@ -176,7 +300,7 @@ fun ScreenSetup(activity: Activity, database: AppDatabase, owner: ViewModelStore
 private fun closeAndroidBars(window: Window){
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         window.decorView.windowInsetsController?.hide(
-            android.view.WindowInsets.Type.statusBars() or android.view.WindowInsets.Type.navigationBars()
+            WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars()
         )
     } else {
         window.decorView.systemUiVisibility = (
@@ -200,7 +324,11 @@ private fun closeAndroidBars(window: Window){
     }
 }
 
-private fun loadSettings(context: Context, settingsModel: SettingViewModel, window: Window) {
+private fun loadSettings(
+    context: Context,
+    settingsModel: SettingViewModel,
+    window: Window
+) {
     val sharedPreferences: SharedPreferences = context.getSharedPreferences(
         "AppSettings", Context.MODE_PRIVATE)
     val showTutorial = sharedPreferences.getBoolean("ShowTutorial", true)
@@ -211,6 +339,7 @@ private fun loadSettings(context: Context, settingsModel: SettingViewModel, wind
     settingsModel.setChosenLanguage(language = language)
     settingsModel.changeKeepScreenOn(enabled = keepScreenOn, context = context)
     setScreenOn(enabled = keepScreenOn, window = window)
+
 }
 
 private fun setScreenOn(enabled: Boolean, window: Window){
@@ -220,3 +349,5 @@ private fun setScreenOn(enabled: Boolean, window: Window){
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 }
+
+

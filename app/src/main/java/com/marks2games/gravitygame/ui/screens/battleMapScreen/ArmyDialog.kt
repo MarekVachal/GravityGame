@@ -1,4 +1,4 @@
-package com.marks2games.gravitygame.ui.screens.armyDialogScreen
+package com.marks2games.gravitygame.ui.screens.battleMapScreen
 
 import android.content.Context
 import androidx.compose.foundation.Image
@@ -47,8 +47,6 @@ import com.marks2games.gravitygame.tutorial.TutorialDialog
 import com.marks2games.gravitygame.tutorial.TutorialViewModel
 import com.marks2games.gravitygame.timer.TimerViewModel
 import com.marks2games.gravitygame.ui.screens.infoDialogsScreens.ShipInfoDialog
-import com.marks2games.gravitygame.ui.screens.battleMapScreen.MovementUiState
-import com.marks2games.gravitygame.ui.screens.battleMapScreen.BattleViewModel
 import com.marks2games.gravitygame.ui.screens.settingScreen.SettingViewModel
 
 @Composable

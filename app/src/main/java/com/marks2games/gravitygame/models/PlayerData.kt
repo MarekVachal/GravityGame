@@ -1,15 +1,17 @@
 package com.marks2games.gravitygame.models
 
+import com.google.firebase.database.DatabaseReference
 import com.marks2games.gravitygame.maps.BattleMapEnum
 import com.marks2games.gravitygame.ui.utils.BattleResultEnum
 
 data class PlayerData(
-    var player: Players = Players.PLAYER1,
-    var opponent: Players = Players.PLAYER2,
-    var playerBattleResult: BattleResultEnum = BattleResultEnum.LOSE,
-    var battleMap: BattleMapEnum = BattleMapEnum.TINY,
-    var gameType: GameType = GameType.FREE,
-    var isOnline: Boolean = false
+    val player: Players = Players.PLAYER1,
+    val opponent: Players = Players.PLAYER2,
+    val playerBattleResult: BattleResultEnum = BattleResultEnum.LOSE,
+    val battleMap: BattleMapEnum = BattleMapEnum.TINY,
+    val gameType: GameType = GameType.FREE,
+    val isOnline: Boolean = false,
+    val roomRef: DatabaseReference? = null
 )
 
 enum class Players{

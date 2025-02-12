@@ -26,6 +26,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -48,22 +49,28 @@ import com.marks2games.gravitygame.ui.screens.settingScreen.SettingViewModel
 @Composable
 fun SelectArmyScreen(
     selectArmyModel: SelectArmyViewModel,
-    onNextButtonClicked: () -> Unit,
+    onOfflineButtonClicked: () -> Unit,
+    onOnlineButtonClicked: () -> Unit,
     battleModel: BattleViewModel,
     settingsModel: SettingViewModel,
     modifier: Modifier = Modifier,
     tutorialModel: TutorialViewModel,
     context: Context,
     onDismissRequest: () -> Unit = { selectArmyModel.showShipInfoDialog(false) },
-    isEnabled: Boolean = !selectArmyModel.checkArmySize(battleModel),
     onBackButtonClick: () -> Unit
 ) {
+    LaunchedEffect (Unit){
+        selectArmyModel.cleanUiStates()
+    }
+
+    val playerData by battleModel.playerData.collectAsState()
     val selectArmyUiState by selectArmyModel.selectArmyUiState.collectAsState()
     val tutorialUiState by tutorialModel.tutorialUiState.collectAsState()
     val settingsUiState by settingsModel.settingUiState.collectAsState()
     val column1Weight = 2f
     val buttonWeight = 1f
     val column3Weight = 0.5f
+    val isEnabled: Boolean = !selectArmyModel.checkArmySize(battleModel)
 
     TutorialDialog(
         tutorialModel = tutorialModel,
@@ -252,8 +259,11 @@ fun SelectArmyScreen(
                         battleModel.createArmyList(
                             selectArmyUiState = selectArmyModel.selectArmyUiState.value
                         )
-                        onNextButtonClicked()
-                        selectArmyModel.cleanUiStates()
+                        if(playerData.isOnline){
+                            onOnlineButtonClicked()
+                        } else {
+                            onOfflineButtonClicked()
+                        }
                     } else {
                         Toast.makeText(
                             context,

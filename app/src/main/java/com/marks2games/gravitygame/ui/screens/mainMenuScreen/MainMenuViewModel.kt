@@ -3,18 +3,91 @@ package com.marks2games.gravitygame.ui.screens.mainMenuScreen
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.marks2games.gravitygame.R
+import com.marks2games.gravitygame.signIn.AnonymousSign
+import com.marks2games.gravitygame.signIn.GoogleSign
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainMenuViewModel : ViewModel() {
+@HiltViewModel
+class MainMenuViewModel @Inject constructor(
+    private val auth: FirebaseAuth
+): ViewModel() {
 
     private val _mainmenuUiState = MutableStateFlow(MainMenuUiStates())
     val mainMenuUiStates: StateFlow<MainMenuUiStates> = _mainmenuUiState.asStateFlow()
+    private val anonymousSign = AnonymousSign(auth)
+
+    fun showSignInDialog(toShow: Boolean){
+        _mainmenuUiState.update { state ->
+            state.copy(
+                showSignInDialog = toShow
+            )
+        }
+    }
+
+    fun shouldSignIn(context: Context){
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences(
+            "AppSettings", Context.MODE_PRIVATE)
+        val hasSignIn = sharedPreferences.getBoolean("hasSignIn", false)
+        if (!hasSignIn) {
+            val user = auth.currentUser
+            Log.d("AuthCheck", "User: $user, isAnonymous: ${user?.isAnonymous}")
+
+            if (user == null || !user.isAnonymous) {
+                Log.d("AuthCheck", "Triggering showSignInDialog")
+                showSignInDialog(true)
+            }
+        }
+    }
+
+    fun anonymousSignIn(){
+        viewModelScope.launch {
+            anonymousSign.signInAnonymously()
+        }
+        showSignInDialog(false)
+        _mainmenuUiState.update { state ->
+            state.copy(
+                alreadySignAsGuest = true
+            )
+        }
+    }
+
+    fun signInWithGoogle(googleSign: GoogleSign, context: Context){
+        viewModelScope.launch {
+            googleSign.signInWithCredentialManager()
+        }
+        showSignInDialog(false)
+        writeToPreferences(context)
+    }
+
+    private fun writeToPreferences(context: Context){
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences(
+            "AppSettings", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putBoolean("hasSignIn", true)
+        editor.apply()
+    }
+
+    fun hasUserImage(): Boolean{
+        return auth.currentUser?.photoUrl != null
+    }
+
+    fun getUserImage(): Uri?{
+        return auth.currentUser?.photoUrl
+    }
 
     fun setTextTitle(context: Context): String{
         return when(mainMenuUiStates.value.textToShow){
@@ -35,7 +108,9 @@ class MainMenuViewModel : ViewModel() {
     }
 
     fun showMenuList(toShow: Boolean){
-        _mainmenuUiState.value = _mainmenuUiState.value.copy(showMenuList = toShow)
+        _mainmenuUiState.update { state ->
+            state.copy(showMenuList = toShow)
+        }
     }
 
     fun openDiscord(context: Context){
@@ -87,9 +162,12 @@ class MainMenuViewModel : ViewModel() {
     }
 
     fun openTextDialog(text: Text = Text.ABOUT_GAME, toShow: Boolean){
-        _mainmenuUiState.value = _mainmenuUiState.value.copy(
-            showTextDialog = toShow,
-            textToShow = text)
+        _mainmenuUiState.update { state ->
+            state.copy(
+                showTextDialog = toShow,
+                textToShow = text
+            )
+        }
     }
 
 }

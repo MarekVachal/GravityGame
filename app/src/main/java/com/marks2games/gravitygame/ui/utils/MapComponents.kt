@@ -1,7 +1,5 @@
 package com.marks2games.gravitygame.ui.utils
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
@@ -13,7 +11,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
@@ -23,21 +20,15 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.models.Location
@@ -45,7 +36,6 @@ import com.marks2games.gravitygame.models.Players
 import com.marks2games.gravitygame.models.Ship
 import com.marks2games.gravitygame.models.ShipType
 import com.marks2games.gravitygame.ui.screens.battleMapScreen.BattleViewModel
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -54,78 +44,30 @@ fun MapBox(
     battleModel: BattleViewModel,
     locationList: List<Location>,
     location: Int,
-    boxSize: Dp,
-    flagSize: Dp,
-    planetSize: Dp,
-    planetImage: Int,
-    explosionSize: Dp
+    planetImage: Int
 ) {
-    var lastTouchPosition: Offset? by remember { mutableStateOf(null) }
-    val draggingIconVisible = remember { mutableStateOf(false) }
-    val iconPositionX = remember { Animatable(0f) }
-    val iconPositionY = remember { Animatable(0f) }
-    val iconSize = boxSize.value/2
-    val coroutineScope = rememberCoroutineScope()
+
+    val playerData by battleModel.playerData.collectAsState()
 
     Box(
         modifier = modifier
-            .size(boxSize)
+            .size(battleModel.battleMap.boxSize)
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = { offset ->
-                        draggingIconVisible.value = true
-                        coroutineScope.launch {
-                            iconPositionX.snapTo(offset.x - iconSize)
-                            iconPositionY.snapTo(offset.y - iconSize)
-                        }
-                        battleModel.setStartLocationMovementOrder(location)
-                        lastTouchPosition = offset
+                        battleModel.onDragStart(offset = offset, location = location)
                     },
                     onDragEnd = {
-                        lastTouchPosition?.let { touchPosition ->
-                            val touchPositionInWindow = Offset(
-                                x = touchPosition.x + battleModel.movementUiState.value.mapBoxCoordinates[location]?.left!!,
-                                y = touchPosition.y + battleModel.movementUiState.value.mapBoxCoordinates[location]?.top!!
-                            )
-                            val endLocation = determineLocationFromOffset(
-                                touchPositionInWindow,
-                                battleModel.movementUiState.value.mapBoxCoordinates
-                            )
-                            if(endLocation != null){
-                                battleModel.setEndLocationMovementOrder(endLocation)
-                                draggingIconVisible.value = false
-                            } else {
-                                draggingIconVisible.value = false
-                                coroutineScope.launch {
-                                    iconPositionX.snapTo(0f)
-                                    iconPositionY.snapTo(0f)
-                                }
-                                battleModel.cleanAfterUnsuccessfulMovement()
-                            }
-                        }
+                        battleModel.onDragEnd()
                     },
-                    onDrag = { change, _ ->
-                        lastTouchPosition = change.position
-                        coroutineScope.launch {
-                            launch {
-                                iconPositionX.animateTo(
-                                    targetValue = change.position.x - iconSize,
-                                    animationSpec = tween(100)
-                                )
-                            }
-                            launch {
-                                iconPositionY.animateTo(
-                                    targetValue = change.position.y - iconSize,
-                                    animationSpec = tween(100)
-                                )
-                            }
-                        }
+                    onDrag = { change, dragAmount ->
+                        battleModel.onDrag(dragAmount = dragAmount)
                         change.consume()
                     }
                 )
             }
             .onGloballyPositioned { coordinates ->
-                battleModel.createMapBoxPositions(location, coordinates.boundsInWindow())
+        battleModel.createMapBoxPosition(location, coordinates.boundsInWindow())
             }
             .combinedClickable(
                 onClick = {
@@ -148,31 +90,17 @@ fun MapBox(
                 ), shape = CircleShape
             )
     ) {
-
-        if (draggingIconVisible.value) {
-            Image(
-                painter = painterResource(id = R.drawable.fleet_icon),
-                contentDescription = null,
-                modifier = Modifier
-                    .size((boxSize.value/1.5).dp)
-                    .offset {
-                        IntOffset(iconPositionX.value.toInt(), iconPositionY.value.toInt())
-                    }
-            )
-        }
-
-
         PlanetImage(
             image = planetImage,
             myContentDescription = "location$location",
-            size = planetSize,
+            battleModel = battleModel,
             modifier = Modifier.align(Alignment.Center)
         )
 
         BattleIconShow(
             location = location,
             locationList = locationList,
-            size = explosionSize,
+            battleModel = battleModel,
             modifier = Modifier.align(Alignment.Center)
         )
 
@@ -187,7 +115,7 @@ fun MapBox(
             PlanetFlag(
                 image = R.drawable.flag_player1,
                 myContentDescription = "Location$location flag",
-                size = flagSize,
+                battleModel = battleModel,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
         }
@@ -195,13 +123,13 @@ fun MapBox(
             PlanetFlag(
                 image = R.drawable.flag_player2,
                 myContentDescription = "Location$location flag",
-                size = flagSize,
+                battleModel = battleModel,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
         }
         //Enemy Ships
         ArmyInfo(
-            modifier = Modifier.align(Alignment.CenterEnd) /*if (battleModel.player1) Alignment.CenterEnd else Alignment.CenterStart*/,
+            modifier = Modifier.align(if (playerData.player == Players.PLAYER1) Alignment.CenterEnd else Alignment.CenterStart) /*Alignment.CenterEnd*/,
             numberCruisers = battleModel.getNumberOfShip(
                 location = location,
                 shipType = ShipType.CRUISER,
@@ -229,7 +157,7 @@ fun MapBox(
         )
         //My Ships
         ArmyInfo(
-            modifier = Modifier.align(Alignment.CenterStart),//if (battleModel.player1) Alignment.CenterStart else Alignment.CenterEnd
+            modifier = Modifier.align(if (playerData.player == Players.PLAYER1) Alignment.CenterStart else Alignment.CenterEnd),//
             numberCruisers = battleModel.getNumberOfShip(
                 location = location,
                 shipType = ShipType.CRUISER,
@@ -336,7 +264,7 @@ fun MovementRecordOnLine(
 private fun BattleIconShow(
     location: Int,
     locationList: List<Location>,
-    size: Dp,
+    battleModel: BattleViewModel,
     modifier: Modifier = Modifier
 ){
     if (locationList[location].wasBattleHere.value){
@@ -346,7 +274,8 @@ private fun BattleIconShow(
             Image(
                 painter = painterResource(id = R.drawable.explosion),
                 contentDescription = "Explosion icon",
-                modifier = Modifier.size(size))
+                modifier = Modifier.size(battleModel.battleMap.explosionSize)
+            )
         }
     }
 }
@@ -375,14 +304,14 @@ private fun AcceptableLost(
 private fun PlanetFlag(
     image: Int,
     myContentDescription: String,
-    size: Dp,
+    battleModel: BattleViewModel,
     modifier: Modifier = Modifier
 ) {
     Image(
         painterResource(image),
         contentDescription = myContentDescription,
         modifier = modifier
-            .size(size)
+            .size(battleModel.battleMap.flagSize)
     )
 }
 
@@ -390,14 +319,14 @@ private fun PlanetFlag(
 private fun PlanetImage(
     image: Int,
     myContentDescription: String,
-    size: Dp,
+    battleModel: BattleViewModel,
     modifier: Modifier = Modifier
 ) {
     Image(
         painter = painterResource(image),
         contentDescription = myContentDescription,
         modifier = modifier
-            .size(size)
+            .size(battleModel.battleMap.planetSize)
     )
 }
 

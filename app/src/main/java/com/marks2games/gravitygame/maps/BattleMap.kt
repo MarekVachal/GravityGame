@@ -33,3 +33,11 @@ abstract class BattleMap {
 enum class BattleMapEnum{
     TINY
 }
+
+fun String.toBattleMap(): BattleMapEnum? {
+    return try {
+        BattleMapEnum.valueOf(this)
+    } catch (e: IllegalArgumentException) {
+        null
+    }
+}

@@ -170,7 +170,7 @@ private fun GameState.getPossibleLocations(ship: Ship): List<Int> {
 
     return when {
         ship.type == ShipType.WARPER && this.locationList[this.gameMap.player1Base].myShipList.isEmpty()
-        -> listOf(0)
+        -> listOf(this.gameMap.player1Base)
         currentLocation != null
         -> {val connections = currentLocation.getConnectionsList().filter { targetId ->
             val targetLocation = this.locationList[targetId]

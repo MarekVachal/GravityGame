@@ -34,7 +34,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.models.ShipType
-import com.marks2games.gravitygame.ui.screens.armyDialogScreen.ArmyDialogRow
+import com.marks2games.gravitygame.ui.screens.battleMapScreen.ArmyDialogRow
 import com.marks2games.gravitygame.ui.screens.battleMapScreen.BattleViewModel
 
 @Composable

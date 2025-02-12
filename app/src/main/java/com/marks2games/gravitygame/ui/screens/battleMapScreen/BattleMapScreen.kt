@@ -1,13 +1,19 @@
 package com.marks2games.gravitygame.ui.screens.battleMapScreen
 
 import android.content.Context
+import android.util.Log
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
@@ -15,9 +21,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,7 +40,6 @@ import com.marks2games.gravitygame.database.DatabaseViewModel
 import com.marks2games.gravitygame.tutorial.Tasks
 import com.marks2games.gravitygame.tutorial.TutorialDialog
 import com.marks2games.gravitygame.tutorial.TutorialViewModel
-import com.marks2games.gravitygame.ui.screens.armyDialogScreen.ArmyDialog
 import com.marks2games.gravitygame.timer.CoroutineTimer
 import com.marks2games.gravitygame.ui.screens.infoDialogsScreens.EndOfGameDialog
 import com.marks2games.gravitygame.ui.screens.infoDialogsScreens.LocationInfoDialog
@@ -40,8 +47,13 @@ import com.marks2games.gravitygame.timer.TimerViewModel
 import com.marks2games.gravitygame.ui.screens.infoDialogsScreens.BattleInfoDialog
 import com.marks2games.gravitygame.ui.screens.settingScreen.SettingViewModel
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.unit.IntOffset
 import com.marks2games.gravitygame.ui.screens.infoDialogsScreens.CapitulateInfoDialog
+import com.marks2games.gravitygame.ui.screens.infoDialogsScreens.PlayerInfoDialog
+import com.marks2games.gravitygame.ui.screens.selectArmyScreen.SelectArmyViewModel
 import com.marks2games.gravitygame.ui.utils.ProgressIndicator
+import com.marks2games.gravitygame.ui.utils.ProgressIndicatorType
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -52,6 +64,7 @@ fun BattleMapScreen(
     tutorialModel: TutorialViewModel,
     settingsModel: SettingViewModel,
     databaseModel: DatabaseViewModel,
+    selectArmyModel: SelectArmyViewModel,
     context: Context,
     endOfGame: () -> Unit,
     showBattleResultMap: () -> Unit
@@ -59,18 +72,93 @@ fun BattleMapScreen(
 
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val playerData by battleModel.playerData.collectAsState()
     val movementUiState by battleModel.movementUiState.collectAsState()
+    val selectArmyUiState by selectArmyModel.selectArmyUiState.collectAsState()
     val timerUiState by timerModel.timerUiState.collectAsState()
     val locationListUiState by battleModel.locationListUiState.collectAsState()
     val movementRecord by battleModel.movementRecord.collectAsState()
     val tutorialUiState by tutorialModel.tutorialUiState.collectAsState()
     val settingsUiState by settingsModel.settingUiState.collectAsState()
+    val iconPositionX = remember { Animatable(movementUiState.iconPositionX) }
+    val iconPositionY = remember { Animatable(movementUiState.iconPositionY) }
+
+    LaunchedEffect(movementUiState.iconPositionX, movementUiState.iconPositionY) {
+        launch {
+            iconPositionX.animateTo(
+                targetValue = movementUiState.iconPositionX,
+                animationSpec = tween(100)
+            )
+        }
+        launch {
+            iconPositionY.animateTo(
+                targetValue = movementUiState.iconPositionY,
+                animationSpec = tween(100)
+            )
+        }
+    }
+
+    LaunchedEffect (Unit){
+        battleModel.showProgressIndicator(false, ProgressIndicatorType.WAITING_FOR_OPPONENT)
+        timerModel.stopTimer()
+        battleModel.cleanAfterCapitulate()
+        battleModel.createArmyList(selectArmyUiState = selectArmyUiState)
+        if(!playerData.isOnline && locationListUiState.locationList[battleModel.findOpponentBaseLocation()].enemyShipList.isEmpty()){
+            val enemyShipList = createAiArmy(battleMap = battleModel.battleMap)
+            battleModel.initializeEnemyShipList(enemyShipList = enemyShipList)
+            battleModel.showTimer(false)
+        }
+        if(playerData.isOnline){
+            battleModel.updateLocations(isSetup = true)
+            timerModel.makeTimer(
+                CoroutineTimer(
+                    timerModel = timerModel,
+                    onFinishTimer = {
+                        Log.d("Timer", "Timer finished")
+                        MainScope().launch {
+                            Log.d("Timer", "Calling finishTurn from timer")
+                            battleModel.finishTurn(timerModel = timerModel, databaseModel = databaseModel)
+                            timerModel.resetTimer()
+                            timerModel.startTimer()
+                        }
+                    },
+                    secondsForTurn = battleModel.battleMap.secondsForTurn
+                )
+            )
+            battleModel.showTimer(true)
+        }
+        battleModel.cleanEnemyRecord()
+        battleModel.showPlayerInfoDialog(true)
+    }
+
+    DisposableEffect(Unit) {
+        battleModel.listenForCapitulation(timerModel)
+        onDispose {  }
+    }
 
     EndOfGameDialog(
         toShow = movementUiState.showEndOfGameDialog,
         onDismissRequest = endOfGame,
         confirmButton = endOfGame,
         dismissButton = showBattleResultMap,
+        battleModel = battleModel,
+        context = context,
+        isCapitulation = false
+    )
+
+    EndOfGameDialog(
+        toShow = movementUiState.showEndOfGameViaCapitulationDialog,
+        onDismissRequest = endOfGame,
+        confirmButton = endOfGame,
+        dismissButton = showBattleResultMap,
+        battleModel = battleModel,
+        context = context,
+        isCapitulation = true
+    )
+
+    PlayerInfoDialog(
+        toShow = movementUiState.showPlayerInfoDialog,
+        onDismissRequest = { battleModel.showPlayerInfoDialog(false) },
         battleModel = battleModel,
         context = context
     )
@@ -96,27 +184,6 @@ fun BattleMapScreen(
         context = context
     )
 
-    LaunchedEffect (Unit){
-        battleModel.cleanAfterCapitulate()
-        if(!battleModel.playerData.isOnline && locationListUiState.locationList[battleModel.findOpponentBaseLocation()].enemyShipList.isEmpty()){
-            val enemyShipList = createAiArmy(battleMap = battleModel.battleMap)
-            battleModel.initializeEnemyShipList(enemyShipList = enemyShipList)
-        }
-        timerModel.stopTimer()
-        timerModel.makeTimer(
-            CoroutineTimer(
-                timerModel = timerModel,
-                finishTurn = {
-                    coroutineScope.launch {
-                        battleModel.finishTurn(timerModel = timerModel, databaseModel = databaseModel)
-                    }
-                },
-                secondsForTurn = battleModel.battleMap.secondsForTurn
-            )
-        )
-        battleModel.cleanEnemyRecord()
-    }
-
     TutorialDialog(
         tutorialModel = tutorialModel,
         toShow = tutorialUiState.showTutorialDialog,
@@ -124,6 +191,7 @@ fun BattleMapScreen(
         settingsModel = settingsModel,
         context = context
     )
+
     if(settingsUiState.showTutorial){
         if(!tutorialUiState.battleOverviewTask){
             tutorialModel.showTutorialDialog(
@@ -165,8 +233,7 @@ fun BattleMapScreen(
 
     Box(
         modifier = modifier.fillMaxSize()
-    )
-    {
+    ) {
         Image(
             painter = painterResource(id = R.drawable.battle_background),
             contentDescription = "Battle map background",
@@ -174,6 +241,7 @@ fun BattleMapScreen(
             modifier = modifier.matchParentSize()
         )
     }
+
 
     battleModel.battleMap.MapLayout(
         modifier = modifier,
@@ -183,32 +251,80 @@ fun BattleMapScreen(
         locationList = locationListUiState.locationList
     )
 
-    Row(
-        verticalAlignment = Alignment.Top,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Card (
-            modifier = modifier.padding(top = 16.dp, start = 16.dp)
+    if (movementUiState.draggingIconVisible && movementUiState.startPosition != null && !movementUiState.endOfGame) {
+        Box(
+            modifier = Modifier
+                .offset {
+                    IntOffset(
+                        movementUiState.iconPositionX.toInt(),
+                        movementUiState.iconPositionY.toInt()
+                    )
+                }
+                .size(battleModel.battleMap.planetSize)
         ){
-            Text(
-                modifier = modifier.padding(4.dp),
-                text = "${timerUiState.minute ?: 0}:${
-                    timerUiState.second?.let {String.format(Locale.US, "%02d", it)} ?: "00"
-                }",
+            Image(
+                painter = painterResource(id = R.drawable.fleet_icon),
+                contentDescription = "Moving icon",
+                modifier = Modifier
+                    .size(battleModel.battleMap.planetSize),
+                contentScale = ContentScale.Fit
             )
         }
+    }
 
-        IconButton(
-            onClick = { battleModel.undoAttack() },
-            modifier = modifier.padding(top = 16.dp, end = 16.dp),
-            enabled = movementRecord.movementRecordOfTurn.isNotEmpty()
-        ){
-            Icon(
-                painter = painterResource(id = R.drawable.undo),
-                contentDescription = "Undo icon",
-                tint = Color.Unspecified)
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.Top
+    ){
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+        ) {
+            if(movementUiState.showTimer){
+                Card(
+                    modifier = modifier
+                        .align(Alignment.CenterStart)
+                        .width(58.dp),
+                ) {
+                    Row(
+                        modifier = modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            modifier = modifier
+                                .padding(4.dp),
+                            text = "${timerUiState.minute ?: 0}:${
+                                timerUiState.second?.let {
+                                    String.format(
+                                        Locale.US,
+                                        "%02d",
+                                        it
+                                    )
+                                } ?: "00"
+                            }",
+                        )
+                    }
+                }
+            }
+
+            IconButton(
+                onClick = { battleModel.undoAttack() },
+                modifier = modifier
+                    .padding(top = 16.dp, end = 16.dp)
+                    .align(Alignment.CenterEnd),
+                enabled = movementRecord.movementRecordOfTurn.isNotEmpty()
+            ){
+                Icon(
+                    painter = painterResource(id = R.drawable.undo),
+                    contentDescription = "Undo icon",
+                    tint = Color.Unspecified)
+            }
         }
     }
+
+
 
     if(!movementUiState.showProgressIndicator){
         Row(

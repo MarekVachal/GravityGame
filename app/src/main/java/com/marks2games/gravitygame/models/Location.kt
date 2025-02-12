@@ -9,16 +9,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.marks2games.gravitygame.ui.utils.BattleResultEnum
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
 
-@Serializable
 data class Location(
     val id: Int,
     private var connections: List<Int>,
-    @Contextual
     val myShipList: SnapshotStateList<Ship> = mutableStateListOf(),
-    @Contextual
     val enemyShipList: SnapshotStateList<Ship> = mutableStateListOf(),
     val myAcceptableLost: MutableIntState = mutableIntStateOf(1),
     val enemyAcceptableLost: MutableIntState = mutableIntStateOf(1),
@@ -77,4 +72,5 @@ fun SnapshotStateList<Ship>.deepCopy(): SnapshotStateList<Ship> {
     }
     return copy
 }
+
 

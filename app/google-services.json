@@ -1,26 +1,45 @@
 {
   "project_info": {
-    "project_number": "232456830551",
-    "project_id": "gravity-game-e16df",
-    "storage_bucket": "gravity-game-e16df.firebasestorage.app"
+    "project_number": "660176966442",
+    "firebase_url": "https://gravitygame-446320-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "gravitygame-446320",
+    "storage_bucket": "gravitygame-446320.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:232456830551:android:094c2535b1de5fc2412d12",
+        "mobilesdk_app_id": "1:660176966442:android:1a764db5b99a0db24cc453",
         "android_client_info": {
           "package_name": "com.marks2games.gravitygame"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "660176966442-879tgtuujnsu3isgvqhg2em0cddva0df.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.marks2games.gravitygame",
+            "certificate_hash": "c387d74d12a02e1d2faaac808eef9c430cb18f49"
+          }
+        },
+        {
+          "client_id": "660176966442-kevfu4uo789cqb6057k1e959b81h7qlq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyA_WDh-Nqna0XBYxt3qGQde4NRySWUUHeI"
+          "current_key": "AIzaSyDjbNToE5JqTJBrBSEJVMCK9h2gKae1ICQ"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "660176966442-kevfu4uo789cqb6057k1e959b81h7qlq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

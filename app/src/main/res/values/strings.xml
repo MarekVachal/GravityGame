@@ -38,7 +38,6 @@
     <string name="closeTutorial">Close tutorial</string>
     <string name="acceptableLossesTitle">Acceptable Losses</string>
     <string name="armyDialogSendShipTitle">Attack with units</string>
-    <string name="locationLimitTitle">Limit of units</string>
     <string name="timerTaskTitle">Timer</string>
     <string name="movementTaskTitle">Moving with units</string>
     <string name="locationInfoTitle">Display location</string>
@@ -60,11 +59,9 @@
     <string name="english" translatable="false">English</string>
     <string name="czech" translatable="false">Čeština</string>
     <string name="showTutorial">Show tutorial</string>
-    <string name="polish">Polish</string>
     <string name="donateTitle" translatable="false">Donate</string>
     <string name="manyShipsOnBaseLocation">There is too many units on your base planet.</string>
     <string name="statisticTitle">Statistics</string>
-    <string name="achievementsTitle" translatable="false">Achievements</string>
     <string name="totalBattle">Total battles: %1$s</string>
     <string name="averageTurns">Average turns: %1$s</string>
     <string name="countOfWins">Count of Wins: %1$s</string>
@@ -179,10 +176,39 @@
         - The game will contain no \“pay-to-win\” concept at any level.</string>
     <string name="donateText">You can support our efforts with this game on the Buy me a coffee platform. You can choose to support us with a one-time donation or set up a monthly contribution and become a member of our community. Just click the button. We are very grateful for any donation.</string>
     <string name="aiCalculate">Calculating opponent move.</string>
-    <string name="waitingForPlayer">Waiting for opponent move.</string>
+    <string name="waitingForMove">Waiting for opponent move.</string>
+    <string name="waitingForOpponent">Waiting for opponent.</string>
     <string name="keepScreenOn">Keep screen on</string>
     <string name="exit" translatable="false">Exit</string>
     <string name="showMap">Show map</string>
     <string name="capitulate">Capitulate</string>
     <string name="capitulateInfoText">Do you really want to capitulate? The game ends and you will lose it.</string>
+    <string name="opponentFound">"Opponent have found. Click to start battle. "</string>
+    <string name="onlineBattle">Play against human</string>
+    <string name="winViaCapitulation">Your opponent capitulated and so you win the game.</string>
+    <string name="ok" translatable="false">OK</string>
+    <string name="playerTitle">Player info</string>
+    <string name="playerInfoText">You play for a %1$s player.</string>
+    <string name="redPlayer">red</string>
+    <string name="bluePlayer">blue</string>
+    <string name="newMessage">New message</string>
+    <string name="clickToOpenScreen">Click on this, to open the game.</string>
+    <string name="notificationTitleOpponentFound">Opponent has found</string>
+    <string name="notificationBodyOpponentFound">Tap to confirm your presence. You must confirm in 1 minute.</string>
+    <string name="userEmail" translatable="false">Email</string>
+    <string name="displayName">Name</string>
+    <string name="logOut" translatable="false">Logout</string>
+    <string name="userLogout">No user is login.</string>
+    <string name="login" translatable="false">Login</string>
+    <string name="userNoEmail">User provide no email.</string>
+    <string name="userNoName">User provide no name.</string>
+    <string name="signInTitle" translatable="false">Sign in</string>
+    <string name="signInAnonymously">Continue as Guest</string>
+    <string name="deleteAccount">Delete account</string>
+    <string name="deleteAccountText">Are you sure to delete your account? All your data will be delete automatically in 90 days.</string>
+    <string name="createAccount">Create account</string>
+    <string name="guest">Guest</string>
+    <string name="signInText">Play as a guest or sign in via google account to save your progress.</string>
+
+
 </resources>

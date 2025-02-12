@@ -3,14 +3,18 @@ package com.marks2games.gravitygame.ui.screens.mainMenuScreen
 import android.app.Activity
 import android.content.Context
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -20,17 +24,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
+import coil.compose.rememberAsyncImagePainter
 import com.marks2games.gravitygame.R
+import com.marks2games.gravitygame.signIn.GoogleSign
+import com.marks2games.gravitygame.ui.screens.battleMapScreen.BattleViewModel
+import com.marks2games.gravitygame.ui.screens.infoDialogsScreens.SignInDialog
 import kotlin.system.exitProcess
 
 @Composable
@@ -38,19 +48,36 @@ fun MainMenuScreen(
     modifier: Modifier = Modifier,
     onBattleButtonClick: () -> Unit,
     mainMenuModel: MainMenuViewModel,
+    battleModel: BattleViewModel,
     onSettingClick: () -> Unit,
     onAccountClick: () -> Unit,
     activity: Activity,
-    context: Context
+    context: Context,
+    googleSign: GoogleSign
 ) {
 
     val mainMenuUiStates by mainMenuModel.mainMenuUiStates.collectAsState()
+
+    LaunchedEffect(Unit) {
+        mainMenuModel.shouldSignIn(context = context)
+    }
 
     InfoTextDialog(
         mainMenuModel = mainMenuModel,
         mainMenuUiStates = mainMenuUiStates,
         toShow = mainMenuUiStates.showTextDialog,
         context = context
+    )
+
+    SignInDialog(
+        modifier = modifier,
+        toShow = mainMenuUiStates.showSignInDialog,
+        backToMainMenu = { mainMenuModel.showSignInDialog(false) },
+        signInAnonymously = { mainMenuModel.anonymousSignIn() },
+        signInWithGoogle = { mainMenuModel.signInWithGoogle(
+            googleSign = googleSign,
+            context = context
+        ) }
     )
 
     Image(
@@ -92,15 +119,27 @@ fun MainMenuScreen(
                     )
                 }
                 IconButton(onClick = { onAccountClick() }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.user_account),
-                        contentDescription = "User account icon",
-                        tint = Color.Unspecified
-                    )
+                    if(mainMenuModel.hasUserImage()){
+                       Image(
+                           painter = rememberAsyncImagePainter(mainMenuModel.getUserImage()),
+                           contentDescription = "Profile picture",
+                           modifier = Modifier
+                               .clip(CircleShape)
+                               .border(2.dp, Color.Gray, CircleShape),
+                           contentScale = ContentScale.Crop
+                       )
+                    } else {
+                        Icon(
+                            painter = painterResource(id = R.drawable.user_account),
+                            contentDescription = "User account icon",
+                            tint = Color.Unspecified
+                        )
+                    }
                 }
             }
         }
     }
+
 
     Column(
         verticalArrangement = Arrangement.Bottom,
@@ -108,7 +147,10 @@ fun MainMenuScreen(
         modifier = modifier.padding(bottom = 96.dp)
     ) {
         OutlinedButton(
-            onClick = onBattleButtonClick,
+            onClick = {
+                onBattleButtonClick()
+                battleModel.isOnlineGame(false)
+            },
             modifier = modifier,
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -118,6 +160,26 @@ fun MainMenuScreen(
         ) {
             Text(
                 text = stringResource(id = R.string.battleWithAI),
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
+        Spacer(
+            modifier = modifier.size(8.dp)
+        )
+        OutlinedButton(
+            onClick = {
+                onBattleButtonClick()
+                battleModel.isOnlineGame(true)
+            },
+            modifier = modifier,
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ),
+            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 12.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.onlineBattle),
                 style = MaterialTheme.typography.titleMedium
             )
         }

@@ -4,3 +4,11 @@ enum class GameType {
     FREE,
     SCORED
 }
+
+fun String.toGameType(): GameType? {
+    return try {
+        GameType.valueOf(this)
+    } catch (e: IllegalArgumentException) {
+        null
+    }
+}

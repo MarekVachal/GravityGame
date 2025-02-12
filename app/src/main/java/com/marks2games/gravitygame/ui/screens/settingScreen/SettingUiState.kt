@@ -3,7 +3,7 @@ package com.marks2games.gravitygame.ui.screens.settingScreen
 data class SettingUiState(
     val isEnglishChecked: Boolean = true,
     val isCzechChecked: Boolean = false,
-    val isPolishChecked: Boolean = false,
+    //val isPolishChecked: Boolean = false,
     val showTutorial: Boolean = true,
     val keepScreenOn: Boolean = true
 )
@@ -11,5 +11,5 @@ data class SettingUiState(
 enum class Languages {
     ENGLISH,
     CZECH,
-    POLISH
+    //POLISH
 }

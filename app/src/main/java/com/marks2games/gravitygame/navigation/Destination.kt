@@ -37,6 +37,11 @@ object Achievements: Destination{
     override val route = "Achievements"
 }
 
+object Matchmaking: Destination{
+    override val route = "Matchmaking"
+    const val ROOM_ID_ARG = "roomId"
+}
+
 enum class Destinations(name: Destination?){
     SELECTARMY(name = SelectArmy),
     BATTLEMAP(name = Battle),
@@ -45,5 +50,6 @@ enum class Destinations(name: Destination?){
     SETTINGS(name = Settings),
     ACCOUNT(name = Account),
     STATISTICS(name = Statistics),
-    ACHIEVEMENTS(name = Achievements)
+    //ACHIEVEMENTS(name = Achievements),
+    MATCHMAKING(name = Matchmaking)
 }

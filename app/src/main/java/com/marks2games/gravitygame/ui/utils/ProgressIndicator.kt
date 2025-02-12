@@ -57,11 +57,22 @@ fun ProgressIndicator(
                         ProgressIndicatorType.NEW_TURN -> {
                             Text(text = stringResource(id = R.string.newTurn))
                         }
-                        ProgressIndicatorType.WAITING_FOR_PLAYER -> {
-                            Column{
+                        ProgressIndicatorType.WAITING_FOR_MOVE -> {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ){
                                 MyProgressIndicator()
                                 Spacer(modifier = modifier.height(4.dp))
-                                Text(text = stringResource(id = R.string.waitingForPlayer))
+                                Text(text = stringResource(id = R.string.waitingForMove))
+                            }
+                        }
+                        ProgressIndicatorType.WAITING_FOR_OPPONENT -> {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ){
+                                MyProgressIndicator()
+                                Spacer(modifier = modifier.height(4.dp))
+                                Text(text = stringResource(id = R.string.waitingForOpponent))
                             }
                         }
                     }
@@ -85,5 +96,6 @@ fun MyProgressIndicator(
 enum class ProgressIndicatorType{
     AI_CALCULATE,
     NEW_TURN,
-    WAITING_FOR_PLAYER
+    WAITING_FOR_MOVE,
+    WAITING_FOR_OPPONENT
 }
