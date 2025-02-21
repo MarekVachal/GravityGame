@@ -3,7 +3,7 @@ package com.marks2games.gravitygame.database
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import com.marks2games.gravitygame.ui.utils.BattleResultEnum
+import com.marks2games.gravitygame.models.BattleResultEnum
 
 @Dao
 interface BattleResultDao {

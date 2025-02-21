@@ -1,15 +1,20 @@
 package com.marks2games.gravitygame.ui.screens.settingScreen
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
+import com.marks2games.gravitygame.models.SharedPreferencesRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.util.Locale
+import javax.inject.Inject
 
-class SettingViewModel : ViewModel() {
+@HiltViewModel
+class SettingViewModel @Inject constructor(
+    private val sharedPreferences: SharedPreferencesRepository
+): ViewModel() {
 
     private val _settingUiState = MutableStateFlow(SettingUiState())
     val settingUiState: StateFlow<SettingUiState> = _settingUiState.asStateFlow()
@@ -42,29 +47,23 @@ class SettingViewModel : ViewModel() {
         }
     }
 
-    fun changeKeepScreenOn(enabled: Boolean, context: Context){
+    fun changeKeepScreenOn(enabled: Boolean){
         _settingUiState.update { state ->
             state.copy(keepScreenOn = enabled)
         }
-        saveTutorialSettings(context = context)
+        saveTutorialSettings()
     }
 
-    fun changeShowTutorial(toShow: Boolean, context: Context){
+    fun changeShowTutorial(toShow: Boolean){
         _settingUiState.update { state ->
             state.copy(showTutorial = toShow)
         }
-        saveTutorialSettings(context = context)
+        saveTutorialSettings()
     }
 
-    fun saveTutorialSettings(context: Context){
-        val sharedPreferences: SharedPreferences =
-            context.getSharedPreferences(
-                "AppSettings", Context.MODE_PRIVATE
-            )
-        val editor = sharedPreferences.edit()
-        editor.putBoolean("ShowTutorial", settingUiState.value.showTutorial)
-        editor.putBoolean("keepScreenOn", settingUiState.value.keepScreenOn)
-        editor.apply()
+    fun saveTutorialSettings(){
+        sharedPreferences.setShowTutorial(settingUiState.value.showTutorial)
+        sharedPreferences.setKeepScreenOn(settingUiState.value.keepScreenOn)
     }
 
     @Suppress("DEPRECATION")
@@ -75,14 +74,7 @@ class SettingViewModel : ViewModel() {
         config.setLocale(locale)
         val resources = context.resources
         resources.updateConfiguration(config, resources.displayMetrics)
-        val prefs: SharedPreferences =
-            context.getSharedPreferences(
-                "AppSettings", Context.MODE_PRIVATE
-            )
-        with(prefs.edit()) {
-            putString("language", language)
-            apply()
-        }
+        sharedPreferences.setLanguage(language)
     }
 
     fun setChosenLanguage(language: String){

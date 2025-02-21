@@ -2,18 +2,19 @@ package com.marks2games.gravitygame.signIn
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.marks2games.gravitygame.R
+import com.marks2games.gravitygame.models.SharedPreferencesRepository
 import io.sentry.Sentry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -23,7 +24,8 @@ import javax.inject.Inject
 
 class GoogleSign @Inject constructor(
     private val context: Context,
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val sharedPreferences: SharedPreferencesRepository
 ) {
 
     private val webClientId = context.getString(R.string.default_web_client_id)
@@ -66,17 +68,11 @@ class GoogleSign @Inject constructor(
 
     private fun deleteUser() {
         auth.currentUser?.delete()
-            ?.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val sharedPreferences: SharedPreferences = context.getSharedPreferences(
-                        "AppSettings", Context.MODE_PRIVATE)
-                    val editor = sharedPreferences.edit()
-                    editor.putBoolean("hasSignIn", false)
-                    editor.apply()
-                    Log.d("FirebaseAuth", "User account deleted successfully")
-                } else {
-                    Log.e("FirebaseAuth", "User deletion failed", task.exception)
-                }
+            ?.addOnSuccessListener {
+                sharedPreferences.setHasSignIn(false)
+            }
+            ?.addOnFailureListener { e ->
+                Sentry.captureException(e)
             }
     }
 
@@ -100,13 +96,7 @@ class GoogleSign @Inject constructor(
                                     user.updateProfile(profileUpdates)
                                         .addOnCompleteListener { updateTask ->
                                             if (updateTask.isSuccessful) {
-                                                val sharedPreferences: SharedPreferences = context.getSharedPreferences(
-                                                    "AppSettings", Context.MODE_PRIVATE
-                                                )
-                                                val editor = sharedPreferences.edit()
-                                                editor.putBoolean("hasSignIn", true)
-                                                editor.apply()
-
+                                                sharedPreferences.setHasSignIn(true)
                                                 updateUserEmail()
                                                 updateUserName()
                                             } else {
@@ -143,11 +133,19 @@ class GoogleSign @Inject constructor(
                     .addCredentialOption(googleIdOption)
                     .build()
 
-                val result = credentialManager.getCredential(
-                    request = request,
-                    context = context
-                )
-                val credential = result.credential
+                val result = runCatching{
+                    credentialManager.getCredential(
+                        request = request,
+                        context = context
+                    )
+                }.onFailure { e ->
+                    if(e is NoCredentialException){
+                        AnonymousSign(auth).signInAnonymously()
+                    } else {
+                        Sentry.captureException(e)
+                    }
+                }.getOrNull()
+                val credential = result?.credential ?: return@withContext
 
                 if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                     val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
@@ -158,7 +156,7 @@ class GoogleSign @Inject constructor(
                 }
 
             } catch (e: GetCredentialException) {
-                e.message?.let { Log.d("GoogleSign", "Get credential failed: $it") }
+                Sentry.captureException(e)
                 try {
                     val newGoogleIdOption = GetGoogleIdOption.Builder()
                         .setFilterByAuthorizedAccounts(false)
@@ -170,11 +168,19 @@ class GoogleSign @Inject constructor(
                         .addCredentialOption(newGoogleIdOption)
                         .build()
 
-                    val newResult = credentialManager.getCredential(
-                        context = context,
-                        request = newRequest
-                    )
-                    val newCredential = newResult.credential
+                    val newResult = runCatching {
+                        credentialManager.getCredential(
+                            context = context,
+                            request = newRequest
+                        )
+                    }.onFailure { error ->
+                        if(error is NoCredentialException){
+                            AnonymousSign(auth).signInAnonymously()
+                        } else {
+                            Sentry.captureException(error)
+                        }
+                    }.getOrNull()
+                    val newCredential = newResult?.credential ?: return@withContext
 
                     if (newCredential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                         val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(newCredential.data)
@@ -185,9 +191,8 @@ class GoogleSign @Inject constructor(
                     }
 
                 } catch (signupException: GetCredentialException) {
-                    Log.e("GoogleSign", "Sign-up flow failed: ${signupException.message}")
-                    //Put a code for alternative sign up. For example using mail and password
-                    //It probably wants a new screen
+                    Sentry.captureException(signupException)
+                    AnonymousSign(auth).signInAnonymously()
                 }
             }
         }
@@ -198,16 +203,11 @@ class GoogleSign @Inject constructor(
         val credential = GoogleAuthProvider.getCredential(idToken, null)
 
         auth.signInWithCredential(credential)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    Log.d("FirebaseAuth", "Authentication successful")
-                    Log.d("FirebaseAuth", "User UID: ${user?.uid}")
-                    Log.d("FirebaseAuth", "User Email: ${user?.email}")
-                    Log.d("FirebaseAuth", "User Display Name: ${user?.displayName}")
-                } else {
-                    Log.e("FirebaseAuth", "Authentication failed", task.exception)
-                }
+            .addOnSuccessListener {
+                sharedPreferences.setHasSignIn(true)
+            }
+            .addOnFailureListener { e ->
+                Sentry.captureException(e)
             }
     }
 

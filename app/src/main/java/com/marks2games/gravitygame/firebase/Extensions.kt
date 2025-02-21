@@ -1,7 +1,9 @@
 package com.marks2games.gravitygame.firebase
 
+import com.marks2games.gravitygame.firebase.models.AcceptableLost
+import com.marks2games.gravitygame.firebase.models.SimplifiedMove
+import com.marks2games.gravitygame.firebase.models.SimplifiedShip
 import com.marks2games.gravitygame.models.Location
-import com.marks2games.gravitygame.models.ShipType
 
 fun List<Location>.toSimplifiedMove(): SimplifiedMove {
     val acceptableLostList = this.map { location ->
@@ -27,12 +29,4 @@ fun List<Location>.toSimplifiedMove(): SimplifiedMove {
         acceptableLost = acceptableLostList,
         simplifiedShipList = simplifiedShips
     )
-}
-
-fun String.toShipType(): ShipType? {
-    return try {
-        ShipType.valueOf(this)
-    } catch (e: IllegalArgumentException) {
-        null
-    }
 }

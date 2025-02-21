@@ -19,8 +19,7 @@ fun EndOfGameDialog(
     context: Context,
     onDismissRequest: () -> Unit,
     confirmButton: () -> Unit,
-    dismissButton: () -> Unit,
-    isCapitulation: Boolean
+    dismissButton: () -> Unit
 ){
     if(toShow){
         AlertDialog(
@@ -43,8 +42,7 @@ fun EndOfGameDialog(
                 Text(
                     text = battleModel.setEndOfGameText(
                         isTitle = true,
-                        context = context,
-                        isCapitulation = isCapitulation
+                        context = context
                     ),
                     textAlign = TextAlign.Center
                 )
@@ -53,8 +51,8 @@ fun EndOfGameDialog(
                 Text(
                     text = battleModel.setEndOfGameText(
                         isTitle = false,
-                        context = context,
-                        isCapitulation = isCapitulation),
+                        context = context
+                    ),
                     textAlign = TextAlign.Justify
                 )
             },

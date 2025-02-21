@@ -31,7 +31,7 @@ import com.marks2games.gravitygame.signIn.GoogleSign
 import com.marks2games.gravitygame.timer.TimerViewModel
 import com.marks2games.gravitygame.ui.screens.infoDialogsScreens.SignInDialog
 import com.marks2games.gravitygame.ui.utils.ProgressIndicator
-import com.marks2games.gravitygame.ui.utils.ProgressIndicatorType
+import com.marks2games.gravitygame.models.ProgressIndicatorType
 import java.util.Locale
 
 @Composable

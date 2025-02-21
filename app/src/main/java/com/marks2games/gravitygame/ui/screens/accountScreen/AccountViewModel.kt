@@ -1,12 +1,16 @@
 package com.marks2games.gravitygame.ui.screens.accountScreen
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.signIn.GoogleSign
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.sentry.Sentry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +34,16 @@ class AccountViewModel @Inject constructor(
         }
     }
 
+    fun showDeleteButton(): Boolean {
+        return if(auth.currentUser == null){
+            false
+        } else if (auth.currentUser?.isAnonymous == true){
+            false
+        } else {
+            true
+        }
+    }
+
     fun deleteUserAccount(googleSign: GoogleSign, context: Context){
         setupAuthStateListener(context)
         viewModelScope.launch {
@@ -48,6 +62,19 @@ class AccountViewModel @Inject constructor(
             state.copy(
                 userEmail = newEmail
             )
+        }
+    }
+
+    fun openPrivacyPolicyLink(context: Context){
+        val privacyPolicyUri = context.getString(R.string.privacyPolicyLink)
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(privacyPolicyUri))
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        try {
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, context.getString(R.string.errorToOpenLink), Toast.LENGTH_LONG).show()
+            Sentry.captureException(e)
         }
     }
 

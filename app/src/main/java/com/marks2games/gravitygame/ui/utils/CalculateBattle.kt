@@ -21,8 +21,8 @@ fun calculateBattle(
     val locationInUse = if(isSimulation) location.deepCopy() else location
     var myHp = 0
     var enemyHp = 0
-    var myFir = 0
-    var enemyFir = 0
+    var playerFirepower = 0
+    var enemyFirepower = 0
     var myLost = 0
     var enemyLost = 0
     var myWin = false
@@ -41,21 +41,21 @@ fun calculateBattle(
     )
 
     do {
-        if (myFir == 0 && enemyFir == 0) {
-            myFir = calcFirepower(
+        if (playerFirepower == 0 && enemyFirepower == 0) {
+            playerFirepower = calcFirepower(
                 shipList = locationInUse.myShipList,
                 shipListOther = locationInUse.enemyShipList,
                 location = locationInUse,
                 player = playerData.player
             )
-            enemyFir = calcFirepower(
+            enemyFirepower = calcFirepower(
                 shipList = locationInUse.enemyShipList,
                 shipListOther = locationInUse.myShipList,
                 location = locationInUse,
                 player = playerData.opponent)
         }
 
-        if (myFir == 0 && enemyFir == 0) {
+        if (playerFirepower == 0 && enemyFirepower == 0) {
             break
         }
 
@@ -69,14 +69,14 @@ fun calculateBattle(
             enemyHp = mapOfShips[enemyTarget]?.hp?:0
         }
 
-        myHp -= enemyFir
-        enemyHp -= myFir
-        myFir = 0
-        enemyFir = 0
+        myHp -= enemyFirepower
+        enemyHp -= playerFirepower
+        playerFirepower = 0
+        enemyFirepower = 0
 
         if (myHp <= 0 && myTarget != null) {
             killUnit(locationInUse.myShipList, myTarget)
-            enemyFir = -myHp
+            enemyFirepower = -myHp
             myHp = 0
             myLost += 1
             mapMyLost[myTarget] = (mapMyLost[myTarget] ?: 0) +1
@@ -84,7 +84,7 @@ fun calculateBattle(
 
         if (enemyHp <= 0 && enemyTarget != null) {
             killUnit(locationInUse.enemyShipList, enemyTarget)
-            myFir = -enemyHp
+            playerFirepower = -enemyHp
             enemyHp = 0
             enemyLost += 1
             mapEnemyLost[enemyTarget] = (mapEnemyLost[enemyTarget] ?: 0) +1
@@ -92,26 +92,26 @@ fun calculateBattle(
 
         myWin = enemyLost >= locationInUse.enemyAcceptableLost.intValue || locationInUse.enemyShipList.isEmpty()
         enemyWin = myLost >= locationInUse.myAcceptableLost.intValue || locationInUse.myShipList.isEmpty()
-    } while ((!myWin && !enemyWin) || myFir > 0 || enemyFir > 0)
+    } while ((!myWin && !enemyWin) || playerFirepower > 0 || enemyFirepower > 0)
 
     battleModel.writeDestroyedShips(isSimulation = isSimulation, myLostShip = myLost, enemyLostShip = enemyLost)
     if (myWin && !enemyWin) {
-        return Triple(Players.PLAYER1, mapMyLost, mapEnemyLost)
+        return Triple(playerData.player, mapMyLost, mapEnemyLost)
     }
     if (!myWin && enemyWin) {
-        return Triple(Players.PLAYER2, mapMyLost, mapEnemyLost)
+        return Triple(playerData.opponent, mapMyLost, mapEnemyLost)
     }
     return Triple(Players.NONE, mapMyLost, mapEnemyLost)
 }
 
-private fun killUnit(shipList: SnapshotStateList<Ship>, stype: ShipType) {
-    val shipInIssue = shipList.firstOrNull { it.type == stype }
+private fun killUnit(shipList: SnapshotStateList<Ship>, targetShipType: ShipType) {
+    val shipInIssue = shipList.firstOrNull { it.type == targetShipType }
     shipList.remove(shipInIssue)
 }
 
 private fun getPriorityUnit(shipList: SnapshotStateList<Ship>): ShipType? {
     if (shipList.isEmpty()) return null
-    var stype: ShipType? = null
+    var dominantShipType: ShipType? = null
     var nMax = 0
     val shipCount = mutableMapOf<ShipType, Int>()
     shipList.forEach {
@@ -119,13 +119,13 @@ private fun getPriorityUnit(shipList: SnapshotStateList<Ship>): ShipType? {
     }
     shipCount.forEach {
         if (it.value > nMax || (it.value == nMax && (mapOfShips[it.key]?.priority
-                ?: 0) > (mapOfShips[stype]?.priority ?: 0))
+                ?: 0) > (mapOfShips[dominantShipType]?.priority ?: 0))
         ) {
-            stype = it.key
+            dominantShipType = it.key
             nMax = it.value
         }
     }
-    return stype
+    return dominantShipType
 }
 
 private fun calcFirepower(

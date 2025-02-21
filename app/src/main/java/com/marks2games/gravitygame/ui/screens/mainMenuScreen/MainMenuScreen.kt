@@ -59,7 +59,9 @@ fun MainMenuScreen(
     val mainMenuUiStates by mainMenuModel.mainMenuUiStates.collectAsState()
 
     LaunchedEffect(Unit) {
-        mainMenuModel.shouldSignIn(context = context)
+        if(!mainMenuUiStates.alreadySignAsGuest){
+            mainMenuModel.shouldSignIn()
+        }
     }
 
     InfoTextDialog(
@@ -74,10 +76,7 @@ fun MainMenuScreen(
         toShow = mainMenuUiStates.showSignInDialog,
         backToMainMenu = { mainMenuModel.showSignInDialog(false) },
         signInAnonymously = { mainMenuModel.anonymousSignIn() },
-        signInWithGoogle = { mainMenuModel.signInWithGoogle(
-            googleSign = googleSign,
-            context = context
-        ) }
+        signInWithGoogle = { mainMenuModel.signInWithGoogle(googleSign) }
     )
 
     Image(
@@ -119,9 +118,9 @@ fun MainMenuScreen(
                     )
                 }
                 IconButton(onClick = { onAccountClick() }) {
-                    if(mainMenuModel.hasUserImage()){
+                    if(mainMenuUiStates.userImage != null){
                        Image(
-                           painter = rememberAsyncImagePainter(mainMenuModel.getUserImage()),
+                           painter = rememberAsyncImagePainter(mainMenuUiStates.userImage),
                            contentDescription = "Profile picture",
                            modifier = Modifier
                                .clip(CircleShape)

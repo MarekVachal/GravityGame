@@ -1,6 +1,5 @@
 package com.marks2games.gravitygame.tutorial
 
-import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
@@ -17,6 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.marks2games.gravitygame.R
+import com.marks2games.gravitygame.models.Tasks
 import com.marks2games.gravitygame.timer.TimerViewModel
 import com.marks2games.gravitygame.ui.screens.settingScreen.SettingViewModel
 
@@ -26,7 +26,6 @@ fun TutorialDialog(
     tutorialModel: TutorialViewModel,
     timerModel: TimerViewModel?,
     settingsModel: SettingViewModel,
-    context: Context,
     toShow: Boolean
 ){
     val tutorialUiState by tutorialModel.tutorialUiState.collectAsState()
@@ -42,10 +41,7 @@ fun TutorialDialog(
             dismissButton = {
                 Button(
                     onClick = {
-                        settingsModel.changeShowTutorial(
-                            toShow = false,
-                            context = context
-                        )
+                        settingsModel.changeShowTutorial(toShow = false)
                         tutorialModel.showTutorialDialog(
                             toShow = false,
                             timerModel = timerModel

@@ -64,7 +64,7 @@ fun SettingScreen(
                     Switch(
                         checked = settingUiState.showTutorial,
                         onCheckedChange = { isChecked ->
-                            settingModel.changeShowTutorial(toShow = isChecked, context = context)
+                            settingModel.changeShowTutorial(toShow = isChecked)
                         }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -77,7 +77,7 @@ fun SettingScreen(
                     Switch(
                         checked = settingUiState.keepScreenOn,
                         onCheckedChange = { isChecked ->
-                            settingModel.changeKeepScreenOn(enabled = isChecked, context = context)
+                            settingModel.changeKeepScreenOn(enabled = isChecked)
                         }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -88,9 +88,7 @@ fun SettingScreen(
 
         Button(
             onClick = {
-                settingModel.saveTutorialSettings(
-                    context = context
-                )
+                settingModel.saveTutorialSettings()
                 onBackButtonClick()
             },
             modifier = modifier

@@ -3,17 +3,17 @@ package com.marks2games.gravitygame.ui.screens.mainMenuScreen
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.marks2games.gravitygame.R
+import com.marks2games.gravitygame.models.SharedPreferencesRepository
 import com.marks2games.gravitygame.signIn.AnonymousSign
 import com.marks2games.gravitygame.signIn.GoogleSign
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.sentry.Sentry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,9 +21,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
 @HiltViewModel
 class MainMenuViewModel @Inject constructor(
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val sharedPreferences: SharedPreferencesRepository
 ): ViewModel() {
 
     private val _mainmenuUiState = MutableStateFlow(MainMenuUiStates())
@@ -38,18 +40,16 @@ class MainMenuViewModel @Inject constructor(
         }
     }
 
-    fun shouldSignIn(context: Context){
-        val sharedPreferences: SharedPreferences = context.getSharedPreferences(
-            "AppSettings", Context.MODE_PRIVATE)
-        val hasSignIn = sharedPreferences.getBoolean("hasSignIn", false)
+
+    fun shouldSignIn(){
+        val hasSignIn = sharedPreferences.getHasSignIn()
         if (!hasSignIn) {
             val user = auth.currentUser
-            Log.d("AuthCheck", "User: $user, isAnonymous: ${user?.isAnonymous}")
-
-            if (user == null || !user.isAnonymous) {
-                Log.d("AuthCheck", "Triggering showSignInDialog")
+            if (user == null) {
                 showSignInDialog(true)
             }
+        } else {
+            getUserImage()
         }
     }
 
@@ -65,28 +65,22 @@ class MainMenuViewModel @Inject constructor(
         }
     }
 
-    fun signInWithGoogle(googleSign: GoogleSign, context: Context){
+    fun signInWithGoogle(googleSign: GoogleSign){
         viewModelScope.launch {
             googleSign.signInWithCredentialManager()
+            getUserImage()
         }
         showSignInDialog(false)
-        writeToPreferences(context)
+        sharedPreferences.setHasSignIn(true)
     }
 
-    private fun writeToPreferences(context: Context){
-        val sharedPreferences: SharedPreferences = context.getSharedPreferences(
-            "AppSettings", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putBoolean("hasSignIn", true)
-        editor.apply()
-    }
-
-    fun hasUserImage(): Boolean{
-        return auth.currentUser?.photoUrl != null
-    }
-
-    fun getUserImage(): Uri?{
-        return auth.currentUser?.photoUrl
+    private fun getUserImage(){
+        val userImage = auth.currentUser?.photoUrl
+        _mainmenuUiState.update { state ->
+            state.copy(
+                userImage = userImage
+            )
+        }
     }
 
     fun setTextTitle(context: Context): String{
@@ -121,11 +115,13 @@ class MainMenuViewModel @Inject constructor(
             intent.setPackage("com.discord")
             context.startActivity(intent)
         } catch (e: ActivityNotFoundException) {
+            Sentry.captureException(e)
             try {
                 intent.setPackage(null)
                 context.startActivity(intent)
             } catch (e: Exception) {
                 Toast.makeText(context, context.getString(R.string.errorToOpenLink), Toast.LENGTH_LONG).show()
+                Sentry.captureException(e)
             }
         }
     }
@@ -138,11 +134,13 @@ class MainMenuViewModel @Inject constructor(
             intent.setPackage("app.buymeacoffee")
             context.startActivity(intent)
         } catch (e: ActivityNotFoundException) {
+            Sentry.captureException(e)
             try{
                 intent.setPackage(null)
                 context.startActivity(intent)
             } catch (e: Exception){
                 Toast.makeText(context, context.getString(R.string.errorToOpenLink), Toast.LENGTH_LONG).show()
+                Sentry.captureException(e)
             }
         }
     }
@@ -157,6 +155,7 @@ class MainMenuViewModel @Inject constructor(
         try {
             context.startActivity(intent)
         } catch (e: ActivityNotFoundException) {
+            Sentry.captureException(e)
             Toast.makeText(context, context.getString(R.string.errorToOpenMail), Toast.LENGTH_LONG).show()
         }
     }

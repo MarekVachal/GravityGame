@@ -1,13 +1,12 @@
 package com.marks2games.gravitygame.ui.screens.matchmakingScreen
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.marks2games.gravitygame.firebase.Notification
-import com.marks2games.gravitygame.firebase.Room
+import com.marks2games.gravitygame.firebase.models.Room
 import com.marks2games.gravitygame.models.PlayerData
 import com.marks2games.gravitygame.models.Players
 import com.marks2games.gravitygame.models.SharedPlayerDataRepository
@@ -23,8 +22,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.maps.toBattleMap
+import com.marks2games.gravitygame.models.toBattleMap
+import com.marks2games.gravitygame.models.RoomStatus
 import com.marks2games.gravitygame.models.toGameType
+import com.marks2games.gravitygame.models.toRoomStatus
 import com.marks2games.gravitygame.signIn.AnonymousSign
 import com.marks2games.gravitygame.signIn.GoogleSign
 
@@ -39,7 +40,6 @@ class MatchmakingViewModel @Inject constructor(
     private val _matchmakingUiStates = MutableStateFlow(MatchmakingUiStates())
     val matchmakingUiStates = _matchmakingUiStates.asStateFlow()
     val playerData: StateFlow<PlayerData> = sharedPlayerModel.playerData
-    private val TAG = "Matchmaking"
     private val anonymousSign = AnonymousSign(auth)
 
     fun restoreGameSession(roomId: String){
@@ -47,13 +47,12 @@ class MatchmakingViewModel @Inject constructor(
         roomRef.get().addOnSuccessListener { snapshot ->
             val room = snapshot.getValue(Room::class.java)
             if(room != null){
-                Log.d("NotificationHandler", "Game session restored for room: $roomId")
                 sharedPlayerModel.updateRoomRef(roomRef)
                 room.gameType.toGameType()?.let { sharedPlayerModel.updateGameType(it) }
                 room.battleMap.toBattleMap()?.let { sharedPlayerModel.updateBattleMap(it) }
                 sharedPlayerModel.updateIsOnline(true)
             } else {
-                Log.e("NotificationHandler", "Room not found: $roomId")
+                return@addOnSuccessListener
             }
         }
     }
@@ -121,21 +120,15 @@ class MatchmakingViewModel @Inject constructor(
                         }
                     }
 
-                    Log.d(TAG, "Listener availableRoomKey: $availableRoomKey")
-
                     if (availableRoomKey != null) {
                         val availableRoomRef = roomsRef.child(availableRoomKey)
                         availableRoomRef.runTransaction(object : Transaction.Handler {
                             override fun doTransaction(mutableData: MutableData): Transaction.Result {
-                                Log.d(TAG, "Transaction starts. Data: $mutableData")
                                 val room = mutableData.getValue(Room::class.java)
                                     ?: return Transaction.success(mutableData)
-                                Log.d(TAG, "Room: $room")
                                 if(room.player2Id.isNotEmpty()){
-                                    Log.d(TAG, "Room if full")
                                     Transaction.success(mutableData)
                                 } else if(room.player1Id == playerId){
-                                    Log.d(TAG, "Player is already in the room")
                                     deleteRoom(availableRoomRef)
                                     Transaction.success(mutableData)
                                 } else {
@@ -144,7 +137,6 @@ class MatchmakingViewModel @Inject constructor(
                                     mutableData.value = room
                                     return Transaction.success(mutableData)
                                 }
-                                Log.d(TAG, "Room is full")
                                 return Transaction.success(mutableData)
                             }
 
@@ -153,26 +145,21 @@ class MatchmakingViewModel @Inject constructor(
                                 committed: Boolean,
                                 currentData: DataSnapshot?
                             ) {
-                                if(currentData == null){
-                                    Log.d(TAG, "currentData in onComplete are null")
+                                if(error != null){
+                                    Sentry.captureException(error.toException())
+                                    return
                                 }
                                 if(!committed){
-                                    Log.d(TAG, "Transaction not committed")
+                                    return
                                 }
-                                if (committed) {
-                                    val room = currentData?.getValue(Room::class.java)
-                                    if (room != null) {
-                                        updateRoomRef(availableRoomRef)
-                                        handleRoomState(playerId, context)
-                                    }
-                                } else {
-                                    Log.d(TAG, "Unknown error")
+                                val room = currentData?.getValue(Room::class.java)
+                                if (room != null) {
+                                    updateRoomRef(availableRoomRef)
+                                    handleRoomState(playerId, context)
                                 }
                             }
                         })
                     } else {
-                        // No matching room. Creating new one
-                        Log.d(TAG, "No available room. Room is creating")
                         val newRoomKey = roomsRef.push().key ?: return
                         val newRoomRef = roomsRef.child(newRoomKey)
                         updateRoomRef(newRoomRef)
@@ -184,20 +171,18 @@ class MatchmakingViewModel @Inject constructor(
                             gameType = gameType.name
                         )
 
-                        Log.d(TAG, "New room created: $newRoom")
                         roomsRef.child(newRoomKey).setValue(newRoom)
                             .addOnSuccessListener {
-                                Log.d(TAG, "Call for handleRoomState()")
                                 handleRoomState(playerId, context)
                             }
                             .addOnFailureListener { error ->
-                                Log.e(TAG, "Failed to create a new room: ${error.message}")
                                 startMatchmakingAfterFail(context)
+                                Sentry.captureException(error)
                             }
                     }
                 }
                 override fun onCancelled(error: DatabaseError) {
-                    Log.e(TAG, "Failed to query rooms: ${error.message}")
+                    Sentry.captureException(error.toException())
                     startMatchmakingAfterFail(context)
                 }
             })
@@ -205,120 +190,100 @@ class MatchmakingViewModel @Inject constructor(
 
     fun handleRoomStateAfterNotification(context: Context) {
         val roomRef = playerData.value.roomRef ?: return
-        Log.d("Notification", "roomRef: $roomRef")
-        roomRef.get().addOnSuccessListener { snapshot ->
-            Log.d("Notification", "Data room successfully get.")
-            val room = snapshot.getValue(Room::class.java)
-            Log.d("Notification", "Room: $room")
-            if (room?.player1Id != "" && room?.player2Id != "") {
-                Log.d("Notification", "Second player joined. Match ready.")
-                opponentFound(true)
-            } else {
-                deleteRoom(roomRef)
-                findOrCreateRoom(context)
+        roomRef.get()
+            .addOnSuccessListener { snapshot ->
+                val room = snapshot.getValue(Room::class.java)
+                if (room?.player1Id != "" && room?.player2Id != "") {
+                    opponentFound(true)
+                } else {
+                    deleteRoom(roomRef)
+                    findOrCreateRoom(context)
+                }
             }
-        }
-            .addOnFailureListener {
+            .addOnFailureListener{ error ->
                 findOrCreateRoom(context)
+                Sentry.captureException(error)
             }
-
     }
 
     private fun handleRoomState(
         playerId: String,
         context: Context
     ) {
-        Log.d(TAG, "handleRoomState starts")
-        Log.d(TAG, "RoomRef in playerData: ${playerData.value.roomRef}")
         val roomRef = playerData.value.roomRef ?: return
-        Log.d(TAG, "HandleRoomState roomRef: $roomRef")
-        roomRef.get().addOnSuccessListener { snapshot ->
-            val room = snapshot.getValue(Room::class.java)
-            if(room != null){
-                Log.d(TAG, "Room data: $room")
-                if (room.player1Id == playerId) {
-                    Log.d(TAG, "Player is assigned as PLAYER1.")
-                    updatePlayer(Players.PLAYER1)
-                } else if (room.player2Id == playerId) {
-                    Log.d(TAG, "Player is assigned as PLAYER2.")
-                    updatePlayer(Players.PLAYER2)
-                }
+        roomRef.get()
+            .addOnSuccessListener { snapshot ->
+                val room = snapshot.getValue(Room::class.java)
+                if(room != null){
+                    if (room.player1Id == playerId) {
+                        updatePlayer(Players.PLAYER1)
+                    } else if (room.player2Id == playerId) {
+                        updatePlayer(Players.PLAYER2)
+                    }
+                    val roomStatus = room.status.toRoomStatus()
+                    when (roomStatus) {
+                        RoomStatus.WAITING -> {
+                            onWaitingForOpponent()
 
-                val roomStatus = room.status.toRoomStatus()
+                            val listener = object : ValueEventListener {
+                                override fun onDataChange(snapshot: DataSnapshot) {
+                                    val updatedRoom = snapshot.getValue(Room::class.java)
+                                    if (updatedRoom?.player1Id != "" && updatedRoom?.player2Id != "") {
+                                        onMatchFound(roomRef)
+                                        roomRef.removeEventListener(this)
+                                        updateListener(null)
+                                    }
+                                }
 
-                when (roomStatus) {
-                    RoomStatus.WAITING -> {
-                        Log.d(TAG, "Room is waiting for the second player.")
-
-                        onWaitingForOpponent()
-
-                        val listener = object : ValueEventListener {
-                            override fun onDataChange(snapshot: DataSnapshot) {
-                                val updatedRoom = snapshot.getValue(Room::class.java)
-                                if (updatedRoom?.player1Id != "" && updatedRoom?.player2Id != "") {
-                                    Log.d(TAG, "Second player joined. Match ready.")
-                                    onMatchFound(roomRef)
-                                    roomRef.removeEventListener(this)
-                                    updateListener(null)
+                                override fun onCancelled(error: DatabaseError) {
+                                    Sentry.captureException(error.toException())
+                                    startMatchmakingAfterFail(context)
                                 }
                             }
+                            updateListener(listener)
+                            roomRef.addValueEventListener(listener)
+                        }
 
-                            override fun onCancelled(error: DatabaseError) {
-                                Sentry.captureException(error.toException())
-                                Log.d(TAG, "Failed to create listener: ${error.message}")
-                                startMatchmakingAfterFail(context)
+                        RoomStatus.TO_CONFIRM -> {
+                            viewModelScope.launch(Dispatchers.IO) {
+                                notification.sendNotificationToPlayer(
+                                    roomId = roomRef.key?: "",
+                                    playerId = room.player1Id,
+                                    title = context.getString(R.string.notificationTitleOpponentFound),
+                                    body = context.getString(R.string.notificationBodyOpponentFound),
+                                    context = context
+                                )
                             }
+                            onMatchFound(roomRef)
                         }
-                        updateListener(listener)
-                        roomRef.addValueEventListener(listener)
-                    }
 
-                    RoomStatus.TO_CONFIRM -> {
-                        Log.d(TAG, "Match found.")
-                        viewModelScope.launch(Dispatchers.IO) {
-                            notification.sendNotificationToPlayer(
-                                roomId = roomRef.key?: "",
-                                playerId = room.player1Id,
-                                title = context.getString(R.string.notificationTitleOpponentFound),
-                                body = context.getString(R.string.notificationBodyOpponentFound),
-                                context = context
-                            )
+                        RoomStatus.FULL -> {
+                            startMatchmakingAfterFail(context)
                         }
-                        onMatchFound(roomRef)
-                    }
 
-                    RoomStatus.FULL -> {
-                        Log.d(TAG, "Room is full.")
-                        startMatchmakingAfterFail(context)
-                    }
+                        RoomStatus.ENDED -> {
+                            deleteRoom(roomRef = roomRef)
+                            startMatchmakingAfterFail(context)
+                        }
 
-                    RoomStatus.ENDED -> {
-                        Log.d(TAG, "Room has ended. Cleaning up.")
-                        deleteRoom(roomRef = roomRef)
-                        startMatchmakingAfterFail(context)
+                        else -> {
+                            deleteRoom(roomRef)
+                            updateListener(null)
+                            updateRoomRef(null)
+                            findOrCreateRoom(context)
+                        }
                     }
-
-                    else -> {
-                        Log.e(TAG, "Unexpected room status: ${room.status}")
-                        deleteRoom(roomRef)
-                        updateListener(null)
-                        updateRoomRef(null)
-                        findOrCreateRoom(context)
-                    }
+                } else {
+                    updateListener(null)
+                    updateRoomRef(null)
+                    findOrCreateRoom(context)
                 }
-            } else {
-                Log.d(TAG, "Room does not exist or data is null.")
+            }.addOnFailureListener { error ->
+                Sentry.captureException(error)
                 updateListener(null)
                 updateRoomRef(null)
                 findOrCreateRoom(context)
             }
-        }.addOnFailureListener { error ->
-            Log.e(TAG, "Failed to fetch room: ${error.message}")
-            Sentry.captureException(error)
-            updateListener(null)
-            updateRoomRef(null)
-            findOrCreateRoom(context)
-        }
     }
 
     fun confirmPresence(
@@ -326,26 +291,18 @@ class MatchmakingViewModel @Inject constructor(
         timerModel: TimerViewModel,
         context: Context
     ) {
-
         val playerId = auth.uid ?: return
         val roomRef = playerData.value.roomRef ?: return
-
-        Log.d("Matchmaking", "Confirming presence for player: $playerId")
 
         roomRef.runTransaction(object : Transaction.Handler {
             override fun doTransaction(currentData: MutableData): Transaction.Result {
                 val room = currentData.getValue(Room::class.java) ?: return Transaction.success(currentData)
-                Log.d("Matchmaking", "Current room data: $room")
 
                 val updatedRoom = when (playerId) {
                     room.player1Id -> room.copy(player1Ready = true)
                     room.player2Id -> room.copy(player2Ready = true)
-                    else -> {
-                        Log.w("Matchmaking", "Player ID $playerId does not match room players.")
-                        return Transaction.abort()
-                    }
+                    else -> return Transaction.abort()
                 }
-                Log.d("Matchmaking", "Updated room data: $updatedRoom")
                 currentData.value = updatedRoom
                 return Transaction.success(currentData)
             }
@@ -356,34 +313,23 @@ class MatchmakingViewModel @Inject constructor(
                 currentData: DataSnapshot?
             ) {
                 if (error != null) {
-                    Log.e("Matchmaking", "Transaction error: ${error.message}")
                     Sentry.captureException(error.toException())
                     return
                 }
 
                 if (!committed) {
-                    Log.d("Matchmaking", "Transaction not committed.")
                     return
                 }
 
                 val room = currentData?.getValue(Room::class.java)?: return
-                Log.d("Matchmaking", "Room data after transaction: $room")
 
                 if (room.player1Ready && room.player2Ready) {
-                    Log.d("Matchmaking", "Both players confirmed presence.")
-                    val statusUpdate = mapOf(
-                        "status" to RoomStatus.FULL.name
-                    )
-                    roomRef.updateChildren(statusUpdate)
-                        .addOnSuccessListener {
-                            Log.d(TAG, "Room status updated successfully.")
-                        }
+                    roomRef.child("status").setValue(RoomStatus.FULL.name)
                         .addOnFailureListener { e ->
-                            Log.e(TAG, "Failed to update room status: ${e.message}")
+                            Sentry.captureException(e)
                         }
                     onMatchConfirmed()
                 } else {
-                    Log.d("Matchmaking", "Waiting for opponent to confirm presence.")
                     waitingForConfirmation(true)
                     val timer = CoroutineTimer(
                         timerModel = timerModel,
@@ -401,10 +347,7 @@ class MatchmakingViewModel @Inject constructor(
                     roomRef.addValueEventListener(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
                             val updatedRoom = snapshot.getValue(Room::class.java)?: return
-                            Log.d("Matchmaking", "Room data on opponent check: $updatedRoom")
-
                             if(updatedRoom.player1Ready && updatedRoom.player2Ready){
-                                Log.d("Matchmaking", "Opponent confirmed presence. Stopping timer.")
                                 room.status = RoomStatus.FULL.name
                                 timerModel.stopTimer()
                                 onMatchConfirmed()
@@ -414,7 +357,6 @@ class MatchmakingViewModel @Inject constructor(
                         }
 
                         override fun onCancelled(error: DatabaseError) {
-                            Log.e("Matchmaking", "Error during opponent check: ${error.message}")
                             Sentry.captureException(error.toException())
                             timerModel.stopTimer()
                             waitingForConfirmation(false)
@@ -429,11 +371,7 @@ class MatchmakingViewModel @Inject constructor(
 
     private fun deleteRoom(roomRef: DatabaseReference){
         roomRef.removeValue()
-            .addOnSuccessListener {
-                Log.d(TAG, "Room successfully deleted.")
-            }
             .addOnFailureListener { error ->
-                Log.e(TAG, "Failed to delete room: ${error.message}")
                 Sentry.captureException(error)
             }
     }
@@ -443,20 +381,17 @@ class MatchmakingViewModel @Inject constructor(
         context: Context,
         timerModel: TimerViewModel
     ){
-        Log.d("Matchmaking", "Opponent did not confirm in time. Deleting room.")
         deleteRoom(roomRef)
         onOpponentDisconnected(context, timerModel)
     }
 
     private fun updatePlayer(player: Players){
-        Log.d("Player", "View model method start. Player data: ${playerData.value.player}, player in method: $player")
         val opponent = when (player) {
             Players.PLAYER1 -> Players.PLAYER2
             Players.PLAYER2 -> Players.PLAYER1
             Players.NONE -> Players.NONE
         }
         sharedPlayerModel.updatePlayer(player = player, opponent = opponent)
-        Log.d("Player", "View model method end: ${playerData.value.player}")
     }
 
     fun waitingForConfirmation(toShow: Boolean){
@@ -516,22 +451,7 @@ class MatchmakingViewModel @Inject constructor(
     }
 
     private fun updateRoomRef(roomRef: DatabaseReference?){
-        Log.d("UpdateRoomRef", "RoomRef: $roomRef")
         sharedPlayerModel.updateRoomRef(roomRef)
     }
 }
 
-enum class RoomStatus{
-    WAITING,
-    TO_CONFIRM,
-    FULL,
-    ENDED
-}
-
-fun String.toRoomStatus(): RoomStatus? {
-    return try {
-        RoomStatus.valueOf(this)
-    } catch (e: IllegalArgumentException) {
-        null
-    }
-}

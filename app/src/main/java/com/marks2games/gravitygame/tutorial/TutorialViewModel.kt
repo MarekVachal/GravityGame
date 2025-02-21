@@ -1,6 +1,7 @@
 package com.marks2games.gravitygame.tutorial
 
 import androidx.lifecycle.ViewModel
+import com.marks2games.gravitygame.models.Tasks
 import com.marks2games.gravitygame.timer.TimerViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

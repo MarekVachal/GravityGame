@@ -3,11 +3,11 @@ package com.marks2games.gravitygame
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
-import android.util.Log
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
+import com.marks2games.gravitygame.models.PlayerState
 import dagger.hilt.android.HiltAndroidApp
 import io.sentry.Sentry
 import javax.inject.Inject
@@ -29,12 +29,10 @@ class MyApp : Application(), Application.ActivityLifecycleCallbacks {
     }
 
     override fun onActivityResumed(p0: Activity) {
-        Log.d("AppState", "App is in foreground")
         updateState(PlayerState.ACTIVE)
     }
 
     override fun onActivityPaused(p0: Activity) {
-        Log.d("AppState", "App is in background")
         updateState(PlayerState.BACKGROUND)
     }
 
@@ -45,11 +43,7 @@ class MyApp : Application(), Application.ActivityLifecycleCallbacks {
             .child(playerId)
             .child("state")
         playerStateRef.setValue(state.name)
-            .addOnSuccessListener {
-                Log.d("AppState", "State updated to $state")
-            }
             .addOnFailureListener { e ->
-                Log.d("AppState", "Failed to update state ${e.message}")
                 Sentry.captureException(e)
             }
 
@@ -59,10 +53,4 @@ class MyApp : Application(), Application.ActivityLifecycleCallbacks {
     override fun onActivityStarted(p0: Activity) { }
     override fun onActivityStopped(p0: Activity) { }
     override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) { }
-}
-
-enum class PlayerState{
-    ACTIVE,
-    BACKGROUND,
-    DEAD
 }

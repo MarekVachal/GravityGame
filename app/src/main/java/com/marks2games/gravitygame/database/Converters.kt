@@ -1,7 +1,7 @@
 package com.marks2games.gravitygame.database
 
 import androidx.room.TypeConverter
-import com.marks2games.gravitygame.ui.utils.BattleResultEnum
+import com.marks2games.gravitygame.models.BattleResultEnum
 
 class Converters {
     @TypeConverter

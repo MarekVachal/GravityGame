@@ -3,7 +3,6 @@ package com.marks2games.gravitygame
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.os.Build
@@ -58,6 +57,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.marks2games.gravitygame.firebase.FcmToken
 import com.marks2games.gravitygame.firebase.Notification
+import com.marks2games.gravitygame.models.SharedPreferencesRepository
 import com.marks2games.gravitygame.navigation.Matchmaking
 import com.marks2games.gravitygame.signIn.GoogleSign
 import com.marks2games.gravitygame.ui.screens.accountScreen.AccountViewModel
@@ -79,6 +79,8 @@ class MainActivity : ComponentActivity() {
     lateinit var fcmToken: FcmToken
     @Inject
     lateinit var notification: Notification
+    @Inject
+    lateinit var sharedPreferences: SharedPreferencesRepository
     private lateinit var navController: NavHostController
     private lateinit var googleSign: GoogleSign
 
@@ -92,7 +94,11 @@ class MainActivity : ComponentActivity() {
             AppDatabase::class.java, "battle_results.db"
         ).build()
         notification.createNotificationChannel(this)
-        googleSign = GoogleSign(context = this, auth = auth)
+        googleSign = GoogleSign(
+            context = this,
+            auth = auth,
+            sharedPreferences = sharedPreferences
+        )
         fcmToken.retrieveAndSaveFcmToken()
 
 
@@ -111,7 +117,8 @@ class MainActivity : ComponentActivity() {
                         owner = this,
                         window = window,
                         navController = navController,
-                        googleSign = googleSign
+                        googleSign = googleSign,
+                        sharedPreferences = sharedPreferences
                     )
                     handleIntent(intent)
                 }
@@ -164,7 +171,8 @@ fun ScreenSetup(
     owner: ViewModelStoreOwner,
     window: Window,
     navController: NavHostController,
-    googleSign: GoogleSign
+    googleSign: GoogleSign,
+    sharedPreferences: SharedPreferencesRepository
 ) {
     val context = LocalContext.current
     val repository = BattleRepository(database.battleResultDao())
@@ -185,7 +193,8 @@ fun ScreenSetup(
         loadSettings(
             context = context,
             settingsModel = settingModel,
-            window = window
+            window = window,
+            sharedPreferences = sharedPreferences
         )
     }
 
@@ -227,13 +236,7 @@ fun ScreenSetup(
                 battleModel = battleModel,
                 timerModel = timerModel,
                 tutorialModel = tutorialModel,
-                endOfGame = {
-                    navController.navigate(Destinations.MAINMENU.name)
-                },
-                showBattleResultMap = {
-                    battleModel.showEndOfGameDialog(false)
-                    battleModel.showEndOfGameViaCapitulationDialog(false)
-                },
+                endOfGame = { navController.navigate(Destinations.MAINMENU.name) },
                 settingsModel = settingModel,
                 context = context,
                 databaseModel = databaseModel,
@@ -244,9 +247,7 @@ fun ScreenSetup(
         composable(route = Destinations.SELECTMAP.name) {
             SelectMapScreen(
                 battleModel = battleModel,
-                onNextButtonClicked = {
-                    navController.navigate(Destinations.SELECTARMY.name)
-                }
+                onNextButtonClicked = { navController.navigate(Destinations.SELECTARMY.name) }
             )
         }
 
@@ -285,9 +286,7 @@ fun ScreenSetup(
         composable(route = Destinations.STATISTICS.name){
             StatisticScreen(
                 databaseModel = databaseModel,
-                onBackButtonClick = {
-                    navController.navigate(Destinations.MAINMENU.name)
-                },
+                onBackButtonClick = { navController.navigate(Destinations.MAINMENU.name) },
                 statisticModel = statisticModel,
                 context = context
             )
@@ -326,17 +325,16 @@ private fun closeAndroidBars(window: Window){
 private fun loadSettings(
     context: Context,
     settingsModel: SettingViewModel,
-    window: Window
+    window: Window,
+    sharedPreferences: SharedPreferencesRepository
 ) {
-    val sharedPreferences: SharedPreferences = context.getSharedPreferences(
-        "AppSettings", Context.MODE_PRIVATE)
-    val showTutorial = sharedPreferences.getBoolean("ShowTutorial", true)
-    val language = sharedPreferences.getString("language", "en")?: ""
-    val keepScreenOn = sharedPreferences.getBoolean("keepScreenOn", true)
-    settingsModel.changeShowTutorial(toShow = showTutorial, context = context)
+    val showTutorial = sharedPreferences.getShowTutorial()
+    val language = sharedPreferences.getLanguage()
+    val keepScreenOn = sharedPreferences.getKeepScreenOn()
+    settingsModel.changeShowTutorial(toShow = showTutorial)
     settingsModel.setLanguage(context = context, language = language)
     settingsModel.setChosenLanguage(language = language)
-    settingsModel.changeKeepScreenOn(enabled = keepScreenOn, context = context)
+    settingsModel.changeKeepScreenOn(enabled = keepScreenOn)
     setScreenOn(enabled = keepScreenOn, window = window)
 
 }

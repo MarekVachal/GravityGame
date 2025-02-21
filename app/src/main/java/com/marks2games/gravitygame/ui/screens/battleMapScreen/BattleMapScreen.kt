@@ -1,7 +1,6 @@
 package com.marks2games.gravitygame.ui.screens.battleMapScreen
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -37,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.ai.createAiArmy
 import com.marks2games.gravitygame.database.DatabaseViewModel
-import com.marks2games.gravitygame.tutorial.Tasks
+import com.marks2games.gravitygame.models.Tasks
 import com.marks2games.gravitygame.tutorial.TutorialDialog
 import com.marks2games.gravitygame.tutorial.TutorialViewModel
 import com.marks2games.gravitygame.timer.CoroutineTimer
@@ -49,10 +48,8 @@ import com.marks2games.gravitygame.ui.screens.settingScreen.SettingViewModel
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.IntOffset
 import com.marks2games.gravitygame.ui.screens.infoDialogsScreens.CapitulateInfoDialog
-import com.marks2games.gravitygame.ui.screens.infoDialogsScreens.PlayerInfoDialog
 import com.marks2games.gravitygame.ui.screens.selectArmyScreen.SelectArmyViewModel
 import com.marks2games.gravitygame.ui.utils.ProgressIndicator
-import com.marks2games.gravitygame.ui.utils.ProgressIndicatorType
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
@@ -66,10 +63,7 @@ fun BattleMapScreen(
     databaseModel: DatabaseViewModel,
     selectArmyModel: SelectArmyViewModel,
     context: Context,
-    endOfGame: () -> Unit,
-    showBattleResultMap: () -> Unit
-
-
+    endOfGame: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val playerData by battleModel.playerData.collectAsState()
@@ -99,9 +93,9 @@ fun BattleMapScreen(
     }
 
     LaunchedEffect (Unit){
-        battleModel.showProgressIndicator(false, ProgressIndicatorType.WAITING_FOR_OPPONENT)
         timerModel.stopTimer()
-        battleModel.cleanAfterCapitulate()
+        battleModel.initializeBattleGameRepository(playerData)
+        battleModel.resetUiStateForNewBattle()
         battleModel.createArmyList(selectArmyUiState = selectArmyUiState)
         if(!playerData.isOnline && locationListUiState.locationList[battleModel.findOpponentBaseLocation()].enemyShipList.isEmpty()){
             val enemyShipList = createAiArmy(battleMap = battleModel.battleMap)
@@ -109,15 +103,20 @@ fun BattleMapScreen(
             battleModel.showTimer(false)
         }
         if(playerData.isOnline){
-            battleModel.updateLocations(isSetup = true)
+            battleModel.updateLocations(
+                isSetup = true,
+                timerModel = timerModel,
+                databaseModel = databaseModel
+            )
             timerModel.makeTimer(
                 CoroutineTimer(
                     timerModel = timerModel,
                     onFinishTimer = {
-                        Log.d("Timer", "Timer finished")
                         MainScope().launch {
-                            Log.d("Timer", "Calling finishTurn from timer")
-                            battleModel.finishTurn(timerModel = timerModel, databaseModel = databaseModel)
+                            battleModel.finishTurn(
+                                timerModel = timerModel,
+                                databaseModel = databaseModel
+                            )
                             timerModel.resetTimer()
                             timerModel.startTimer()
                         }
@@ -128,11 +127,13 @@ fun BattleMapScreen(
             battleModel.showTimer(true)
         }
         battleModel.cleanEnemyRecord()
-        battleModel.showPlayerInfoDialog(true)
     }
 
     DisposableEffect(Unit) {
-        battleModel.listenForCapitulation(timerModel)
+        battleModel.listenForCapitulation(
+            timerModel,
+            databaseModel = databaseModel
+        )
         onDispose {  }
     }
 
@@ -140,25 +141,7 @@ fun BattleMapScreen(
         toShow = movementUiState.showEndOfGameDialog,
         onDismissRequest = endOfGame,
         confirmButton = endOfGame,
-        dismissButton = showBattleResultMap,
-        battleModel = battleModel,
-        context = context,
-        isCapitulation = false
-    )
-
-    EndOfGameDialog(
-        toShow = movementUiState.showEndOfGameViaCapitulationDialog,
-        onDismissRequest = endOfGame,
-        confirmButton = endOfGame,
-        dismissButton = showBattleResultMap,
-        battleModel = battleModel,
-        context = context,
-        isCapitulation = true
-    )
-
-    PlayerInfoDialog(
-        toShow = movementUiState.showPlayerInfoDialog,
-        onDismissRequest = { battleModel.showPlayerInfoDialog(false) },
+        dismissButton = { battleModel.showEndOfGameDialog(false) },
         battleModel = battleModel,
         context = context
     )
@@ -188,8 +171,7 @@ fun BattleMapScreen(
         tutorialModel = tutorialModel,
         toShow = tutorialUiState.showTutorialDialog,
         timerModel = timerModel,
-        settingsModel = settingsModel,
-        context = context
+        settingsModel = settingsModel
     )
 
     if(settingsUiState.showTutorial){
@@ -370,8 +352,7 @@ fun BattleMapScreen(
         tutorialModel = tutorialModel,
         toShow = movementUiState.showArmyDialog,
         timerModel = timerModel,
-        settingsModel = settingsModel,
-        context = context
+        settingsModel = settingsModel
     )
 
     ProgressIndicator(

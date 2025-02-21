@@ -93,8 +93,4 @@ data class Warper (override val id: Int) : Ship(id){
     }
 }
 
-enum class ShipType{
-    CRUISER, DESTROYER, GHOST, WARPER
-}
-
 val mapOfShips = mapOf(ShipType.CRUISER to Cruiser(0), ShipType.DESTROYER to Destroyer(0), ShipType.GHOST to Ghost(0), ShipType.WARPER to Warper(0))

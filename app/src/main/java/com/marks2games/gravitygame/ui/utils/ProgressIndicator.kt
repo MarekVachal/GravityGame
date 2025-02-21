@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
+import com.marks2games.gravitygame.models.ProgressIndicatorType
 
 @Composable
 fun ProgressIndicator(
@@ -91,11 +92,4 @@ fun MyProgressIndicator(
         color = Color.Black,
         trackColor = Color.Red
     )
-}
-
-enum class ProgressIndicatorType{
-    AI_CALCULATE,
-    NEW_TURN,
-    WAITING_FOR_MOVE,
-    WAITING_FOR_OPPONENT
 }

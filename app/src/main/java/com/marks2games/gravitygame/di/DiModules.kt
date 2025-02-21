@@ -2,7 +2,9 @@ package com.marks2games.gravitygame.di
 
 import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
+import com.marks2games.gravitygame.firebase.BattleGameRepositoryFactory
 import com.marks2games.gravitygame.models.SharedPlayerDataRepository
+import com.marks2games.gravitygame.models.SharedPreferencesRepository
 import com.marks2games.gravitygame.signIn.GoogleSign
 import dagger.Module
 import dagger.Provides
@@ -23,11 +25,24 @@ object AppModule {
     @Singleton
     fun provideMySignIn(
         context: Context,
-        auth: FirebaseAuth
+        auth: FirebaseAuth,
+        sharedPreferences: SharedPreferencesRepository
     ): GoogleSign {
         return GoogleSign(
             context = context,
-            auth = auth
+            auth = auth,
+            sharedPreferences = sharedPreferences
         )
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object BattleModule {
+
+    @Provides
+    @Singleton
+    fun provideBattleGameRepositoryFactory(auth: FirebaseAuth): BattleGameRepositoryFactory {
+        return BattleGameRepositoryFactory(auth)
     }
 }

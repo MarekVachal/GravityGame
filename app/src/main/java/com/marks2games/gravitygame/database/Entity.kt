@@ -2,7 +2,7 @@ package com.marks2games.gravitygame.database
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.marks2games.gravitygame.ui.utils.BattleResultEnum
+import com.marks2games.gravitygame.models.BattleResultEnum
 
 @Entity(tableName = "battle_results")
 data class BattleResult(

@@ -1,4 +1,4 @@
-package com.marks2games.gravitygame.firebase
+package com.marks2games.gravitygame.firebase.models
 
 data class Room(
     var player1Id: String = "",

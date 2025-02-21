@@ -1,6 +1,5 @@
 package com.marks2games.gravitygame.ui.screens.battleMapScreen
 
-import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -42,7 +41,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.models.ShipType
 import com.marks2games.gravitygame.models.mapOfShips
-import com.marks2games.gravitygame.tutorial.Tasks
+import com.marks2games.gravitygame.models.Tasks
 import com.marks2games.gravitygame.tutorial.TutorialDialog
 import com.marks2games.gravitygame.tutorial.TutorialViewModel
 import com.marks2games.gravitygame.timer.TimerViewModel
@@ -57,7 +56,6 @@ fun ArmyDialog(
     settingsModel: SettingViewModel,
     timerModel: TimerViewModel,
     toShow: Boolean,
-    context: Context,
     onDismissRequest: () -> Unit = { battleModel.cleanMovementValues() },
     onConfirmation: () -> Unit = { battleModel.attack() },
     onCancel: () -> Unit = { battleModel.cleanMovementValues() },
@@ -82,8 +80,7 @@ fun ArmyDialog(
         tutorialModel = tutorialModel,
         toShow = tutorialUiState.showTutorialDialog,
         timerModel = timerModel,
-        settingsModel = settingsModel,
-        context = context
+        settingsModel = settingsModel
     )
     if (settingsUiState.showTutorial){
         if (!tutorialUiState.sendShipsTask && tutorialUiState.battleOverviewTask && tutorialUiState.movementTask && movementUiState.showArmyDialog) {

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Gravity Game</string>
+    <string name="privacyPolicy">Zásady ochrany osobních údajů</string>
     <string name="errorToOpenLink">Odkaz nelze otevřít</string>
     <string name="destroyer">Torbédoborec</string>
     <string name="ghost">Duch</string>
@@ -42,7 +43,7 @@
     <string name="infoShipTask">Pokud se chceš dozvědět informace o jednotce, klikni na její jméno.</string>
     <string name="numberShipsTask">Pro následující bitvu, je třeba si do své armády vybrat jednotky. Existují čtyři typy jednotek. Jeden typ je unikátní jednotka Warper, která je přidělena do armády již v základu. Je tedy nutné vybrat následujících 10 jednotek z 11. Jakmile budeš mít sestavenou armádu, potvrď výběr tlačítkem.</string>
     <string name="battleOverviewTitle">Bitva</string>
-    <string name="battleOverviewTask">Nyní začíná bitva. Pokud hraješ proti AI, tvá armáda je modré barvy. Tvá domovská planeta se základnou je na levé straně bojiště, kde jsou i umístěny tvé jednotky. Abys vyhrál bitvu, je nutné dobýt domovskou planetu nepřítele, která je na pravé straně bojiště. Pokud ale nepřítel dobyje tvou domovskou planetu, prohrál jsi.</string>
+    <string name="battleOverviewTask">Nyní začíná bitva. Tvá armáda je vždy modré barvy a soupeřova je červená. Ve hře proti počítači je tvá domovská planeta se základnou na levé straně bojiště, kde jsou i umístěny tvé jednotky. Abys vyhrál bitvu, je nutné dobýt domovskou planetu nepřítele, která je na pravé straně bojiště. Pokud ale nepřítel dobyje tvou domovskou planetu, prohrál jsi. V online hrách může být tvá domovská planeta na obou stranách, vždy hledej modrou armádu.</string>
     <string name="movementTask">Pro pohyb jednotek umísti prst na planetu, kde máš alespoň jednu jednotku a posuň prst na planetu, kam se chceš pohnout. Ve chvíli, kdy umístíš prst na planetu, odkud se budeš hýbat a pohneš jím, všechny dostupné pozice budou označeny zeleným kruhem. Na počátku bitvy se takto označí všechny planety, protože unikátní jednotka Warper se může pohnout kamkoliv. Zbývající typy jednotek se však mohou přesunout pouze na sousední planetu.</string>
     <string name="sendShipsTask">Po výběru pohybu z planety na planetu, je potřeba také zvolit, počet jednotek k přesunu. První sloupec zobrazuje počet nepřátelských jednotek na zvolené planetě. Druhý sloupec zobrazuje počet jednotek, které můžeš přemístit. Třetí sloupec zobrazuje celkový počet jednotek, které budou na zvolené planetě po přesunu. To znamená, jak jednotky, které tam jsou od minulého kola, tak také jednotky, které tam právě přesouváš. Na každé planetě nemůže být více než 6 jednotek jednoho hráče současně.</string>
     <string name="acceptableLossesTask">Mimo výběru jednotek musíš také zvolit, kolik jednotek jsi ochoten v bitvě obětovat. To se dělá pomocí posuvníku a hodnota je počet jednotek. Samotná bitva probíhá v kolech, kdy si jednotky navzájem vyměnují výstřely a končí ve chvíli, kdy jedna z armád dosáne svých tolerovaných ztrát. Když armáda dosáhne svého maxima tolerovaných ztrát, stáhne se z bitvy. Stažená armáda zůstává na planetě a hráč se v dalším tahu může rozhodnout, co s nimi bude dělat. Bitva může také skončit remízou, kdy obě armády dosáhnou svých tolerovaných ztrát.</string>
@@ -177,10 +178,6 @@
     <string name="opponentFound">Soupeř nalezen. Klikni pro zahájení bitvy.</string>
     <string name="onlineBattle">Hraj proti člověku</string>
     <string name="winViaCapitulation">Soupeř kapituloval a ty jsi tak vyhrál hru.</string>
-    <string name="playerTitle">Hráč</string>
-    <string name="playerInfoText">Hraješ za %1$s hráče</string>
-    <string name="redPlayer">červeného</string>
-    <string name="bluePlayer">modrého</string>
     <string name="newMessage">Nová zpráva</string>
     <string name="clickToOpenScreen">Klikni pro otevření hry.</string>
     <string name="notificationTitleOpponentFound">Soupeř nalezen</string>
@@ -195,4 +192,5 @@
     <string name="guest">Host</string>
     <string name="signInText">Hraj jako host nebo se přihlaš pomocí google účtu pro ukládání svého postupu.</string>
     <string name="createAccount">Vytvoř účet</string>
+    <string name="winViaOpponentDisconnection">Soupeř se odpojil. Vyhrál jsi hru.</string>
 </resources>

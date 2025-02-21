@@ -1,8 +1,6 @@
 package com.marks2games.gravitygame.models
 
 import com.google.firebase.database.DatabaseReference
-import com.marks2games.gravitygame.maps.BattleMapEnum
-import com.marks2games.gravitygame.ui.utils.BattleResultEnum
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

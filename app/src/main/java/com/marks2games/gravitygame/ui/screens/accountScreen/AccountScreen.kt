@@ -93,13 +93,16 @@ fun AccountScreen (
                     )
                 }
                 Spacer(modifier.size(4.dp))
-                Button(
-                    onClick = { accountModel.updateShowDeleteAccountDialog(true) }
-                ) {
-                    Text(
-                        text = stringResource(R.string.deleteAccount)
-                    )
+                if(accountModel.showDeleteButton()){
+                    Button(
+                        onClick = { accountModel.updateShowDeleteAccountDialog(true) }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.deleteAccount)
+                        )
+                    }
                 }
+
             }
         }
 
@@ -123,9 +126,16 @@ fun AccountScreen (
         modifier = modifier
             .fillMaxWidth()
             .padding(end = 24.dp, bottom = 24.dp),
-        horizontalArrangement = Arrangement.End,
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Bottom
     ){
+        Button(
+            onClick = { accountModel.openPrivacyPolicyLink(context) }
+        ){
+            Text(
+                text = stringResource(R.string.privacyPolicy)
+            )
+        }
         IconButton(
             onClick = { onBackButtonClick() }
         ) {

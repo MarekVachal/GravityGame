@@ -111,7 +111,7 @@ fun MapBox(
                 .clip(shape = CircleShape)
                 .align(Alignment.BottomCenter)
         )
-        if (locationList[location].owner.value == Players.PLAYER1) {
+        if (battleModel.isMyLocation(location) == true) {
             PlanetFlag(
                 image = R.drawable.flag_player1,
                 myContentDescription = "Location$location flag",
@@ -119,7 +119,7 @@ fun MapBox(
                 modifier = Modifier.align(Alignment.TopCenter)
             )
         }
-        if (locationList[location].owner.value == Players.PLAYER2) {
+        if (battleModel.isMyLocation(location) == false) {
             PlanetFlag(
                 image = R.drawable.flag_player2,
                 myContentDescription = "Location$location flag",

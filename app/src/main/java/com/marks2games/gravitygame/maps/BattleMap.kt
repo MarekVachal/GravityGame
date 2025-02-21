@@ -29,15 +29,3 @@ abstract class BattleMap {
         locationList: List<Location>
     )
 }
-
-enum class BattleMapEnum{
-    TINY
-}
-
-fun String.toBattleMap(): BattleMapEnum? {
-    return try {
-        BattleMapEnum.valueOf(this)
-    } catch (e: IllegalArgumentException) {
-        null
-    }
-}

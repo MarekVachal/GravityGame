@@ -1,5 +1,7 @@
 package com.marks2games.gravitygame.tutorial
 
+import com.marks2games.gravitygame.models.Tasks
+
 data class TutorialUiState(
     val showTutorialDialog: Boolean = false,
     val typeTaskToShow: Tasks? = null,
@@ -14,16 +16,3 @@ data class TutorialUiState(
     val acceptableLostTask: Boolean = false,
     val battleInfoTask: Boolean = false
 )
-
-enum class Tasks{
-    INFO_SHIP,
-    NUMBER_SHIPS,
-    TIMER,
-    MOVEMENT,
-    LOCATION_INFO,
-    LOCATION_OWNER,
-    SEND_SHIPS,
-    ACCEPTABLE_LOST,
-    BATTLE_OVERVIEW,
-    BATTLE_INFO
-}

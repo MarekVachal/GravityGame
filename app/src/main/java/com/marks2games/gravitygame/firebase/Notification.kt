@@ -20,7 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.database.FirebaseDatabase
-import com.marks2games.gravitygame.PlayerState
+import com.marks2games.gravitygame.models.PlayerState
 import com.marks2games.gravitygame.models.NotificationContent
 import com.marks2games.gravitygame.models.NotificationData
 import com.marks2games.gravitygame.models.NotificationDto

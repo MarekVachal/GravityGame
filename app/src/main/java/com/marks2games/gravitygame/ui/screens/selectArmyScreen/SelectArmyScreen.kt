@@ -39,7 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.models.ShipType
-import com.marks2games.gravitygame.tutorial.Tasks
+import com.marks2games.gravitygame.models.Tasks
 import com.marks2games.gravitygame.tutorial.TutorialDialog
 import com.marks2games.gravitygame.tutorial.TutorialViewModel
 import com.marks2games.gravitygame.ui.screens.infoDialogsScreens.ShipInfoDialog
@@ -76,8 +76,7 @@ fun SelectArmyScreen(
         tutorialModel = tutorialModel,
         toShow = tutorialUiState.showTutorialDialog,
         timerModel = null,
-        settingsModel = settingsModel,
-        context = context
+        settingsModel = settingsModel
     )
 
     if(settingsUiState.showTutorial){

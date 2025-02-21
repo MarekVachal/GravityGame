@@ -1,26 +1,24 @@
 package com.marks2games.gravitygame.ui.screens.battleMapScreen
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseAuth
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.ai.GameState
 import com.marks2games.gravitygame.ai.MCTS
 import com.marks2games.gravitygame.database.BattleResult
 import com.marks2games.gravitygame.database.DatabaseViewModel
-import com.marks2games.gravitygame.firebase.BattleConnection
-import com.marks2games.gravitygame.firebase.Room
-import com.marks2games.gravitygame.firebase.SimplifiedMove
-import com.marks2games.gravitygame.firebase.toShipType
+import com.marks2games.gravitygame.firebase.BattleGameRepositoryFactory
+import com.marks2games.gravitygame.firebase.models.SimplifiedMove
+import com.marks2games.gravitygame.models.toShipType
 import com.marks2games.gravitygame.maps.BattleMap
-import com.marks2games.gravitygame.maps.BattleMapEnum
+import com.marks2games.gravitygame.models.BattleMapEnum
 import com.marks2games.gravitygame.maps.TinyMap
 import com.marks2games.gravitygame.models.Cruiser
 import com.marks2games.gravitygame.models.Destroyer
+import com.marks2games.gravitygame.models.EndOfGameType
 import com.marks2games.gravitygame.models.Ghost
 import com.marks2games.gravitygame.models.Location
 import com.marks2games.gravitygame.models.LocationList
@@ -34,8 +32,8 @@ import com.marks2games.gravitygame.ui.utils.calculateBattle
 import com.marks2games.gravitygame.models.MovementRecord
 import com.marks2games.gravitygame.models.SharedPlayerDataRepository
 import com.marks2games.gravitygame.ui.screens.selectArmyScreen.SelectArmyUiState
-import com.marks2games.gravitygame.ui.utils.BattleResultEnum
-import com.marks2games.gravitygame.ui.utils.ProgressIndicatorType
+import com.marks2games.gravitygame.models.BattleResultEnum
+import com.marks2games.gravitygame.models.ProgressIndicatorType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import kotlinx.coroutines.delay
@@ -48,7 +46,7 @@ import javax.inject.Inject
 @HiltViewModel
 class BattleViewModel @Inject constructor(
     private val sharedPlayerModel: SharedPlayerDataRepository,
-    private val auth: FirebaseAuth
+    private val battleGameRepositoryFactory: BattleGameRepositoryFactory
 ): ViewModel() {
 
     private val _movementUiState = MutableStateFlow(MovementUiState())
@@ -72,19 +70,45 @@ class BattleViewModel @Inject constructor(
         }
     }
 
-    suspend fun updateLocations(isSetup: Boolean) {
-        playerData.value.roomRef?.let {
-            BattleConnection(
-                roomRef = it,
-                player = playerData.value.player
-            ).sendUpdatedLocations(
-                updatedLocations = locationListUiState.value.locationList,
-                onOpponentReady = { newLocationList ->
-                    updateOpponentData(simplifiedMove = newLocationList, isSetup = isSetup)
-                }
+    fun isMyLocation(location: Int): Boolean?{
+        val locationOwner = locationListUiState.value.locationList[location].owner.value
+        if (locationOwner == sharedPlayerModel.playerData.value.player){
+            return true
+        }
+        if (locationOwner == sharedPlayerModel.playerData.value.opponent){
+            return false
+        }
+        return null
+    }
+
+    fun initializeBattleGameRepository(playerData: PlayerData){
+        _movementUiState.update { state ->
+            state.copy(
+                battleGameRepository = battleGameRepositoryFactory.create(playerData)
             )
         }
-        Log.d("Update army", "Function updatedLocations finish.")
+    }
+
+    suspend fun updateLocations(
+        isSetup: Boolean,
+        timerModel: TimerViewModel,
+        databaseModel: DatabaseViewModel
+    ) {
+        movementUiState.value.battleGameRepository?.sendUpdatedLocations(
+            updatedLocations = locationListUiState.value.locationList,
+            onOpponentReady = { newLocationList ->
+                updateOpponentData(simplifiedMove = newLocationList, isSetup = isSetup) },
+            timeoutMillis = getTimeoutMillis(timerModel = timerModel),
+            onOpponentDisconnected = {
+                sharedPlayerModel.updateBattleResult(BattleResultEnum.WIN)
+                endOfGame(
+                    timerModel = timerModel,
+                    isCapitulation = false,
+                    isOpponentDisconnected = true,
+                    databaseModel = databaseModel,
+                )
+            }
+            )?: return
     }
 
     private fun updateOpponentData(simplifiedMove: SimplifiedMove, isSetup: Boolean) {
@@ -120,6 +144,12 @@ class BattleViewModel @Inject constructor(
         _locationListUiState.update { state ->
             state.copy(locationList = newList)
         }
+    }
+
+    private fun getTimeoutMillis(timerModel: TimerViewModel): Long{
+        val minute = timerModel.timerUiState.value.minute ?: 0
+        val second = timerModel.timerUiState.value.second ?: 0
+        return ((minute * 60 + second) * 1000) + 2000L
     }
 
     fun isOnlineGame(isOnline: Boolean) {
@@ -233,7 +263,7 @@ class BattleViewModel @Inject constructor(
         }
     }
 
-    fun showProgressIndicator(toShow: Boolean, progressIndicatorType: ProgressIndicatorType) {
+    private fun showProgressIndicator(toShow: Boolean, progressIndicatorType: ProgressIndicatorType) {
         _movementUiState.update { state ->
             state.copy(
                 showProgressIndicator = toShow,
@@ -345,13 +375,11 @@ class BattleViewModel @Inject constructor(
     }
 
     fun createArmyList(selectArmyUiState: SelectArmyUiState) {
-        Log.d("Update army", "Start creating army list")
         val newLocationList = locationListUiState.value.locationList
         newLocationList.forEach { it.myShipList.clear() }
         newLocationList.forEach { it.enemyShipList.clear() }
         var indexNumber = 0
         val startingLocationIndex = findPlayerBaseLocation()
-        Log.d("Update army", "Starting location: $startingLocationIndex")
         val location = newLocationList[startingLocationIndex]
         for (i in 1..selectArmyUiState.numberCruisers) {
             location.myShipList.add(Cruiser(indexNumber))
@@ -366,7 +394,6 @@ class BattleViewModel @Inject constructor(
             indexNumber++
         }
         location.myShipList.add(Warper(indexNumber))
-        Log.d("Update army", "Updated ships location.")
         location.myShipList.forEach { ship ->
             ship.currentPosition = startingLocationIndex
             ship.startingPosition = startingLocationIndex
@@ -532,14 +559,13 @@ class BattleViewModel @Inject constructor(
         } else {
             navigateToMainMenuScreen()
             showEndOfGameDialog(false)
-            showEndOfGameViaCapitulationDialog(false)
             changeEndOfGameState(false)
             showCapitulateInfoDialog(false)
         }
     }
 
-    fun cleanAfterCapitulate() {
-        showEndOfGameViaCapitulationDialog(false)
+    fun resetUiStateForNewBattle() {
+        showProgressIndicator(false, ProgressIndicatorType.NEW_TURN)
         changeEndOfGameState(false)
         showCapitulateInfoDialog(false)
     }
@@ -553,13 +579,11 @@ class BattleViewModel @Inject constructor(
     }
 
     suspend fun finishTurn(timerModel: TimerViewModel, databaseModel: DatabaseViewModel) {
-        Log.d("Timer", "Finish turn start")
         timerModel.stopTimer()
         cleanBattleOnLocations()
         cleanHasMoved()
         cleanRecordsForTurn()
         cleanMovementValues()
-        Log.d("Timer", "RandomMove")
         if(movementUiState.value.turn == 0){
             randomMoveForFirstTurn()
         }
@@ -570,10 +594,13 @@ class BattleViewModel @Inject constructor(
                 progressIndicatorType = ProgressIndicatorType.WAITING_FOR_MOVE
             )
             try {
-                updateLocations(isSetup = false)
+                updateLocations(
+                    isSetup = false,
+                    timerModel = timerModel,
+                    databaseModel = databaseModel
+                )
                 conductBattles()
             } catch (e: Exception) {
-                Log.e("finishTurn", "Failed to update locations: ${e.message}")
                 Sentry.captureException(e)
                 return
             }
@@ -586,13 +613,11 @@ class BattleViewModel @Inject constructor(
             conductBattles()
             cleanEnemyAcceptableLost()
         }
-        checkEndCondition(timerModel = timerModel)
-        showNewTurnDialog()
+        checkEndCondition(timerModel = timerModel, databaseModel = databaseModel)
         if (!movementUiState.value.endOfGame) {
+            showNewTurnDialog()
             timerModel.resetTimer()
             timerModel.startTimer()
-        } else {
-            writeDataToDatabase(databaseModel = databaseModel)
         }
     }
 
@@ -677,121 +702,111 @@ class BattleViewModel @Inject constructor(
         }
     }
 
-    private fun checkEndCondition(timerModel: TimerViewModel) {
-        val player1Base = battleMap.player1Base
-        val player2Base = battleMap.player2Base
+    private fun checkEndCondition(timerModel: TimerViewModel, databaseModel: DatabaseViewModel) {
+        val player: Players
+        val opponent: Players
+        val playerBase: Int
+        val opponentBase: Int
+        when(sharedPlayerModel.playerData.value.player) {
+            Players.PLAYER1 -> {
+                player = Players.PLAYER1
+                opponent = Players.PLAYER2
+                playerBase = battleMap.player1Base
+                opponentBase = battleMap.player2Base
+            }
+            Players.PLAYER2 -> {
+                player = Players.PLAYER2
+                opponent = Players.PLAYER1
+                playerBase = battleMap.player2Base
+                opponentBase = battleMap.player1Base
+            }
+            else -> return
+        }
         val locationList = locationListUiState.value.locationList
 
-        if (locationList[player1Base].owner.value == Players.PLAYER2 &&
-            locationList[player2Base].owner.value == Players.PLAYER1
+        if (locationList[playerBase].owner.value == opponent &&
+            locationList[opponentBase].owner.value == player
         ) {
             sharedPlayerModel.updateBattleResult(BattleResultEnum.DRAW)
-            endOfGame(timerModel = timerModel, isCapitulation = false)
-        } else if (locationList[player1Base].owner.value == Players.PLAYER2 ||
-            locationList.all { it.myShipList.isEmpty() }
-        ) {
-            when (sharedPlayerModel.playerData.value.player) {
-                Players.PLAYER1 -> sharedPlayerModel.updateBattleResult(BattleResultEnum.LOSE)
-                Players.PLAYER2 -> sharedPlayerModel.updateBattleResult(BattleResultEnum.WIN)
-                Players.NONE -> sharedPlayerModel.updateBattleResult(BattleResultEnum.DRAW)
-            }
-            endOfGame(timerModel = timerModel, isCapitulation = false)
-        } else if (locationList[player2Base].owner.value == Players.PLAYER1 ||
-            locationList.all { it.enemyShipList.isEmpty() }
-        ) {
-            when (sharedPlayerModel.playerData.value.player) {
-                Players.PLAYER1 -> sharedPlayerModel.updateBattleResult(BattleResultEnum.WIN)
-                Players.PLAYER2 -> sharedPlayerModel.updateBattleResult(BattleResultEnum.LOSE)
-                Players.NONE -> sharedPlayerModel.updateBattleResult(BattleResultEnum.DRAW)
-            }
-            endOfGame(timerModel = timerModel, isCapitulation = false)
+            endOfGame(
+                timerModel = timerModel,
+                isCapitulation = false,
+                isOpponentDisconnected = false,
+                databaseModel = databaseModel
+            )
+        } else if (locationList[playerBase].owner.value == opponent ||
+            locationList.all { it.myShipList.isEmpty() } ) {
+            sharedPlayerModel.updateBattleResult(BattleResultEnum.LOSE)
+            endOfGame(
+                timerModel = timerModel,
+                isCapitulation = false,
+                isOpponentDisconnected = false,
+                databaseModel = databaseModel
+            )
+        } else if (locationList[opponentBase].owner.value == player ||
+            locationList.all { it.enemyShipList.isEmpty() }) {
+            sharedPlayerModel.updateBattleResult(BattleResultEnum.WIN)
+            endOfGame(
+                timerModel = timerModel,
+                isCapitulation = false,
+                isOpponentDisconnected = false,
+                databaseModel = databaseModel
+            )
         }
     }
 
     fun capitulate(timerModel: TimerViewModel, databaseModel: DatabaseViewModel) {
         sharedPlayerModel.updateBattleResult(BattleResultEnum.LOSE)
-        changeEndOfGameState(true)
         timerModel.cancelTimer()
-        writeDataToDatabase(databaseModel = databaseModel)
-        playerData.value.roomRef?.let {
-            BattleConnection(
-                roomRef = it,
-                player = playerData.value.player
-            ).capitulate()
-        }
-        deleteRoom()
+        movementUiState.value.battleGameRepository?.capitulate() ?: return
+        endOfGame(
+            timerModel = timerModel,
+            isCapitulation = true,
+            isOpponentDisconnected = false,
+            databaseModel = databaseModel
+        )
     }
 
-    fun listenForCapitulation(timerModel: TimerViewModel) {
-        playerData.value.roomRef?.let {
-            BattleConnection(
-                roomRef = it,
-                player = playerData.value.player
-            ).listenForCapitulation {
+    fun listenForCapitulation(timerModel: TimerViewModel, databaseModel: DatabaseViewModel) {
+        movementUiState.value.battleGameRepository?.listenForCapitulation {
                 sharedPlayerModel.updateBattleResult(BattleResultEnum.WIN)
-                endOfGame(timerModel = timerModel, isCapitulation = true)
+                endOfGame(
+                    timerModel = timerModel,
+                    isCapitulation = true,
+                    isOpponentDisconnected = false,
+                    databaseModel = databaseModel
+                )
             }
+
+    }
+
+    private fun changeEndOfGameType(endOfGameType: EndOfGameType){
+        _movementUiState.update { state ->
+            state.copy(endOfGameType = endOfGameType)
         }
     }
 
-    private fun endOfGame(timerModel: TimerViewModel, isCapitulation: Boolean) {
+    private fun endOfGame(
+        timerModel: TimerViewModel,
+        isCapitulation: Boolean,
+        isOpponentDisconnected: Boolean,
+        databaseModel: DatabaseViewModel
+    ) {
         if (isCapitulation) {
-            showEndOfGameViaCapitulationDialog(true)
+            changeEndOfGameType(EndOfGameType.CAPITULATION)
+            showEndOfGameDialog(true)
+        } else if (isOpponentDisconnected){
+            changeEndOfGameType(EndOfGameType.DISCONNECTED)
+            showEndOfGameDialog(true)
         } else {
+            changeEndOfGameType(EndOfGameType.REGULAR)
             showEndOfGameDialog(true)
         }
         changeEndOfGameState(true)
-        deleteRoom()
+        showProgressIndicator(false, ProgressIndicatorType.NEW_TURN)
+        writeDataToDatabase(databaseModel)
+        movementUiState.value.battleGameRepository?.deleteRoom(isOpponentDisconnected)?: return
         timerModel.cancelTimer()
-    }
-
-    private fun deleteRoom() {
-        val roomRef = playerData.value.roomRef ?: return
-        roomRef.get().addOnSuccessListener { snapshot ->
-            val room = snapshot.getValue(Room::class.java) ?: return@addOnSuccessListener
-            val player: String
-            val opponent: String
-            if (room.player1Id == auth.uid.toString()) {
-                player = "player1Id"
-                opponent = "player2Id"
-            } else {
-                player = "player2Id"
-                opponent = "player1Id"
-            }
-            if (snapshot.child(opponent).value == "") {
-                roomRef.removeValue()
-                    .addOnSuccessListener {
-                        Log.d("Delete room", "Room successfully deleted.")
-                    }
-                    .addOnFailureListener { error ->
-                        Log.e("Delete room", "Failed to delete room: ${error.message}")
-                        Sentry.captureException(error)
-                    }
-            } else {
-                val deletingUpdate = mapOf(
-                    player to ""
-                )
-                roomRef.updateChildren(deletingUpdate)
-                    .addOnSuccessListener {
-                        Log.d("Delete room", "Player ID successfully removed from room.")
-                    }
-                    .addOnFailureListener { error ->
-                        Log.e("Delete room", "Failed to remove player ID: ${error.message}")
-                        Sentry.captureException(error)
-                    }
-            }
-
-        }.addOnFailureListener { e ->
-            Log.d("Delete room", "Cannot get Room: ${e.message}")
-            Sentry.captureException(e)
-        }
-
-    }
-
-    fun showEndOfGameViaCapitulationDialog(toShow: Boolean) {
-        _movementUiState.update { state ->
-            state.copy(showEndOfGameViaCapitulationDialog = toShow)
-        }
     }
 
     private fun changeEndOfGameState(isEnd: Boolean) {
@@ -1339,41 +1354,28 @@ class BattleViewModel @Inject constructor(
         }
     }
 
-    fun setEndOfGameText(isTitle: Boolean, context: Context, isCapitulation: Boolean): String {
-        val string = if (isTitle) {
+    fun setEndOfGameText(
+        isTitle: Boolean,
+        context: Context
+    ): String {
+        return if (isTitle) {
             when (sharedPlayerModel.playerData.value.playerBattleResult) {
                 BattleResultEnum.WIN -> context.getString(R.string.titleWinGame)
                 BattleResultEnum.LOSE -> context.getString(R.string.titleLostGame)
                 BattleResultEnum.DRAW -> context.getString(R.string.titleDrawGame)
             }
         } else {
-            if (isCapitulation) {
-                context.getString(R.string.winViaCapitulation)
-            } else {
-                when (sharedPlayerModel.playerData.value.playerBattleResult) {
-                    BattleResultEnum.WIN -> context.getString(R.string.winGame)
-                    BattleResultEnum.LOSE -> context.getString(R.string.lostGame)
-                    BattleResultEnum.DRAW -> context.getString(R.string.drawGame)
+            when(movementUiState.value.endOfGameType){
+                EndOfGameType.CAPITULATION -> context.getString(R.string.winViaCapitulation)
+                EndOfGameType.DISCONNECTED -> context.getString(R.string.winViaOpponentDisconnection)
+                EndOfGameType.REGULAR -> {
+                    when (sharedPlayerModel.playerData.value.playerBattleResult) {
+                        BattleResultEnum.WIN -> context.getString(R.string.winGame)
+                        BattleResultEnum.LOSE -> context.getString(R.string.lostGame)
+                        BattleResultEnum.DRAW -> context.getString(R.string.drawGame)
+                    }
                 }
             }
-
-        }
-        return string
-    }
-
-    fun setPlayerInfoText(context: Context): String {
-        return when (playerData.value.player) {
-            Players.PLAYER1 -> context.getString(R.string.bluePlayer)
-            Players.PLAYER2 -> context.getString(R.string.redPlayer)
-            Players.NONE -> "Problem has occurred"
-        }
-    }
-
-    fun showPlayerInfoDialog(toShow: Boolean) {
-        _movementUiState.update { state ->
-            state.copy(
-                showPlayerInfoDialog = toShow
-            )
         }
     }
 

@@ -3,6 +3,8 @@
     <string name="discordInviteLink" translatable="false">https://discord.gg/H4hFa3vgvZ</string>
     <string name="buyMeACoffeeLink" translatable="false">https://buymeacoffee.com/gravitygame</string>
     <string name="email" translatable="false">gravitygame2024@gmail.com</string>
+    <string name="privacyPolicyLink" translatable="false">https://docs.google.com/document/d/1XP6rsyd4VdUXliGmDUuSyLPMT89v0QqzR1r--vrvh7E/edit?usp=sharing</string>
+    <string name="privacyPolicy">Privacy Policy</string>
     <string name="errorToOpenLink">The link can not be open</string>
     <string name="destroyer">Destroyer</string>
     <string name="ghost">Ghost</string>
@@ -45,7 +47,7 @@
     <string name="infoShipTask">If you want to learn more information about the unit, click on its name.</string>
     <string name="numberShipsTask">For the upcoming battle, you need to select units for your army. There are four types of units. One type is the unique Warper unit, which is assigned to the army by default. Therefore, you need to choose 10 out of the remaining 11 units. Once you have assembled your army, confirm your selection with the button.</string>
     <string name="battleOverviewTitle">Battle overview</string>
-    <string name="battleOverviewTask">The battle begins now. If you are playing against AI, your army is blue. Your home planet with a base is on the left side of the battlefield, where your units are also positioned. To win the battle, you must conquer the enemy\’s home planet, which is on the right side of the battlefield. However, if the enemy conquers your home planet, you lose.</string>
+    <string name="battleOverviewTask">The battle begins now. You will always play for blue player and opponent for red player. Against AI, your home planet with a base is on the left side of the battlefield, where your units are also positioned. To win the battle, you must conquer the enemy\’s home planet, which is on the right side of the battlefield. However, if the enemy conquers your home planet, you lose. In the online game your home planet can be on both sides, always look for a blue player.</string>
     <string name="movementTask">To move your units, place your finger on the planet where you have at least one unit and drag it to the planet you want to move to. When you place your finger on the planet from which you\'re moving and move the finger, all available positions will be marked with a green circle. At the start of the battle, all planets will be marked this way, because the unique Warper unit can move anywhere. However, the remaining types of units can only move to adjacent planets.</string>
     <string name="sendShipsTask">After selecting the movement from one planet to another, you also need to choose the number of units to move. The first column shows the number of enemy units on the selected planet. The second column shows the number of units you can move. The third column shows the total number of units that will be on the selected planet after the move, including both the units that were there from the previous round and the units you\'re moving. There can be no more than 6 units per player on a planet simultaneously.</string>
     <string name="acceptableLossesTask">In addition to selecting units, you must also choose how many units you are willing to sacrifice in the battle. This is done using a slider, and the value represents the number of units. The battle itself takes place in rounds, where the units exchange shots, and it ends when one of the armies reaches its tolerated losses. When an army reaches its maximum tolerated losses, it withdraws from the battle. The withdrawn army remains on the planet, and the player can decide what to do with them in the next turn. The battle can also end in a draw if both armies reach their tolerated losses.</string>
@@ -187,10 +189,6 @@
     <string name="onlineBattle">Play against human</string>
     <string name="winViaCapitulation">Your opponent capitulated and so you win the game.</string>
     <string name="ok" translatable="false">OK</string>
-    <string name="playerTitle">Player info</string>
-    <string name="playerInfoText">You play for a %1$s player.</string>
-    <string name="redPlayer">red</string>
-    <string name="bluePlayer">blue</string>
     <string name="newMessage">New message</string>
     <string name="clickToOpenScreen">Click on this, to open the game.</string>
     <string name="notificationTitleOpponentFound">Opponent has found</string>
@@ -206,9 +204,10 @@
     <string name="signInAnonymously">Continue as Guest</string>
     <string name="deleteAccount">Delete account</string>
     <string name="deleteAccountText">Are you sure to delete your account? All your data will be delete automatically in 90 days.</string>
-    <string name="createAccount">Create account</string>
+    <string name="createAccount">Sign up</string>
     <string name="guest">Guest</string>
     <string name="signInText">Play as a guest or sign in via google account to save your progress.</string>
+    <string name="winViaOpponentDisconnection">Opponent has disconnected. You win the game.</string>
 
 
 </resources>
