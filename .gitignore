@@ -20,7 +20,8 @@ wrapper/
 .tmp/
 native/
 kotlin-profile/
-service-account.json
+app/src/main/assets/service-account.json
 sentry.properties
-google-services.json
+app/google-services.json
 gradle.properties
+.gitattributes
