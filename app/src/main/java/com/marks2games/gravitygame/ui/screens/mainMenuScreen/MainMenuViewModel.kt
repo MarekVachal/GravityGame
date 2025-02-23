@@ -115,7 +115,6 @@ class MainMenuViewModel @Inject constructor(
             intent.setPackage("com.discord")
             context.startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            Sentry.captureException(e)
             try {
                 intent.setPackage(null)
                 context.startActivity(intent)
@@ -134,7 +133,6 @@ class MainMenuViewModel @Inject constructor(
             intent.setPackage("app.buymeacoffee")
             context.startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            Sentry.captureException(e)
             try{
                 intent.setPackage(null)
                 context.startActivity(intent)
