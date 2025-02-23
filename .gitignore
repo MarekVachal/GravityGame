@@ -23,5 +23,4 @@ kotlin-profile/
 app/src/main/assets/service-account.json
 sentry.properties
 app/google-services.json
-gradle.properties
 .gitattributes
