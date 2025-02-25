@@ -72,13 +72,11 @@ class BattleViewModel @Inject constructor(
 
     fun isMyLocation(location: Int): Boolean?{
         val locationOwner = locationListUiState.value.locationList[location].owner.value
-        if (locationOwner == sharedPlayerModel.playerData.value.player){
-            return true
+        return when(locationOwner){
+            sharedPlayerModel.playerData.value.player -> true
+            sharedPlayerModel.playerData.value.opponent -> false
+            else -> null
         }
-        if (locationOwner == sharedPlayerModel.playerData.value.opponent){
-            return false
-        }
-        return null
     }
 
     fun initializeBattleGameRepository(playerData: PlayerData){
@@ -315,7 +313,7 @@ class BattleViewModel @Inject constructor(
         startLocation: Int?,
         endLocation: Int?
     ): Boolean {
-        val isEnabled = checkAddShipAccordingToNumberOfShips(shipType = shipType) &&
+        return checkAddShipAccordingToNumberOfShips(shipType = shipType) &&
                 checkAddShipAccordingToMovementRestriction(
                     isWarperPresent = isWarperPresent,
                     endLocation = endLocation,
@@ -323,7 +321,6 @@ class BattleViewModel @Inject constructor(
                     startLocation = startLocation
                 ) &&
                 checkShipLimitOnPosition()
-        return isEnabled
     }
 
     private fun checkAddShipAccordingToNumberOfShips(shipType: ShipType): Boolean {
@@ -341,18 +338,17 @@ class BattleViewModel @Inject constructor(
         startLocation: Int?,
         endLocation: Int?
     ): Boolean {
-        var isAccesable = false
         if (ship == ShipType.WARPER) {
-            isAccesable = true
+            return true
         } else if (!isWarperPresent) {
-            isAccesable = true
+            return true
         } else {
             val connectionList = startLocation?.let {
                 locationListUiState.value.locationList[it].getConnectionsList()
             }
-            connectionList?.forEach { if (it == endLocation) isAccesable = true } ?: return false
+            connectionList?.forEach { if (it == endLocation && !checkOwnersRestriction(startLocation, endLocation)) return true } ?: return false
         }
-        return isAccesable
+        return false
     }
 
     private fun turnCounter() {
@@ -479,26 +475,24 @@ class BattleViewModel @Inject constructor(
             if (it.myShipList.isNotEmpty() && it.enemyShipList.isNotEmpty()) {
                 wasBattleOnLocation(location = it.id, wasBattle = true)
                 setMapsOfShipsBeforeBattle(it.id)
-                val (player, mapMyLost, mapEnemyLost) = (calculateBattle(
+                val (winner, myLostShips, enemyLostShips) = (calculateBattle(
                     location = it,
                     playerData = sharedPlayerModel.playerData.value,
                     isSimulation = false,
                     battleModel = this
                 )
                         )
-                when (player) {
+                when (winner) {
                     Players.PLAYER1 -> newLocationList[it.id].owner.value = Players.PLAYER1
                     Players.PLAYER2 -> newLocationList[it.id].owner.value = Players.PLAYER2
                     Players.NONE -> newLocationList[it.id].owner.value =
                         newLocationList[it.id].owner.value
                 }
-                val newMapMyLost: MutableMap<ShipType, Int> = mapMyLost
-                val newMapEnemyLost: MutableMap<ShipType, Int> = mapEnemyLost
                 newLocationList[it.id].mapMyLost.clear()
-                newLocationList[it.id].mapMyLost.putAll(newMapMyLost)
+                newLocationList[it.id].mapMyLost.putAll(myLostShips)
                 newLocationList[it.id].mapEnemyLost.clear()
-                newLocationList[it.id].mapEnemyLost.putAll(newMapEnemyLost)
-                newLocationList[it.id].lastBattleResult = when (player) {
+                newLocationList[it.id].mapEnemyLost.putAll(enemyLostShips)
+                newLocationList[it.id].lastBattleResult = when (winner) {
                     Players.PLAYER1 -> {
                         when (sharedPlayerModel.playerData.value.player == Players.PLAYER1) {
                             true -> BattleResultEnum.WIN
@@ -568,6 +562,7 @@ class BattleViewModel @Inject constructor(
         showProgressIndicator(false, ProgressIndicatorType.NEW_TURN)
         changeEndOfGameState(false)
         showCapitulateInfoDialog(false)
+        showEndOfGameDialog(false)
     }
 
     fun setOnClickButtonNextTurnText(context: Context): String {
@@ -1131,7 +1126,8 @@ class BattleViewModel @Inject constructor(
     private fun checkOwnersRestriction(startLocation: Int, endLocation: Int): Boolean {
         val startLocationOwner = locationListUiState.value.locationList[startLocation].owner.value
         val endLocationOwner = locationListUiState.value.locationList[endLocation].owner.value
-        return startLocationOwner == sharedPlayerModel.playerData.value.opponent && endLocationOwner == sharedPlayerModel.playerData.value.opponent
+        val opponent = sharedPlayerModel.playerData.value.opponent
+        return startLocationOwner == opponent && endLocationOwner == opponent
     }
 
     fun attack() {
