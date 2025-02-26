@@ -107,9 +107,34 @@ class MainMenuViewModel @Inject constructor(
         }
     }
 
+    fun openFacebook(context: Context){
+        val fbUrl = context.getString(R.string.facebookLink)
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(fbUrl))
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        try {
+            intent.setPackage("com.facebook.katana")
+            context.startActivity(intent)
+        } catch (e: ActivityNotFoundException){
+            try {
+                intent.setPackage("com.facebook.lite")
+                context.startActivity(intent)
+            } catch (e: ActivityNotFoundException){
+                try {
+                    intent.setPackage(null)
+                    context.startActivity(intent)
+                } catch (e: Exception){
+                    Toast.makeText(context, context.getString(R.string.errorToOpenLink), Toast.LENGTH_LONG).show()
+                    Sentry.captureException(e)
+                }
+            }
+        }
+    }
+
     fun openDiscord(context: Context){
         val discordUrl = context.getString(R.string.discordInviteLink)
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(discordUrl))
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
         try {
             intent.setPackage("com.discord")
@@ -128,6 +153,7 @@ class MainMenuViewModel @Inject constructor(
     fun openBuyMeACoffeeLink(context: Context){
         val buyMeACoffeeUrl = context.getString(R.string.buyMeACoffeeLink)
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(buyMeACoffeeUrl))
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
         try {
             intent.setPackage("app.buymeacoffee")

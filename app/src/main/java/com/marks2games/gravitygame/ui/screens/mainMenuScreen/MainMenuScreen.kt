@@ -59,7 +59,7 @@ fun MainMenuScreen(
     val mainMenuUiStates by mainMenuModel.mainMenuUiStates.collectAsState()
 
     LaunchedEffect(Unit) {
-        if(!mainMenuUiStates.alreadySignAsGuest){
+        if (!mainMenuUiStates.alreadySignAsGuest) {
             mainMenuModel.shouldSignIn()
         }
     }
@@ -86,55 +86,33 @@ fun MainMenuScreen(
         modifier = modifier.fillMaxSize()
     )
 
-    Row (
+    Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.SpaceBetween
-    ){
+    ) {
         IconButtonWithMenu(
             mainMenuUiStates = mainMenuUiStates,
             mainMenuModel = mainMenuModel,
             onSettingClick = onSettingClick
         )
 
-        Box(
-            modifier = modifier
-        ){
-            Row (
-                horizontalArrangement = Arrangement.SpaceBetween
-            ){
-                IconButton(onClick = { mainMenuModel.openDiscord(context = context) }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.discord),
-                        contentDescription = "Discord icon",
-                        tint = Color.Unspecified
-                    )
-                }
-                IconButton(onClick = { mainMenuModel.openEmail(context = context) }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.email),
-                        contentDescription = "Email icon",
-                        tint = Color.Unspecified
-                    )
-                }
-                IconButton(onClick = { onAccountClick() }) {
-                    if(mainMenuUiStates.userImage != null){
-                       Image(
-                           painter = rememberAsyncImagePainter(mainMenuUiStates.userImage),
-                           contentDescription = "Profile picture",
-                           modifier = Modifier
-                               .clip(CircleShape)
-                               .border(2.dp, Color.Gray, CircleShape),
-                           contentScale = ContentScale.Crop
-                       )
-                    } else {
-                        Icon(
-                            painter = painterResource(id = R.drawable.user_account),
-                            contentDescription = "User account icon",
-                            tint = Color.Unspecified
-                        )
-                    }
-                }
+        IconButton(onClick = { onAccountClick() }) {
+            if (mainMenuUiStates.userImage != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(mainMenuUiStates.userImage),
+                    contentDescription = "Profile picture",
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .border(2.dp, Color.Gray, CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    painter = painterResource(id = R.drawable.user_account),
+                    contentDescription = "User account icon",
+                    tint = Color.Unspecified
+                )
             }
         }
     }
@@ -175,7 +153,7 @@ fun MainMenuScreen(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ),
-            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 12.dp)
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
         ) {
             Text(
                 text = stringResource(id = R.string.onlineBattle),
@@ -184,23 +162,58 @@ fun MainMenuScreen(
         }
     }
 
-    Row (
-        horizontalArrangement = Arrangement.End,
+    Row(
         verticalAlignment = Alignment.Bottom,
         modifier = modifier
             .padding(24.dp)
-    ){
-        IconButton(
-            onClick = {
-                activity.finish()
-                exitProcess(0)
-            }
+            .fillMaxWidth()
+    ) {
+        Box(
+            modifier = modifier.fillMaxWidth()
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.logout),
-                contentDescription = "Logout icon",
-                tint = Color.Unspecified
-            )
+            IconButton(
+                modifier = modifier.align(Alignment.CenterEnd),
+                onClick = {
+                    activity.finish()
+                    exitProcess(0)
+                }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.logout),
+                    contentDescription = "Logout icon",
+                    tint = Color.Unspecified
+                )
+            }
+
+            Box(
+                modifier = modifier.align(Alignment.CenterStart)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    IconButton(onClick = { mainMenuModel.openEmail(context = context) }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.email),
+                            contentDescription = "Email icon",
+                            tint = Color.Unspecified
+                        )
+                    }
+                    IconButton(onClick = { mainMenuModel.openDiscord(context = context) }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.discord),
+                            contentDescription = "Discord icon",
+                            tint = Color.Unspecified
+                        )
+                    }
+                    IconButton(onClick = { mainMenuModel.openFacebook(context = context) }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.facebook_icon),
+                            contentDescription = "Facebook icon",
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -212,9 +225,9 @@ fun IconButtonWithMenu(
     onSettingClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box (
+    Box(
         modifier = modifier
-    ){
+    ) {
         IconButton(
             onClick = { mainMenuModel.showMenuList(true) },
             modifier = modifier
@@ -222,7 +235,8 @@ fun IconButtonWithMenu(
             Icon(
                 painter = painterResource(id = R.drawable.menu),
                 contentDescription = "Menu icon",
-                tint = Color.Unspecified)
+                tint = Color.Unspecified
+            )
         }
 
         DropdownMenu(

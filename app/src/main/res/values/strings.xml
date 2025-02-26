@@ -2,6 +2,7 @@
     <string name="app_name">Gravity Game</string>
     <string name="discordInviteLink" translatable="false">https://discord.gg/H4hFa3vgvZ</string>
     <string name="buyMeACoffeeLink" translatable="false">https://buymeacoffee.com/gravitygame</string>
+    <string name="facebookLink" translatable="false">https://www.facebook.com/groups/979557247091776/</string>
     <string name="email" translatable="false">gravitygame2024@gmail.com</string>
     <string name="privacyPolicyLink" translatable="false">https://docs.google.com/document/d/1XP6rsyd4VdUXliGmDUuSyLPMT89v0QqzR1r--vrvh7E/edit?usp=sharing</string>
     <string name="privacyPolicy">Privacy Policy</string>
