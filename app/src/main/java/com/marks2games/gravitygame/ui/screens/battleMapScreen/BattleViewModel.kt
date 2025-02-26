@@ -477,9 +477,10 @@ class BattleViewModel @Inject constructor(
                 setMapsOfShipsBeforeBattle(it.id)
                 val (winner, myLostShips, enemyLostShips) = (calculateBattle(
                     location = it,
-                    playerData = sharedPlayerModel.playerData.value,
+                    player = sharedPlayerModel.playerData.value.player,
+                    opponent = sharedPlayerModel.playerData.value.opponent,
                     isSimulation = false,
-                    battleModel = this
+                    writeDestroyedShips = (::writeDestroyedShips)
                 )
                         )
                 when (winner) {
@@ -665,7 +666,8 @@ class BattleViewModel @Inject constructor(
         val mcts = MCTS(mctsIterations, difficulty)
         val bestMove = mcts.findBestMove(
             initialState = state,
-            playerData = sharedPlayerModel.playerData.value
+            player = sharedPlayerModel.playerData.value.player,
+            opponent = sharedPlayerModel.playerData.value.opponent
         )
         updateUIWithBestMove(bestMove)
         updateEnemyRecord(bestMove)

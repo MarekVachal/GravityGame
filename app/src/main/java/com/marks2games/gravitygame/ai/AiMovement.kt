@@ -9,7 +9,6 @@ import com.marks2games.gravitygame.models.deepCopy
 import com.marks2games.gravitygame.models.Players
 import com.marks2games.gravitygame.ui.utils.calculateBattle
 import com.marks2games.gravitygame.ui.screens.battleMapScreen.BattleViewModel
-import com.marks2games.gravitygame.models.PlayerData
 import kotlinx.coroutines.*
 
 data class GameState(
@@ -24,12 +23,14 @@ class MCTS(private val iterations: Int, private val difficulty: Int) {
 
     suspend fun findBestMove(
         initialState: GameState,
-        playerData: PlayerData,
+        player: Players,
+        opponent: Players
     ): GameState {
         val mapOfMovement: Map<Int, GameState> = simulate(
             state = initialState,
             iterate = iterations,
-            playerData = playerData,
+            player = player,
+            opponent = opponent
         )
         val sortedMap: Map<Int, GameState> = mapOfMovement.toSortedMap(compareByDescending { it })
         val chosenStates: List<GameState> = sortedMap.entries
@@ -42,7 +43,8 @@ class MCTS(private val iterations: Int, private val difficulty: Int) {
     private suspend fun simulate(
         state: GameState,
         iterate: Int,
-        playerData: PlayerData
+        player: Players,
+        opponent: Players
     ): Map<Int, GameState> = coroutineScope {
         val mapOfScoredState: MutableMap<Int, GameState> = mutableMapOf()
 
@@ -50,7 +52,7 @@ class MCTS(private val iterations: Int, private val difficulty: Int) {
             async(Dispatchers.Default) {
                 val movedState = state.deepCopy()
                 movedState.generateTurnMove()
-                val score = movedState.evaluateGameState(playerData = playerData)
+                val score = movedState.evaluateGameState(player = player, opponent = opponent)
                 score to movedState
             }
         }
@@ -67,7 +69,7 @@ class MCTS(private val iterations: Int, private val difficulty: Int) {
 
 }
 
-private fun GameState.evaluateGameState(playerData: PlayerData): Int {
+private fun GameState.evaluateGameState(player: Players, opponent: Players): Int {
     var score = 0
 
     //Move to enemy base
@@ -87,7 +89,7 @@ private fun GameState.evaluateGameState(playerData: PlayerData): Int {
     }
 
     //Score according to battles plus improvement of AI acceptableLoss
-    score += simulateBattle(playerData = playerData)
+    score += simulateBattle(player = player, opponent = opponent)
 
     if (this.isWinningState()) score += 30
     if (this.isLostState()) score -= 40
@@ -96,7 +98,8 @@ private fun GameState.evaluateGameState(playerData: PlayerData): Int {
 }
 
 private fun GameState.simulateBattle(
-    playerData: PlayerData,
+    player: Players,
+    opponent: Players
 ): Int {
 
     this.locationList.forEach { location ->
@@ -107,9 +110,10 @@ private fun GameState.simulateBattle(
             while (enemyAcceptableLost <= maxAcceptableLost) {
                 val (winningPlayer, _, _) = calculateBattle(
                     location = location,
-                    playerData = playerData,
+                    player = player,
+                    opponent = opponent,
                     isSimulation = true,
-                    battleModel = this.battleModel
+                    writeDestroyedShips = { isFalse, a, b -> println("$isFalse + $a + $b")}
                 )
 
                 if (winningPlayer == Players.PLAYER2) {
