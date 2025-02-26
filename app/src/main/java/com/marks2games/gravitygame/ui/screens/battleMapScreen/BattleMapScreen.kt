@@ -52,6 +52,7 @@ import com.marks2games.gravitygame.ui.screens.selectArmyScreen.SelectArmyViewMod
 import com.marks2games.gravitygame.ui.utils.ProgressIndicator
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import okhttp3.internal.wait
 
 @Composable
 fun BattleMapScreen(
@@ -94,7 +95,6 @@ fun BattleMapScreen(
 
     LaunchedEffect (Unit){
         timerModel.stopTimer()
-        battleModel.initializeBattleGameRepository(playerData)
         battleModel.resetUiStateForNewBattle()
         battleModel.createArmyList(selectArmyUiState = selectArmyUiState)
         if(!playerData.isOnline && locationListUiState.locationList[battleModel.findOpponentBaseLocation()].enemyShipList.isEmpty()){
@@ -103,6 +103,7 @@ fun BattleMapScreen(
             battleModel.showTimer(false)
         }
         if(playerData.isOnline){
+            battleModel.initializeBattleGameRepository(playerData).wait()
             battleModel.updateLocations(
                 isSetup = true,
                 timerModel = timerModel,
