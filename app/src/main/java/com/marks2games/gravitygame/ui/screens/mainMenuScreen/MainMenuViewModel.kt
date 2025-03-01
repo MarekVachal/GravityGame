@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import okhttp3.internal.wait
 import javax.inject.Inject
 
 
@@ -43,9 +45,14 @@ class MainMenuViewModel @Inject constructor(
 
     fun shouldSignIn(){
         val hasSignIn = sharedPreferences.getHasSignIn()
+        Log.d("hasSignIn", "Has sign in: ${sharedPreferences.getHasSignIn()}")
+        Log.d("hasSignIn", "Already sign as guest: ${mainMenuUiStates.value.alreadySignAsGuest}")
+        Log.d("hasSignIn", "Is user anonym: ${auth.currentUser?.isAnonymous}")
         if (!hasSignIn) {
             val user = auth.currentUser
             if (user == null) {
+                showSignInDialog(true)
+            } else if(user.isAnonymous && !mainMenuUiStates.value.alreadySignAsGuest){
                 showSignInDialog(true)
             }
         } else {
@@ -68,7 +75,7 @@ class MainMenuViewModel @Inject constructor(
     fun signInWithGoogle(googleSign: GoogleSign){
         viewModelScope.launch {
             googleSign.signInWithCredentialManager()
-            getUserImage()
+            getUserImage().wait()
         }
         showSignInDialog(false)
         sharedPreferences.setHasSignIn(true)

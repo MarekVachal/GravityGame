@@ -34,6 +34,7 @@ class GoogleSign @Inject constructor(
     suspend fun logout(){
         auth.signOut()
         credentialManager.clearCredentialState(ClearCredentialStateRequest())
+        sharedPreferences.setHasSignIn(false)
     }
 
     @SuppressLint("CredentialManagerSignInWithGoogle")
