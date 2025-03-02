@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.signIn.GoogleSign
+import com.marks2games.gravitygame.core.domain.authentication.GoogleSign
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import kotlinx.coroutines.flow.MutableStateFlow

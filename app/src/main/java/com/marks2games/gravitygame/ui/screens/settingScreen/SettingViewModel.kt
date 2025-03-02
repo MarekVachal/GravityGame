@@ -2,7 +2,7 @@ package com.marks2games.gravitygame.ui.screens.settingScreen
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import com.marks2games.gravitygame.models.SharedPreferencesRepository
+import com.marks2games.gravitygame.core.data.SharedPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

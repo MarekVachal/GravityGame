@@ -1,6 +1,6 @@
 package com.marks2games.gravitygame.ui.screens.statisticScreen
 
-import com.marks2games.gravitygame.database.BattleResult
+import com.marks2games.gravitygame.battle_game.data.room_database.BattleResult
 
 data class StatisticUiState (
     val battleResult: BattleResult? = null,

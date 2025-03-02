@@ -4,23 +4,23 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.models.SharedPreferencesRepository
-import com.marks2games.gravitygame.signIn.AnonymousSign
-import com.marks2games.gravitygame.signIn.GoogleSign
+import com.marks2games.gravitygame.core.data.SharedPreferencesRepository
+import com.marks2games.gravitygame.core.domain.authentication.AnonymousSign
+import com.marks2games.gravitygame.core.domain.authentication.GoogleSign
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okhttp3.internal.wait
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -45,9 +45,6 @@ class MainMenuViewModel @Inject constructor(
 
     fun shouldSignIn(){
         val hasSignIn = sharedPreferences.getHasSignIn()
-        Log.d("hasSignIn", "Has sign in: ${sharedPreferences.getHasSignIn()}")
-        Log.d("hasSignIn", "Already sign as guest: ${mainMenuUiStates.value.alreadySignAsGuest}")
-        Log.d("hasSignIn", "Is user anonym: ${auth.currentUser?.isAnonymous}")
         if (!hasSignIn) {
             val user = auth.currentUser
             if (user == null) {
@@ -56,7 +53,9 @@ class MainMenuViewModel @Inject constructor(
                 showSignInDialog(true)
             }
         } else {
-            getUserImage()
+            viewModelScope.launch {
+                getUserImage()
+            }
         }
     }
 
@@ -75,18 +74,19 @@ class MainMenuViewModel @Inject constructor(
     fun signInWithGoogle(googleSign: GoogleSign){
         viewModelScope.launch {
             googleSign.signInWithCredentialManager()
-            getUserImage().wait()
+            getUserImage()
+            showSignInDialog(false)
         }
-        showSignInDialog(false)
-        sharedPreferences.setHasSignIn(true)
     }
 
-    private fun getUserImage(){
-        val userImage = auth.currentUser?.photoUrl
-        _mainmenuUiState.update { state ->
-            state.copy(
-                userImage = userImage
-            )
+    private suspend fun getUserImage(){
+        withContext(Dispatchers.Main){
+            val userImage = auth.currentUser?.photoUrl
+            _mainmenuUiState.update { state ->
+                state.copy(
+                    userImage = userImage
+                )
+            }
         }
     }
 

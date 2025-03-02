@@ -38,9 +38,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import coil.compose.rememberAsyncImagePainter
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.signIn.GoogleSign
-import com.marks2games.gravitygame.ui.screens.battleMapScreen.BattleViewModel
-import com.marks2games.gravitygame.ui.screens.infoDialogsScreens.SignInDialog
+import com.marks2games.gravitygame.core.domain.authentication.GoogleSign
+import com.marks2games.gravitygame.battle_game.ui.screens.battleMapScreen.BattleViewModel
+import com.marks2games.gravitygame.core.ui.utils.SignInDialog
 import kotlin.system.exitProcess
 
 @Composable
