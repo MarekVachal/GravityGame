@@ -114,8 +114,10 @@ class AccountViewModel @Inject constructor(
             setupAuthStateListener(context)
             viewModelScope.launch {
                 googleSign.linkGuestAccountWithGoogle(
-                    updateUserName = { updateUserName(context) },
-                    updateUserEmail = { updateUserEmail(context) }
+                    onUserUpdated = {
+                        updateUserName(context)
+                        updateUserEmail(context)
+                    }
                 )
             }
         } else {

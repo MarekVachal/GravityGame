@@ -11,8 +11,8 @@ import androidx.credentials.exceptions.NoCredentialException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.UserProfileChangeRequest
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.core.data.SharedPreferencesRepository
 import io.sentry.Sentry
@@ -53,16 +53,13 @@ class GoogleSign @Inject constructor(
             val credential = GoogleAuthProvider.getCredential(googleIdToken, null)
 
             auth.currentUser?.reauthenticate(credential)
-                ?.addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        Log.d("FirebaseAuth", "Reauthentication successful")
-                        deleteUser()
-                    } else {
-                        Log.e("FirebaseAuth", "Reauthentication failed", task.exception)
-                    }
+                ?.addOnSuccessListener {
+                    deleteUser()
+                }
+                ?.addOnFailureListener { e ->
+                    Sentry.captureException(e)
                 }
         } catch (e: Exception) {
-            Log.e("GoogleSign", "Reauthentication failed: ${e.message}")
             Sentry.captureException(e)
         }
     }
@@ -77,42 +74,30 @@ class GoogleSign @Inject constructor(
             }
     }
 
-    suspend fun linkGuestAccountWithGoogle(updateUserName:()-> Unit, updateUserEmail:() -> Unit) {
-        withContext(Dispatchers.IO) {
-            try {
-                val token = getGoogleIdToken()
+    suspend fun linkGuestAccountWithGoogle(onUserUpdated:()-> Unit) {
+        try {
+            withContext(Dispatchers.IO) {
+                val token = getGoogleIdToken() ?: throw Exception("Google ID token is null")
                 val credential = GoogleAuthProvider.getCredential(token, null)
 
-                withContext(Dispatchers.Main) {
-                    auth.currentUser?.linkWithCredential(credential)
-                        ?.addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                val user = task.result?.user
-                                if (user != null) {
-                                    val profileUpdates = UserProfileChangeRequest.Builder()
-                                        .setDisplayName(user.providerData.find { it.providerId == "google.com" }?.displayName)
-                                        .setPhotoUri(user.providerData.find { it.providerId == "google.com" }?.photoUrl)
-                                        .build()
-
-                                    user.updateProfile(profileUpdates)
-                                        .addOnCompleteListener { updateTask ->
-                                            if (updateTask.isSuccessful) {
-                                                sharedPreferences.setHasSignIn(true)
-                                                updateUserEmail()
-                                                updateUserName()
-                                            } else {
-                                                Log.e("FirebaseAuth", "Updating profile failed", updateTask.exception)
-                                            }
-                                        }
-                                }
-                            } else {
-                                Log.e("FirebaseAuth", "Linking guest account failed", task.exception)
-                            }
+                auth.currentUser?.linkWithCredential(credential)
+                    ?.addOnSuccessListener { task ->
+                        val user = task.user
+                        if (user != null) {
+                            onUserUpdated()
                         }
-                }
-            } catch (e: Exception) {
-                Sentry.captureException(e)
+                    }
+                    ?.addOnFailureListener { error ->
+                        if (error is FirebaseAuthUserCollisionException) {
+                            authenticateWithFirebase(token)
+                        } else {
+                            Sentry.captureException(error)
+                        }
+
+                    }
             }
+        } catch (e: Exception) {
+            Sentry.captureException(e)
         }
     }
 
