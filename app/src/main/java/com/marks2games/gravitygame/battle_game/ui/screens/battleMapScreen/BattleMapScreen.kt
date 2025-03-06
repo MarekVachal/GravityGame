@@ -12,9 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,7 +29,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import java.util.Locale
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.battle_game.domain.ai.createAiArmy
@@ -50,6 +47,7 @@ import androidx.compose.ui.unit.IntOffset
 import com.marks2games.gravitygame.battle_game.ui.utils.CapitulateInfoDialog
 import com.marks2games.gravitygame.battle_game.ui.screens.selectArmyScreen.SelectArmyViewModel
 import com.marks2games.gravitygame.core.ui.utils.ProgressIndicator
+import com.marks2games.gravitygame.core.ui.utils.TimerCard
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import okhttp3.internal.wait
@@ -70,7 +68,6 @@ fun BattleMapScreen(
     val playerData by battleModel.playerData.collectAsState()
     val movementUiState by battleModel.movementUiState.collectAsState()
     val selectArmyUiState by selectArmyModel.selectArmyUiState.collectAsState()
-    val timerUiState by timerModel.timerUiState.collectAsState()
     val locationListUiState by battleModel.locationListUiState.collectAsState()
     val movementRecord by battleModel.movementRecord.collectAsState()
     val tutorialUiState by tutorialModel.tutorialUiState.collectAsState()
@@ -266,30 +263,7 @@ fun BattleMapScreen(
                 .fillMaxWidth()
         ) {
             if(movementUiState.showTimer){
-                Card(
-                    modifier = modifier
-                        .align(Alignment.CenterStart)
-                        .width(58.dp),
-                ) {
-                    Row(
-                        modifier = modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            modifier = modifier
-                                .padding(4.dp),
-                            text = "${timerUiState.minute ?: 0}:${
-                                timerUiState.second?.let {
-                                    String.format(
-                                        Locale.US,
-                                        "%02d",
-                                        it
-                                    )
-                                } ?: "00"
-                            }",
-                        )
-                    }
-                }
+                TimerCard(timerModel)
             }
 
             IconButton(

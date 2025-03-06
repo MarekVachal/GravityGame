@@ -51,6 +51,7 @@ fun MainMenuScreen(
     battleModel: BattleViewModel,
     onSettingClick: () -> Unit,
     onAccountClick: () -> Unit,
+    onEmpireButtonClick: () -> Unit,
     activity: Activity,
     context: Context,
     googleSign: GoogleSign
@@ -157,6 +158,22 @@ fun MainMenuScreen(
         ) {
             Text(
                 text = stringResource(id = R.string.onlineBattle),
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
+        OutlinedButton(
+            onClick = {
+                onEmpireButtonClick()
+            },
+            modifier = modifier,
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ),
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+        ) {
+            Text(
+                text = "Empire",
                 style = MaterialTheme.typography.titleMedium
             )
         }

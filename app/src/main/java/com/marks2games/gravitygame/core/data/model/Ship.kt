@@ -31,12 +31,12 @@ data class Cruiser (override val id: Int) : Ship(id){
     override val priority = 4
     override val descriptionId = R.string.cruiserInfo
     override fun deepCopy(): Cruiser {
-        val copiedShip = Cruiser(id)
-        copiedShip.currentPosition = this.currentPosition
-        copiedShip.startingPosition = this.startingPosition
-        copiedShip.hasMoved = this.hasMoved
-        copiedShip.justMoved = this.justMoved
-        return copiedShip
+        return Cruiser(id).apply {
+            currentPosition = this@Cruiser.currentPosition
+            startingPosition = this@Cruiser.startingPosition
+            hasMoved = this@Cruiser.hasMoved
+            justMoved = this@Cruiser.justMoved
+        }
     }
 }
 
@@ -49,12 +49,12 @@ data class Destroyer (override val id: Int) : Ship(id) {
     override val priority = 3
     override val descriptionId = R.string.destroyerInfo
     override fun deepCopy(): Destroyer {
-        val copiedShip = Destroyer(id)
-        copiedShip.currentPosition = this.currentPosition
-        copiedShip.startingPosition = this.startingPosition
-        copiedShip.hasMoved = this.hasMoved
-        copiedShip.justMoved = this.justMoved
-        return copiedShip
+        return Destroyer(id).apply {
+            currentPosition = this@Destroyer.currentPosition
+            startingPosition = this@Destroyer.startingPosition
+            hasMoved = this@Destroyer.hasMoved
+            justMoved = this@Destroyer.justMoved
+        }
     }
 }
 
@@ -67,12 +67,12 @@ data class Ghost (override val id: Int) : Ship(id){
     override val priority = 2
     override val descriptionId = R.string.ghostInfo
     override fun deepCopy(): Ghost {
-        val copiedShip = Ghost(id)
-        copiedShip.currentPosition = this.currentPosition
-        copiedShip.startingPosition = this.startingPosition
-        copiedShip.hasMoved = this.hasMoved
-        copiedShip.justMoved = this.justMoved
-        return copiedShip
+        return Ghost(id).apply {
+            currentPosition = this@Ghost.currentPosition
+            startingPosition = this@Ghost.startingPosition
+            hasMoved = this@Ghost.hasMoved
+            justMoved = this@Ghost.justMoved
+        }
     }
 }
 
@@ -85,12 +85,12 @@ data class Warper (override val id: Int) : Ship(id){
     override val priority = 1
     override val descriptionId = R.string.warperInfo
     override fun deepCopy(): Warper {
-        val copiedShip = Warper(id)
-        copiedShip.currentPosition = this.currentPosition
-        copiedShip.startingPosition = this.startingPosition
-        copiedShip.hasMoved = this.hasMoved
-        copiedShip.justMoved = this.justMoved
-        return copiedShip
+        return Warper(id).apply {
+            currentPosition = this@Warper.currentPosition
+            startingPosition = this@Warper.startingPosition
+            hasMoved = this@Warper.hasMoved
+            justMoved = this@Warper.justMoved
+        }
     }
 }
 

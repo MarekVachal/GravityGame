@@ -209,6 +209,19 @@
     <string name="guest">Guest</string>
     <string name="signInText">Play as a guest or sign in via google account to save your progress.</string>
     <string name="winViaOpponentDisconnection">Opponent has disconnected. You win the game.</string>
+    <string name="capitolDistrictName">Capitol</string>
+    <string name="prospectorsDistrictName">Prospectors</string>
+    <string name="emptyDistrictName">Empty district</string>
+    <string name="industrialDistrictName">Industrial</string>
+    <string name="expeditionPlatformDistrictName">Expedition platform</string>
+    <string name="urbanCenterDistrictName">Urban center</string>
+    <string name="research">Research</string>
+    <string name="tradepower">Tradepower</string>
+    <string name="expeditions">Expeditions</string>
+    <string name="credits">Credits</string>
+    <string name="fleet">Fleet</string>
+    <string name="turnsBank">Turns</string>
+    <string name="biomass">Biomass</string>
 
 
 </resources>

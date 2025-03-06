@@ -47,4 +47,8 @@ class CoroutineTimer(
         timeLeftInMillis = originalTimeInMillis
     }
 
+    fun restartTimer(newTime: Long){
+        timeLeftInMillis = newTime
+    }
+
 }

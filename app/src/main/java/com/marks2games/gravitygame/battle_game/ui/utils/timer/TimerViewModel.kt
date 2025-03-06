@@ -54,4 +54,9 @@ class TimerViewModel : ViewModel() {
             state.copy(isRunning = true)
         }
     }
+
+    fun restartTimer(newTime: Long){
+        timerUiState.value.timer?.restartTimer(newTime)
+        startTimer()
+    }
 }
