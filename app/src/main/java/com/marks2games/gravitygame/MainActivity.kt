@@ -23,7 +23,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
 import com.marks2games.gravitygame.battle_game.data.room_database.AppDatabase
-import com.marks2games.gravitygame.core.domain.navigation.Destinations
 import com.marks2games.gravitygame.ui.screens.settingScreen.SettingViewModel
 import com.marks2games.gravitygame.ui.theme.GravityGameTheme
 import com.google.firebase.auth.FirebaseAuth
