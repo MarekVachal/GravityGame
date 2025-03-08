@@ -6,8 +6,10 @@ import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
+import androidx.credentials.exceptions.publickeycredential.GetPublicKeyCredentialException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
@@ -101,6 +103,7 @@ class GoogleSign @Inject constructor(
         }
     }
 
+    /*
     private suspend fun getGoogleIdToken(): String?{
         val rawNonce = UUID.randomUUID().toString()
         val hashedNonce = hashNonce(rawNonce)
@@ -181,6 +184,84 @@ class GoogleSign @Inject constructor(
             }
         }
         return token
+    }
+
+     */
+
+    suspend fun getGoogleIdToken(): String? {
+        val nonce = UUID.randomUUID().toString()
+        val hashedNonce = hashNonce(nonce)
+
+        // First attempt with filtering by authorized accounts
+        return tryGetGoogleIdToken(hashedNonce, true) ?: tryGetGoogleIdToken(hashedNonce, false)
+    }
+
+    private suspend fun tryGetGoogleIdToken(
+        hashedNonce: String,
+        filterByAuthorizedAccounts: Boolean
+    ): String? {
+        return try {
+            val googleIdOption = buildGoogleIdOption(hashedNonce, filterByAuthorizedAccounts)
+            val request = buildGetCredentialRequest(googleIdOption)
+            val result = getCredential(request)
+
+            val credential = result?.credential ?: return null
+            extractIdToken(credential)
+        } catch (e: GetCredentialException) {
+            handleCredentialException(e)
+            null
+        } catch(e: GetPublicKeyCredentialException){
+            handleCredentialException(e)
+            null
+        }
+    }
+
+    private fun extractIdToken(credential: androidx.credentials.Credential): String? {
+        return if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+            val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+            googleIdTokenCredential.idToken
+        } else {
+            Log.e("GoogleSign", "Unexpected type of credential: ${credential.type}")
+            null
+        }
+    }
+
+    private fun buildGoogleIdOption(
+        hashedNonce: String,
+        filterByAuthorizedAccounts: Boolean
+    ): GetGoogleIdOption {
+        return GetGoogleIdOption.Builder()
+            .setFilterByAuthorizedAccounts(filterByAuthorizedAccounts)
+            .setServerClientId(webClientId)
+            .setNonce(hashedNonce)
+            .setAutoSelectEnabled(true)
+            .build()
+    }
+
+    private fun buildGetCredentialRequest(credentialOption: GetGoogleIdOption): GetCredentialRequest {
+        return GetCredentialRequest.Builder()
+            .addCredentialOption(credentialOption)
+            .build()
+    }
+
+    private suspend fun getCredential(request: GetCredentialRequest): GetCredentialResponse? {
+        return runCatching {
+            credentialManager.getCredential(
+                request = request,
+                context = context
+            )
+        }.onFailure { e ->
+            if (e is NoCredentialException) {
+                AnonymousSign(auth).signInAnonymously()
+            } else {
+                Sentry.captureException(e)
+            }
+        }.getOrNull()
+    }
+
+    private fun handleCredentialException(e: Exception) {
+        Sentry.captureException(e)
+        Log.e("GoogleSign", "Error getting credential", e)
     }
 
     private fun authenticateWithFirebase(idToken: String) {

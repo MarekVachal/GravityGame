@@ -1,4 +1,4 @@
-package com.marks2games.gravitygame.building_game.domain.usecase
+package com.marks2games.gravitygame.building_game.domain.usecase.planetaction
 
 import com.marks2games.gravitygame.building_game.data.model.District
 import com.marks2games.gravitygame.building_game.data.model.DistrictEnum
@@ -16,7 +16,7 @@ class ChangeDistrictModeUseCase @Inject constructor(
         planet: Planet,
         districtForChange: DistrictEnum,
         newMode: Enum<*>
-    ): Planet{
+    ): Planet {
         var infrastructure = planet.infrastructure
         val updatedDistricts = planet.districts.toMutableList()
         val index = updatedDistricts.indexOfFirst { district ->

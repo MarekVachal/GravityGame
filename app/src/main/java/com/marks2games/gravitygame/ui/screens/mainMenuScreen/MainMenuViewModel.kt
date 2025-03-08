@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -116,72 +117,32 @@ class MainMenuViewModel @Inject constructor(
 
     fun openFacebook(context: Context){
         val fbUrl = context.getString(R.string.facebookLink)
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(fbUrl))
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-        try {
-            intent.setPackage("com.facebook.katana")
-            context.startActivity(intent)
-        } catch (e: ActivityNotFoundException){
-            try {
-                intent.setPackage("com.facebook.lite")
-                context.startActivity(intent)
-            } catch (e: ActivityNotFoundException){
-                try {
-                    intent.setPackage(null)
-                    context.startActivity(intent)
-                } catch (e: Exception){
-                    Toast.makeText(context, context.getString(R.string.errorToOpenLink), Toast.LENGTH_LONG).show()
-                    Sentry.captureException(e)
-                }
-            }
+        if (openApp(context, "com.facebook.katana", fbUrl.toUri())) {
+            return
         }
+        if (openApp(context, "com.facebook.lite", fbUrl.toUri())) {
+            return
+        }
+        openInBrowser(context, fbUrl.toUri(), R.string.errorToOpenLink)
     }
 
     fun openDiscord(context: Context){
         val discordUrl = context.getString(R.string.discordInviteLink)
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(discordUrl))
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-        try {
-            intent.setPackage("com.discord")
-            context.startActivity(intent)
-        } catch (e: ActivityNotFoundException) {
-            try {
-                intent.setPackage(null)
-                context.startActivity(intent)
-            } catch (e: Exception) {
-                Toast.makeText(context, context.getString(R.string.errorToOpenLink), Toast.LENGTH_LONG).show()
-                Sentry.captureException(e)
-            }
-        }
+        openLink(context, "com.discord", discordUrl, R.string.errorToOpenLink)
     }
 
     fun openBuyMeACoffeeLink(context: Context){
         val buyMeACoffeeUrl = context.getString(R.string.buyMeACoffeeLink)
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(buyMeACoffeeUrl))
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-        try {
-            intent.setPackage("app.buymeacoffee")
-            context.startActivity(intent)
-        } catch (e: ActivityNotFoundException) {
-            try{
-                intent.setPackage(null)
-                context.startActivity(intent)
-            } catch (e: Exception){
-                Toast.makeText(context, context.getString(R.string.errorToOpenLink), Toast.LENGTH_LONG).show()
-                Sentry.captureException(e)
-            }
-        }
+        openLink(context, "app.buymeacoffee", buyMeACoffeeUrl, R.string.errorToOpenLink)
     }
 
     fun openEmail(context: Context){
         val emailAddress = context.getString(R.string.email)
         val intent = Intent(Intent.ACTION_SENDTO).apply {
-            data = Uri.parse("mailto:$emailAddress")
+            data = "mailto:$emailAddress".toUri()
             //putExtra(Intent.EXTRA_SUBJECT, "Subject of mail") // I can define a subject of the mail
             //putExtra(Intent.EXTRA_TEXT, "Body of email") // I can define even a text of the mail
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         try {
             context.startActivity(intent)
@@ -190,6 +151,41 @@ class MainMenuViewModel @Inject constructor(
             Toast.makeText(context, context.getString(R.string.errorToOpenMail), Toast.LENGTH_LONG).show()
         }
     }
+
+    private fun openLink(context: Context, appPackage: String?, url: String, errorMessageId: Int) {
+        val uri = url.toUri()
+        if (appPackage != null && openApp(context, appPackage, uri)) {
+            return
+        }
+        openInBrowser(context, uri, errorMessageId)
+    }
+
+    private fun openApp(context: Context, packageName: String, uri: Uri): Boolean {
+        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            setPackage(packageName)
+        }
+        return try {
+            context.startActivity(intent)
+            true
+        } catch (e: ActivityNotFoundException) {
+            Sentry.captureException(e)
+            false
+        }
+    }
+
+    private fun openInBrowser(context: Context, uri: Uri, errorMessageId: Int) {
+        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        try {
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, context.getString(errorMessageId), Toast.LENGTH_LONG).show()
+            Sentry.captureException(e)
+        }
+    }
+
 
     fun openTextDialog(text: Text = Text.ABOUT_GAME, toShow: Boolean){
         _mainmenuUiState.update { state ->

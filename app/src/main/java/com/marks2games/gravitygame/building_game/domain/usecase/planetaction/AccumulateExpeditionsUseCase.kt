@@ -1,4 +1,4 @@
-package com.marks2games.gravitygame.building_game.domain.usecase
+package com.marks2games.gravitygame.building_game.domain.usecase.planetaction
 
 import com.marks2games.gravitygame.building_game.data.model.Empire
 import com.marks2games.gravitygame.building_game.data.model.EmpireResource
@@ -6,6 +6,7 @@ import com.marks2games.gravitygame.building_game.data.model.Planet
 import com.marks2games.gravitygame.building_game.data.model.PlanetResource
 import com.marks2games.gravitygame.building_game.domain.repository.EmpireRepository
 import com.marks2games.gravitygame.building_game.domain.repository.PlanetRepository
+import com.marks2games.gravitygame.building_game.domain.usecase.CreateNewPlanetUseCase
 import javax.inject.Inject
 import kotlin.math.pow
 
@@ -19,7 +20,7 @@ class AccumulateExpeditionsUseCase @Inject constructor(
         planet: Planet,
         empire: Empire,
         increaseExpeditions: (Float, List<Planet>) -> Unit
-    ): Planet{
+    ): Planet {
         var updatedPlanet = planet
         val planets = empire.planets.toMutableList()
         var rocketMaterial = planet.rocketMaterials

@@ -1,4 +1,4 @@
-package com.marks2games.gravitygame.building_game.domain.usecase
+package com.marks2games.gravitygame.building_game.domain.usecase.planetaction
 
 import com.marks2games.gravitygame.building_game.data.model.Empire
 import com.marks2games.gravitygame.building_game.data.model.EmpireResource
@@ -8,7 +8,7 @@ import com.marks2games.gravitygame.building_game.domain.repository.EmpireReposit
 import com.marks2games.gravitygame.building_game.domain.repository.PlanetRepository
 import javax.inject.Inject
 
-class MakeTradepowerUseCase @Inject constructor(
+class AccumulateTradepowerUseCase @Inject constructor(
     private val empireRepository: EmpireRepository,
     private val planetRepository: PlanetRepository
 ){

@@ -8,16 +8,16 @@ import com.marks2games.gravitygame.building_game.data.model.IndustrialMode
 import com.marks2games.gravitygame.building_game.data.model.Planet
 import com.marks2games.gravitygame.building_game.data.model.ProspectorsMode
 import com.marks2games.gravitygame.building_game.data.model.UrbanCenterMode
-import com.marks2games.gravitygame.building_game.domain.usecase.AccumulateDevelopmentUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.AccumulateExpeditionsUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.AccumulateProgressUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.BuildDistrictUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.ChangeDistrictModeUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.CreateArmyUnitUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.DestroyDistrictUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.planetaction.AccumulateDevelopmentUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.planetaction.AccumulateExpeditionsUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.planetaction.AccumulateProgressUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.planetaction.BuildDistrictUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.planetaction.ChangeDistrictModeUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.planetaction.CreateArmyUnitUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.planetaction.DestroyDistrictUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.GetPlanetFromDatabaseUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.GetPlanetUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.MakeTradepowerUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.planetaction.AccumulateTradepowerUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.UpdatePlanetUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,7 +34,7 @@ class PlanetViewModel @Inject constructor(
     private val changeDistrictModeUseCase: ChangeDistrictModeUseCase,
     private val accumulateProgressUseCase: AccumulateProgressUseCase,
     private val getPlanetUseCase: GetPlanetUseCase,
-    private val makeTradepowerUseCase: MakeTradepowerUseCase,
+    private val accumulateTradepowerUseCase: AccumulateTradepowerUseCase,
     private val accumulateDevelopmentUseCase: AccumulateDevelopmentUseCase,
     private val accumulateExpeditionsUseCase: AccumulateExpeditionsUseCase,
     private val createArmyUnitUseCase: CreateArmyUnitUseCase
@@ -64,7 +64,7 @@ class PlanetViewModel @Inject constructor(
 
     fun makeTradepower(value: Int, empire: Empire, increaseTradepower: (Int, List<Planet>) -> Unit) {
         viewModelScope.launch {
-            _planet.value = makeTradepowerUseCase.invoke(
+            _planet.value = accumulateTradepowerUseCase.invoke(
                 value = value,
                 planet = planet.value,
                 empire = empire,

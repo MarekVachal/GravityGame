@@ -1,4 +1,4 @@
-package com.marks2games.gravitygame.building_game.domain.usecase
+package com.marks2games.gravitygame.building_game.domain.usecase.planetaction
 
 import com.marks2games.gravitygame.building_game.data.model.Planet
 import com.marks2games.gravitygame.building_game.data.model.PlanetResource
@@ -8,7 +8,7 @@ import javax.inject.Inject
 class AccumulateDevelopmentUseCase @Inject constructor(
     private val planetRepository: PlanetRepository
 ) {
-    suspend operator fun invoke(value: Int, planet: Planet): Planet{
+    suspend operator fun invoke(value: Int, planet: Planet): Planet {
         var infrastructure = planet.infrastructure
         var development = planet.development
         if (infrastructure >= value) {
