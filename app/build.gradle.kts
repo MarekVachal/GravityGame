@@ -81,7 +81,6 @@ android {
     }
     bundle {
         language{
-            @Suppress("UnstableApiUsage")
             enableSplit = false
         }
     }
