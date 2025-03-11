@@ -10,9 +10,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.core.data.SharedPreferencesRepository
-import com.marks2games.gravitygame.core.domain.authentication.AnonymousSign
-import com.marks2games.gravitygame.core.domain.authentication.GoogleSign
+import com.marks2games.gravitygame.core.domain.usecases.authentication.AnonymousSignInUseCase
+import com.marks2games.gravitygame.core.domain.usecases.authentication.SignInWithGoogleUseCase
+import com.marks2games.gravitygame.core.domain.usecases.sharedRepository.GetHasSignInUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import kotlinx.coroutines.Dispatchers
@@ -28,12 +28,13 @@ import javax.inject.Inject
 @HiltViewModel
 class MainMenuViewModel @Inject constructor(
     private val auth: FirebaseAuth,
-    private val sharedPreferences: SharedPreferencesRepository
+    private val anonymousSignInUseCase: AnonymousSignInUseCase,
+    private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
+    private val getHasSignInUseCase: GetHasSignInUseCase
 ): ViewModel() {
 
     private val _mainmenuUiState = MutableStateFlow(MainMenuUiStates())
     val mainMenuUiStates: StateFlow<MainMenuUiStates> = _mainmenuUiState.asStateFlow()
-    private val anonymousSign = AnonymousSign(auth)
 
     fun showSignInDialog(toShow: Boolean){
         _mainmenuUiState.update { state ->
@@ -43,26 +44,27 @@ class MainMenuViewModel @Inject constructor(
         }
     }
 
-
     fun shouldSignIn(){
-        val hasSignIn = sharedPreferences.getHasSignIn()
-        if (!hasSignIn) {
-            val user = auth.currentUser
-            if (user == null) {
-                showSignInDialog(true)
-            } else if(user.isAnonymous && !mainMenuUiStates.value.alreadySignAsGuest){
-                showSignInDialog(true)
-            }
-        } else {
-            viewModelScope.launch {
+        viewModelScope.launch {
+            val hasSignIn = getHasSignInUseCase.invoke()
+            if (!hasSignIn) {
+                val user = auth.currentUser
+                if (user == null) {
+                    showSignInDialog(true)
+                } else if(user.isAnonymous && !mainMenuUiStates.value.alreadySignAsGuest){
+                    showSignInDialog(true)
+                }
+            } else {
                 getUserImage()
             }
         }
+
+
     }
 
     fun anonymousSignIn(){
         viewModelScope.launch {
-            anonymousSign.signInAnonymously()
+            anonymousSignInUseCase.invoke()
         }
         showSignInDialog(false)
         _mainmenuUiState.update { state ->
@@ -72,12 +74,12 @@ class MainMenuViewModel @Inject constructor(
         }
     }
 
-    fun signInWithGoogle(googleSign: GoogleSign){
+    fun signInWithGoogle(){
         viewModelScope.launch {
-            googleSign.signInWithCredentialManager()
+            signInWithGoogleUseCase.invoke()
             getUserImage()
-            showSignInDialog(false)
         }
+        showSignInDialog(false)
     }
 
     private suspend fun getUserImage(){

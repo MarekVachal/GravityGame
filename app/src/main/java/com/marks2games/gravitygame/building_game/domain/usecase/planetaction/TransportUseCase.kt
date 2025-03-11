@@ -2,17 +2,14 @@ package com.marks2games.gravitygame.building_game.domain.usecase.planetaction
 
 import com.marks2games.gravitygame.building_game.data.model.Planet
 import com.marks2games.gravitygame.building_game.data.model.Transport
-import com.marks2games.gravitygame.building_game.domain.repository.PlanetRepository
 import javax.inject.Inject
 
-class TransportUseCase @Inject constructor(
-    private val planetRepository: PlanetRepository
-) {
-    suspend operator fun invoke(
+class TransportUseCase @Inject constructor() {
+    operator fun invoke(
         transport: Transport,
         planets: List<Planet>,
         updatePlanets: (List<Planet>) -> Unit
-    ){
+    ): Pair<Planet, Planet>{
         val planet1Id = transport.planet1Id
         val planet2Id = transport.planet2Id
         if(transport.planet1OrganicSediments-1 < 0) return
@@ -30,8 +27,6 @@ class TransportUseCase @Inject constructor(
             organicSediment = transport.planet2OrganicSediments,
             rocketMaterials = transport.planet2RocketMaterials
         )
-        planetRepository.updatePlanet(newPlanet1)
-        planetRepository.updatePlanet(newPlanet2)
         val updatedPlanets = planets.map {
             when (it.id) {
                 planet1Id -> newPlanet1
@@ -40,6 +35,6 @@ class TransportUseCase @Inject constructor(
             }
         }
         updatePlanets(updatedPlanets)
-
+        return Pair(newPlanet1, newPlanet2)
     }
 }

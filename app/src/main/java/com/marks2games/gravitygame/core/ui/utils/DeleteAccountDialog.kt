@@ -8,15 +8,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.core.domain.authentication.GoogleSign
 import com.marks2games.gravitygame.ui.screens.accountScreen.AccountViewModel
+
 
 @Composable
 fun DeleteAccountDialog(
     modifier: Modifier,
     accountModel: AccountViewModel,
     toShow: Boolean,
-    googleSign: GoogleSign,
     context: Context
 ) {
     if (toShow) {
@@ -24,7 +23,7 @@ fun DeleteAccountDialog(
             onDismissRequest = { accountModel.updateShowDeleteAccountDialog(false) },
             confirmButton = {
                 Button(
-                    onClick = { accountModel.deleteUserAccount(googleSign, context) }
+                    onClick = { accountModel.deleteUserAccount(context) }
                 ) {
                     Text(
                         text = stringResource(R.string.deleteAccount)

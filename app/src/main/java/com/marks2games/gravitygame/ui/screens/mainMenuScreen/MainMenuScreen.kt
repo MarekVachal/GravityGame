@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import coil.compose.rememberAsyncImagePainter
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.core.domain.authentication.GoogleSign
 import com.marks2games.gravitygame.battle_game.ui.screens.battleMapScreen.BattleViewModel
 import com.marks2games.gravitygame.core.ui.utils.SignInDialog
 import kotlin.system.exitProcess
@@ -53,8 +52,7 @@ fun MainMenuScreen(
     onAccountClick: () -> Unit,
     onEmpireButtonClick: () -> Unit,
     activity: Activity,
-    context: Context,
-    googleSign: GoogleSign
+    context: Context
 ) {
 
     val mainMenuUiStates by mainMenuModel.mainMenuUiStates.collectAsState()
@@ -77,7 +75,7 @@ fun MainMenuScreen(
         toShow = mainMenuUiStates.showSignInDialog,
         backToMainMenu = { mainMenuModel.showSignInDialog(false) },
         signInAnonymously = { mainMenuModel.anonymousSignIn() },
-        signInWithGoogle = { mainMenuModel.signInWithGoogle(googleSign) }
+        signInWithGoogle = { mainMenuModel.signInWithGoogle() }
     )
 
     Image(

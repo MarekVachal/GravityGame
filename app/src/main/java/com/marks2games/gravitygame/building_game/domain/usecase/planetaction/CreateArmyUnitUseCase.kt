@@ -1,18 +1,11 @@
 package com.marks2games.gravitygame.building_game.domain.usecase.planetaction
 
 import com.marks2games.gravitygame.building_game.data.model.Empire
-import com.marks2games.gravitygame.building_game.data.model.EmpireResource
 import com.marks2games.gravitygame.building_game.data.model.Planet
-import com.marks2games.gravitygame.building_game.data.model.PlanetResource
-import com.marks2games.gravitygame.building_game.domain.repository.EmpireRepository
-import com.marks2games.gravitygame.building_game.domain.repository.PlanetRepository
 import javax.inject.Inject
 
-class CreateArmyUnitUseCase @Inject constructor(
-    private val empireRepository: EmpireRepository,
-    private val planetRepository: PlanetRepository
-) {
-    suspend operator fun invoke(
+class CreateArmyUnitUseCase @Inject constructor() {
+    operator fun invoke(
         value: Int,
         planet: Planet,
         empire: Empire,
@@ -33,15 +26,6 @@ class CreateArmyUnitUseCase @Inject constructor(
                     it
                 }
             }
-            planetRepository.updatePlanetResource(
-                planetId = planet.id,
-                resource = PlanetResource.ROCKET_MATERIALS,
-                value = rocketMaterial.toDouble()
-            )
-            empireRepository.updateEmpireResource(
-                resource = EmpireResource.ARMY,
-                value = army.toDouble()
-            )
             createArmyUnit(army, planets)
         }
         return updatedPlanet

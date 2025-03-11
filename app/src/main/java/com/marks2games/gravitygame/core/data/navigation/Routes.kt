@@ -25,8 +25,7 @@ import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.PlanetViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TradeViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TransportViewModel
-import com.marks2games.gravitygame.core.data.SharedPreferencesRepository
-import com.marks2games.gravitygame.core.domain.authentication.GoogleSign
+import com.marks2games.gravitygame.core.domain.repository.SharedPreferencesRepository
 import com.marks2games.gravitygame.loadSettings
 import com.marks2games.gravitygame.ui.screens.accountScreen.AccountViewModel
 import com.marks2games.gravitygame.ui.screens.mainMenuScreen.MainMenuViewModel
@@ -40,7 +39,6 @@ fun Routes(
     owner: ViewModelStoreOwner,
     window: Window,
     navController: NavHostController,
-    googleSign: GoogleSign,
     sharedPreferences: SharedPreferencesRepository,
     context: Context
 ) {
@@ -76,7 +74,6 @@ fun Routes(
         battleNavGraph(
             activity = activity,
             navController = navController,
-            googleSign = googleSign,
             context = context,
             databaseModel = databaseModel,
             battleModel = battleModel,

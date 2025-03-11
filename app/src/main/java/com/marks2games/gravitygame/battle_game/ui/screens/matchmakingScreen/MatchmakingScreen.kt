@@ -27,7 +27,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.core.domain.authentication.GoogleSign
 import com.marks2games.gravitygame.battle_game.ui.utils.timer.TimerViewModel
 import com.marks2games.gravitygame.core.ui.utils.SignInDialog
 import com.marks2games.gravitygame.core.ui.utils.ProgressIndicator
@@ -42,7 +41,6 @@ fun MatchmakingScreen(
     onMatchConfirmed: () -> Unit,
     onBackMainMenuScreen: () -> Unit,
     context: Context,
-    googleSign: GoogleSign,
     roomId: String?
 ){
     val matchmakingUiStates by matchmakingModel.matchmakingUiStates.collectAsState()
@@ -76,7 +74,7 @@ fun MatchmakingScreen(
         backToMainMenu = onBackMainMenuScreen,
         signInAnonymously = { matchmakingModel.signInAnonymously() },
         signInWithGoogle = {
-            matchmakingModel.signInWithGoogle(googleSign = googleSign, context = context)
+            matchmakingModel.signInWithGoogle(context = context)
         }
     )
 

@@ -2,13 +2,12 @@ package com.marks2games.gravitygame.ui.screens.accountScreen
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.core.domain.authentication.GoogleSign
+import com.marks2games.gravitygame.core.domain.usecases.authentication.DeleteUserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,10 +16,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import androidx.core.net.toUri
+import com.marks2games.gravitygame.core.domain.usecases.authentication.LinkQuestWithGoogleUseCase
+import com.marks2games.gravitygame.core.domain.usecases.authentication.LogoutUseCase
+import com.marks2games.gravitygame.core.domain.usecases.authentication.SignInWithGoogleUseCase
 
 @HiltViewModel
 class AccountViewModel @Inject constructor(
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val deleteUserUseCase: DeleteUserUseCase,
+    private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
+    private val linkQuestWithGoogleUseCase: LinkQuestWithGoogleUseCase,
+    private val logoutUseCase: LogoutUseCase
 ): ViewModel() {
 
     private val _accountUiState = MutableStateFlow(AccountUiState())
@@ -44,10 +51,10 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun deleteUserAccount(googleSign: GoogleSign, context: Context){
+    fun deleteUserAccount(context: Context){
         setupAuthStateListener(context)
         viewModelScope.launch {
-            googleSign.reauthenticateAndDeleteUser()
+            deleteUserUseCase.invoke()
         }
         updateShowDeleteAccountDialog(false)
     }
@@ -67,7 +74,7 @@ class AccountViewModel @Inject constructor(
 
     fun openPrivacyPolicyLink(context: Context){
         val privacyPolicyUri = context.getString(R.string.privacyPolicyLink)
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(privacyPolicyUri))
+        val intent = Intent(Intent.ACTION_VIEW, privacyPolicyUri.toUri())
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
         try {
@@ -103,17 +110,17 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun setClickOnButton(context: Context, googleSign: GoogleSign){
+    fun setClickOnButton(context: Context){
         val user = auth.currentUser
         if (user == null) {
             setupAuthStateListener(context)
             viewModelScope.launch {
-                googleSign.signInWithCredentialManager()
+                signInWithGoogleUseCase.invoke()
             }
         } else if (user.isAnonymous){
             setupAuthStateListener(context)
             viewModelScope.launch {
-                googleSign.linkGuestAccountWithGoogle(
+                linkQuestWithGoogleUseCase.invoke (
                     onUserUpdated = {
                         updateUserName(context)
                         updateUserEmail(context)
@@ -123,10 +130,8 @@ class AccountViewModel @Inject constructor(
         } else {
             setupAuthStateListener(context)
             viewModelScope.launch {
-                googleSign.logout()
-
+                logoutUseCase.invoke()
             }
-
         }
     }
 

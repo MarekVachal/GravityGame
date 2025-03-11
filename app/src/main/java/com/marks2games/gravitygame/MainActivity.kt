@@ -30,11 +30,13 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.marks2games.gravitygame.core.domain.FcmToken
 import com.marks2games.gravitygame.core.domain.Notification
-import com.marks2games.gravitygame.core.data.SharedPreferencesRepository
+import com.marks2games.gravitygame.core.domain.repository.SharedPreferencesRepository
 import com.marks2games.gravitygame.core.domain.navigation.Matchmaking
-import com.marks2games.gravitygame.core.domain.authentication.GoogleSign
 import com.marks2games.gravitygame.core.data.navigation.Routes
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -53,7 +55,6 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var sharedPreferences: SharedPreferencesRepository
     private lateinit var navController: NavHostController
-    private lateinit var googleSign: GoogleSign
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,11 +66,6 @@ class MainActivity : ComponentActivity() {
             AppDatabase::class.java, "battle_results.db"
         ).build()
         notification.createNotificationChannel(this)
-        googleSign = GoogleSign(
-            context = this,
-            auth = auth,
-            sharedPreferences = sharedPreferences
-        )
         fcmToken.retrieveAndSaveFcmToken()
 
 
@@ -87,7 +83,6 @@ class MainActivity : ComponentActivity() {
                         owner = this,
                         window = window,
                         navController = navController,
-                        googleSign = googleSign,
                         sharedPreferences = sharedPreferences,
                         context = this
                     )
@@ -167,14 +162,18 @@ fun loadSettings(
     window: Window,
     sharedPreferences: SharedPreferencesRepository
 ) {
-    val showTutorial = sharedPreferences.getShowTutorial()
-    val language = sharedPreferences.getLanguage()
-    val keepScreenOn = sharedPreferences.getKeepScreenOn()
-    settingsModel.changeShowTutorial(toShow = showTutorial)
-    settingsModel.setLanguage(context = context, language = language)
-    settingsModel.setChosenLanguage(language = language)
-    settingsModel.changeKeepScreenOn(enabled = keepScreenOn)
-    setScreenOn(enabled = keepScreenOn, window = window)
+    //You have to refactor this to use UseCase
+    CoroutineScope(Dispatchers.IO).launch {
+        val showTutorial = sharedPreferences.getShowTutorial()
+        val language = sharedPreferences.getLanguage()
+        val keepScreenOn = sharedPreferences.getKeepScreenOn()
+        settingsModel.changeShowTutorial(toShow = showTutorial)
+        settingsModel.setLanguage(context = context, language = language)
+        settingsModel.setChosenLanguage(language = language)
+        settingsModel.changeKeepScreenOn(enabled = keepScreenOn)
+        setScreenOn(enabled = keepScreenOn, window = window)
+    }
+
 
 }
 

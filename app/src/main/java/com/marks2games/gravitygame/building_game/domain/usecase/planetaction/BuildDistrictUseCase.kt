@@ -3,13 +3,10 @@ package com.marks2games.gravitygame.building_game.domain.usecase.planetaction
 import com.marks2games.gravitygame.building_game.data.model.District
 import com.marks2games.gravitygame.building_game.data.model.DistrictEnum
 import com.marks2games.gravitygame.building_game.data.model.Planet
-import com.marks2games.gravitygame.building_game.domain.repository.PlanetRepository
 import javax.inject.Inject
 
-class BuildDistrictUseCase @Inject constructor(
-    private val planetRepository: PlanetRepository
-){
-    suspend operator fun invoke(planet: Planet, districtToBuild: DistrictEnum): Planet {
+class BuildDistrictUseCase @Inject constructor(){
+    operator fun invoke(planet: Planet, districtToBuild: DistrictEnum): Planet {
         var infrastructure = planet.infrastructure
         val planetLevel = planet.level
         val districtsCounts = planet.districts.size
@@ -31,12 +28,9 @@ class BuildDistrictUseCase @Inject constructor(
             districts.add(chosenDistrict)
         }
 
-        val updatedPlanet = planet.copy(
+        return planet.copy(
             infrastructure = infrastructure,
             districts = districts
         )
-
-        planetRepository.updatePlanet(updatedPlanet)
-        return updatedPlanet
     }
 }

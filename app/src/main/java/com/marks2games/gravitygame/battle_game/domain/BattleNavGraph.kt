@@ -18,7 +18,6 @@ import com.marks2games.gravitygame.battle_game.ui.screens.selectArmyScreen.Selec
 import com.marks2games.gravitygame.battle_game.ui.screens.selectMapScreen.SelectMapScreen
 import com.marks2games.gravitygame.battle_game.ui.tutorial.TutorialViewModel
 import com.marks2games.gravitygame.battle_game.ui.utils.timer.TimerViewModel
-import com.marks2games.gravitygame.core.domain.authentication.GoogleSign
 import com.marks2games.gravitygame.core.domain.navigation.Destinations
 import com.marks2games.gravitygame.core.domain.navigation.Matchmaking
 import com.marks2games.gravitygame.ui.screens.accountScreen.AccountScreen
@@ -33,7 +32,6 @@ import com.marks2games.gravitygame.ui.screens.statisticScreen.StatisticViewModel
 fun NavGraphBuilder.battleNavGraph (
     activity: Activity,
     navController: NavHostController,
-    googleSign: GoogleSign,
     context: Context,
     databaseModel: DatabaseViewModel,
     battleModel: BattleViewModel,
@@ -63,7 +61,6 @@ fun NavGraphBuilder.battleNavGraph (
                     matchmakingModel.showSignInDialog(false)
                 },
                 context = context,
-                googleSign = googleSign,
                 roomId = backStackEntry.arguments?.getString(Matchmaking.ROOM_ID_ARG)
             )
         }
@@ -109,8 +106,7 @@ fun NavGraphBuilder.battleNavGraph (
                 onSettingClick = { navController.navigate(Destinations.SETTINGS.name) },
                 onAccountClick = { navController.navigate(Destinations.ACCOUNT.name) },
                 onEmpireButtonClick = { navController.navigate("BuilderGame") },
-                battleModel = battleModel,
-                googleSign = googleSign
+                battleModel = battleModel
             )
         }
 
@@ -128,8 +124,7 @@ fun NavGraphBuilder.battleNavGraph (
                 //onAchievementsButtonClick = { navController.navigate(Destinations.ACHIEVEMENTS.name) },
                 onBackButtonClick = { navController.navigate(Destinations.MAINMENU.name) },
                 accountModel = accountModel,
-                context = context,
-                googleSign = googleSign
+                context = context
             )
         }
 

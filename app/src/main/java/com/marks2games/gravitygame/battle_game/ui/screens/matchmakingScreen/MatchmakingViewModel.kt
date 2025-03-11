@@ -26,21 +26,22 @@ import com.marks2games.gravitygame.battle_game.data.model.enum_class.toBattleMap
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.RoomStatus
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.toGameType
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.toRoomStatus
-import com.marks2games.gravitygame.core.domain.authentication.AnonymousSign
-import com.marks2games.gravitygame.core.domain.authentication.GoogleSign
+import com.marks2games.gravitygame.core.domain.usecases.authentication.AnonymousSignInUseCase
+import com.marks2games.gravitygame.core.domain.usecases.authentication.SignInWithGoogleUseCase
 
 @HiltViewModel
 class MatchmakingViewModel @Inject constructor(
     private val sharedPlayerModel: SharedPlayerDataRepository,
     private val auth: FirebaseAuth,
     private val database: FirebaseDatabase,
-    private val notification: Notification
+    private val notification: Notification,
+    private val anonymousSignInUseCase: AnonymousSignInUseCase,
+    private val signInWithGoogleUseCase: SignInWithGoogleUseCase
 ): ViewModel() {
 
     private val _matchmakingUiStates = MutableStateFlow(MatchmakingUiStates())
     val matchmakingUiStates = _matchmakingUiStates.asStateFlow()
     val playerData: StateFlow<PlayerData> = sharedPlayerModel.playerData
-    private val anonymousSign = AnonymousSign(auth)
 
     fun restoreGameSession(roomId: String){
         val roomRef = database.reference.child("rooms").child(roomId)
@@ -67,12 +68,12 @@ class MatchmakingViewModel @Inject constructor(
 
     fun signInAnonymously(){
         viewModelScope.launch {
-            anonymousSign.signInAnonymously()
+            anonymousSignInUseCase.invoke()
         }
         showSignInDialog(false)
     }
 
-    fun signInWithGoogle(googleSign: GoogleSign, context: Context){
+    fun signInWithGoogle(context: Context){
         viewModelScope.launch {
             val authListener = object : FirebaseAuth.AuthStateListener {
                 override fun onAuthStateChanged(firebaseAuth: FirebaseAuth) {
@@ -83,7 +84,7 @@ class MatchmakingViewModel @Inject constructor(
                 }
             }
             auth.addAuthStateListener(authListener)
-            googleSign.signInWithCredentialManager()
+            signInWithGoogleUseCase.invoke()
             showSignInDialog(false)
         }
     }

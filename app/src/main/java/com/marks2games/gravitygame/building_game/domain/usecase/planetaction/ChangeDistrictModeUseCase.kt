@@ -6,13 +6,10 @@ import com.marks2games.gravitygame.building_game.data.model.IndustrialMode
 import com.marks2games.gravitygame.building_game.data.model.Planet
 import com.marks2games.gravitygame.building_game.data.model.ProspectorsMode
 import com.marks2games.gravitygame.building_game.data.model.UrbanCenterMode
-import com.marks2games.gravitygame.building_game.domain.repository.PlanetRepository
 import javax.inject.Inject
 
-class ChangeDistrictModeUseCase @Inject constructor(
-    private val planetRepository: PlanetRepository
-) {
-    suspend operator fun invoke(
+class ChangeDistrictModeUseCase @Inject constructor() {
+    operator fun invoke(
         planet: Planet,
         districtForChange: DistrictEnum,
         newMode: Enum<*>
@@ -36,12 +33,9 @@ class ChangeDistrictModeUseCase @Inject constructor(
             }
             infrastructure -= 1
         }
-
-        val updatedPlanet = planet.copy(
+        return planet.copy(
             infrastructure = infrastructure,
             districts = updatedDistricts
         )
-        planetRepository.updatePlanet(updatedPlanet)
-        return updatedPlanet
     }
 }
