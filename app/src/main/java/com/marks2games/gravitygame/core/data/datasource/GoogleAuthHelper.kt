@@ -2,6 +2,7 @@ package com.marks2games.gravitygame.core.data.datasource
 
 import android.content.Context
 import android.util.Log
+import androidx.credentials.Credential
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
@@ -57,7 +58,7 @@ class GoogleAuthHelper @Inject constructor(
         }
     }
 
-    private fun extractIdToken(credential: androidx.credentials.Credential): String? {
+    private fun extractIdToken(credential: Credential): String? {
         return if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
             val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
             googleIdTokenCredential.idToken

@@ -4,7 +4,9 @@ sealed class Action {
     abstract val planetId: Int
     abstract val mainValue: Int
 
-    data class AccumulateDevelopment()
+    data class AccumulateDevelopment(
+        val planetId: Int
+    )
 
     data class AccumulateExpeditions(
         val planetId: Int,
@@ -54,6 +56,11 @@ sealed class Action {
     data class Transport(
         val planet1Id: Int,
         val planet2Id: Int,
+        val transport: Transport
+    )
 
+    data class Tade(
+        val planetId: Int,
+        val trade: Trade
     )
 }

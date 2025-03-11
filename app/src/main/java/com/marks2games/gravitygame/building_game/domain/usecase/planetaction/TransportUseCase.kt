@@ -12,9 +12,9 @@ class TransportUseCase @Inject constructor() {
     ): Pair<Planet, Planet>{
         val planet1Id = transport.planet1Id
         val planet2Id = transport.planet2Id
-        if(transport.planet1OrganicSediments-1 < 0) return
-        val planet1 = planets.find { it.id == planet1Id } ?: return
-        val planet2 = planets.find { it.id == planet2Id } ?: return
+        val planet1 = planets.find { it.id == planet1Id } ?: return Pair(Planet(), Planet())
+        val planet2 = planets.find { it.id == planet2Id } ?: return Pair(Planet(), Planet())
+        if(transport.planet1OrganicSediments-1 < 0) return Pair(planet1, planet2)
 
         val newPlanet1 = planet1.copy(
             metal = transport.planet1Metal,

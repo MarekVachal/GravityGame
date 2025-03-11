@@ -1,4 +1,4 @@
-package com.marks2games.gravitygame.building_game.domain.usecase
+package com.marks2games.gravitygame.building_game.domain.usecase.planetaction
 
 import com.marks2games.gravitygame.building_game.data.model.Empire
 import com.marks2games.gravitygame.building_game.data.model.Trade

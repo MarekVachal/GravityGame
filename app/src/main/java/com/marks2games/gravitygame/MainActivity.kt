@@ -163,6 +163,7 @@ fun loadSettings(
     sharedPreferences: SharedPreferencesRepository
 ) {
     //You have to refactor this to use UseCase
+    Log.d("Settings", "loadSettings")
     CoroutineScope(Dispatchers.IO).launch {
         val showTutorial = sharedPreferences.getShowTutorial()
         val language = sharedPreferences.getLanguage()
@@ -173,6 +174,7 @@ fun loadSettings(
         settingsModel.changeKeepScreenOn(enabled = keepScreenOn)
         setScreenOn(enabled = keepScreenOn, window = window)
     }
+    Log.d("Settings", "loadSettings end")
 
 
 }
