@@ -104,8 +104,19 @@ enum class DistrictEnum {
     EXPEDITION_PLATFORM,
     URBAN_CENTER
 }
+enum class RocketMaterialsSetting {NOTHING, MAXIMUM, USAGE}
+enum class InfrastructureSetting {MAXIMUM, USAGE}
 
 fun String.toDistrictEnum(): DistrictEnum? {
+    return try{
+        DistrictEnum.valueOf(this)
+    } catch(e: IllegalArgumentException) {
+        Sentry.captureException(e)
+        null
+    }
+}
+
+fun String.toDistrictModeEnum(): DistrictEnum? {
     return try{
         DistrictEnum.valueOf(this)
     } catch(e: IllegalArgumentException) {

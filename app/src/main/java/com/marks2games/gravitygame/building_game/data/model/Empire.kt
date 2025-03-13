@@ -1,5 +1,7 @@
 package com.marks2games.gravitygame.building_game.data.model
 
+import io.sentry.Sentry
+
 data class Empire(
     val research: Int = 0,
     val tradePower: Int = 0,

@@ -7,7 +7,7 @@ import javax.inject.Inject
 
 class InfrastructureGrowthUseCase @Inject constructor(){
     operator fun invoke(planet: Planet): Pair <Int, Int> {
-        var infrastructure = 0
+        var infrastructure = 1
         var metal = planet.metal
         val infrastructureIndustrial = planet.districts
             .filterIsInstance<District.Industrial>()

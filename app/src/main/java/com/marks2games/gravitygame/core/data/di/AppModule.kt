@@ -32,6 +32,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideGoogleAuthHelper(): GoogleAuthHelper {
+        return GoogleAuthHelper()
+    }
+
+    @Provides
+    @Singleton
     fun provideSharedPreferences(
         @ApplicationContext context: Context
     ): SharedPreferences {
@@ -39,8 +45,8 @@ object AppModule {
     }
 
     @Provides
-    fun provideFirebaseUser(auth: FirebaseAuth): FirebaseUser {
-        return auth.currentUser ?: throw IllegalStateException("User is not logged in")
+    fun provideFirebaseUser(auth: FirebaseAuth): FirebaseUser? {
+        return auth.currentUser
     }
 
 
@@ -48,7 +54,7 @@ object AppModule {
     @Singleton
     fun provideEmpireRepository(
         firestore: FirebaseFirestore,
-        user: FirebaseUser
+        user: FirebaseUser?
     ): EmpireRepository {
         return EmpireRepositoryImpl(firestore, user)
     }
@@ -57,7 +63,7 @@ object AppModule {
     @Singleton
     fun providePlanetRepository(
         firestore: FirebaseFirestore,
-        user: FirebaseUser
+        user: FirebaseUser?
     ): PlanetRepository {
         return PlanetRepositoryImpl(firestore, user)
     }

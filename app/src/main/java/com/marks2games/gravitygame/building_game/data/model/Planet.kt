@@ -1,5 +1,8 @@
 package com.marks2games.gravitygame.building_game.data.model
 
+import kotlin.math.floor
+import kotlin.math.min
+
 data class Planet(
     val id: Int = 0,
     val name: String = "Planet 0",
@@ -13,7 +16,14 @@ data class Planet(
     val transport: Int = 0,
     val progress: Int = 0,
     val development: Int = 0,
+    val progressSetting: Int = min(infrastructure, floor(biomass).toInt()),
+    val researchSetting: Int = 0,
+    val expeditionsSetting: Int = 0,
+    val armyConstructionSetting: Int = 0,
+    val rocketMaterialsSetting: RocketMaterialsSetting = RocketMaterialsSetting.MAXIMUM,
+    val infrastructureSetting: InfrastructureSetting = InfrastructureSetting.MAXIMUM,
     val districts: List<District> = listOf(District.Capitol()),
+    val actions: List<Action> = emptyList()
 ) {
     fun toMap(): Map<String, Any> = mapOf(
         "id" to id,
@@ -27,13 +37,21 @@ data class Planet(
         PlanetResource.TRANSPORT.name to transport,
         PlanetResource.PROGRESS.name to progress,
         PlanetResource.DEVELOPMENT.name to development,
-        "districts" to districts.map { it.toMap() }
+        "progressSetting" to progressSetting,
+        "researchSetting" to researchSetting,
+        "expeditionsSetting" to expeditionsSetting,
+        "armyConstructionSetting" to armyConstructionSetting,
+        "rocketMaterialsSetting" to rocketMaterialsSetting,
+        "infrastructureSetting" to infrastructureSetting,
+        "districts" to districts.map { it.toMap() },
+        "actions" to actions.map {it.toMap()}
     )
 
     companion object {
         fun fromMap(map: Map<String, Any>): Planet {
             @Suppress("UNCHECKED_CAST")
             val districts = (map["districts"] as? List<Map<String, String>>)?.map { District.fromMap(it) } ?: emptyList()
+            val actions = (map["actions"] as? List<Map<String, String>>)?.map { Action.fromMap(it) } ?: emptyList()
             return Planet(
                 id = (map["id"] as Long).toInt(),
                 level = (map["level"] as Long).toInt(),
@@ -46,7 +64,14 @@ data class Planet(
                 transport = (map[PlanetResource.TRANSPORT.name] as Long).toInt(),
                 progress = (map[PlanetResource.PROGRESS.name] as Long).toInt(),
                 development = (map[PlanetResource.DEVELOPMENT.name] as Long).toInt(),
-                districts = districts
+                progressSetting = (map["progressSetting"] as Long).toInt(),
+                researchSetting = (map["researchSetting"] as Long).toInt(),
+                expeditionsSetting = (map["expeditionsSetting"] as Long).toInt(),
+                armyConstructionSetting = (map["armyConstructionSetting"] as Long).toInt(),
+                rocketMaterialsSetting = (map["rocketMaterialsSetting"] as RocketMaterialsSetting),
+                infrastructureSetting = (map["infrastructureSetting"] as InfrastructureSetting),
+                districts = districts,
+                actions = actions
             )
         }
     }

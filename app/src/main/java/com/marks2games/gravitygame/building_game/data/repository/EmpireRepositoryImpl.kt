@@ -13,9 +13,10 @@ import javax.inject.Inject
 
 class EmpireRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val user: FirebaseUser
+    private val user: FirebaseUser?
 ) : EmpireRepository {
     override suspend fun getEmpire(): Empire {
+        if(user == null) return Empire()
         try {
             val snapshot = firestore
                 .collection("empires")
@@ -45,6 +46,7 @@ class EmpireRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateEmpire(empire: Empire) {
+        if (user == null) return
         try {
             firestore
                 .collection("empires")
@@ -67,6 +69,7 @@ class EmpireRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getEmpireResource(resource: EmpireResource): Double {
+        if (user == null) return 0.0
         return try {
             val snapshot = firestore
                 .collection("empires")
@@ -81,6 +84,7 @@ class EmpireRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateEmpireResource(resource: EmpireResource, value: Double) {
+        if(user == null) return
         try{
             firestore
                 .collection("empires")
@@ -93,6 +97,7 @@ class EmpireRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveTurn(value: Int) {
+        if(user == null) return
         try{
             firestore
                 .collection("empires")
@@ -105,6 +110,7 @@ class EmpireRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateUpdateTime(value: Long) {
+        if(user == null) return
         try{
             firestore
                 .collection("empires")

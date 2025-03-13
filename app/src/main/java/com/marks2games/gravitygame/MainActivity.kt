@@ -28,6 +28,7 @@ import com.marks2games.gravitygame.ui.theme.GravityGameTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
+import com.marks2games.gravitygame.core.data.datasource.GoogleAuthHelper
 import com.marks2games.gravitygame.core.domain.FcmToken
 import com.marks2games.gravitygame.core.domain.Notification
 import com.marks2games.gravitygame.core.domain.repository.SharedPreferencesRepository
@@ -37,6 +38,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -54,6 +56,8 @@ class MainActivity : ComponentActivity() {
     lateinit var notification: Notification
     @Inject
     lateinit var sharedPreferences: SharedPreferencesRepository
+    @Inject
+    lateinit var googleAuthHelper: GoogleAuthHelper
     private lateinit var navController: NavHostController
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,7 +71,7 @@ class MainActivity : ComponentActivity() {
         ).build()
         notification.createNotificationChannel(this)
         fcmToken.retrieveAndSaveFcmToken()
-
+        googleAuthHelper.setActivity(this)
 
         setContent {
             GravityGameTheme {
@@ -168,11 +172,14 @@ fun loadSettings(
         val showTutorial = sharedPreferences.getShowTutorial()
         val language = sharedPreferences.getLanguage()
         val keepScreenOn = sharedPreferences.getKeepScreenOn()
-        settingsModel.changeShowTutorial(toShow = showTutorial)
-        settingsModel.setLanguage(context = context, language = language)
-        settingsModel.setChosenLanguage(language = language)
-        settingsModel.changeKeepScreenOn(enabled = keepScreenOn)
-        setScreenOn(enabled = keepScreenOn, window = window)
+
+        withContext(Dispatchers.Main){
+            settingsModel.changeShowTutorial(toShow = showTutorial)
+            settingsModel.setLanguage(context = context, language = language)
+            settingsModel.setChosenLanguage(language = language)
+            settingsModel.changeKeepScreenOn(enabled = keepScreenOn)
+            setScreenOn(enabled = keepScreenOn, window = window)
+        }
     }
     Log.d("Settings", "loadSettings end")
 
