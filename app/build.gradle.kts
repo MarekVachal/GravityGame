@@ -28,8 +28,8 @@ android {
         applicationId = "com.marks2games.gravitygame"
         minSdk = 26
         targetSdk = 35
-        versionCode = 8
-        versionName = "1.2.5"
+        versionCode = 9
+        versionName = "1.2.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -99,13 +99,13 @@ sentry {
 
 dependencies {
 
-    val composeBomVersion = "2025.02.00"
+    val composeBomVersion = "2025.03.00"
     val roomVersion = "2.6.1"
-    val credentialVersion = "1.5.0-rc01"
+    val credentialVersion = "1.5.0"
     val hiltVersion = "2.55"
     val ktorVersion = "3.0.3"
     val coroutineVersion = "1.10.1"
-    val sentryVersion = "8.2.0"
+    val sentryVersion = "8.4.0"
 
     //Ktor
     implementation ("io.ktor:ktor-client-core:$ktorVersion")
@@ -139,7 +139,7 @@ dependencies {
     //implementation ("com.google.android.gms:play-services-tasks:18.2.0")
 
     //Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.11.0"))
     implementation("com.google.firebase:firebase-common")
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
@@ -153,7 +153,7 @@ dependencies {
     implementation("io.grpc:grpc-okhttp:1.70.0")
 
     //Compose navigation
-    implementation("androidx.navigation:navigation-compose:2.8.8")
+    implementation("androidx.navigation:navigation-compose:2.8.9")
 
     //Coroutines
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")

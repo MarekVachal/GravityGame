@@ -1,16 +1,27 @@
 package com.marks2games.gravitygame.battle_game.ui.screens.selectArmyScreen
 
 import androidx.lifecycle.ViewModel
+import com.marks2games.gravitygame.battle_game.data.SharedPlayerDataRepository
 import com.marks2games.gravitygame.core.data.model.enum_class.ShipType
 import com.marks2games.gravitygame.battle_game.ui.screens.battleMapScreen.BattleViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import javax.inject.Inject
 
-class SelectArmyViewModel : ViewModel() {
+@HiltViewModel
+class SelectArmyViewModel @Inject constructor(
+    private val sharedPlayerData: SharedPlayerDataRepository
+): ViewModel() {
+
     private val _selectArmyUiState = MutableStateFlow(SelectArmyUiState())
     val selectArmyUiState: StateFlow<SelectArmyUiState> = _selectArmyUiState.asStateFlow()
+
+    fun isOnlineGame(): Boolean {
+        return sharedPlayerData.getIsOnline()
+    }
 
     fun checkArmySize(
         battleModel: BattleViewModel

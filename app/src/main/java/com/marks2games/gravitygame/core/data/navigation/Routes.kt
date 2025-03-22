@@ -22,7 +22,6 @@ import com.marks2games.gravitygame.battle_game.ui.tutorial.TutorialViewModel
 import com.marks2games.gravitygame.battle_game.ui.utils.timer.TimerViewModel
 import com.marks2games.gravitygame.building_game.domain.builderNavGraph
 import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
-import com.marks2games.gravitygame.building_game.ui.viewmodel.PlanetViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TradeViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TransportViewModel
 import com.marks2games.gravitygame.core.domain.repository.SharedPreferencesRepository
@@ -44,7 +43,6 @@ fun Routes(
 ) {
     val tradeModel: TradeViewModel = viewModel()
     val transportModel: TransportViewModel = viewModel()
-    val planetModel: PlanetViewModel = viewModel()
     val empireViewModel: EmpireViewModel = viewModel()
     val repository = BattleRepository(database.battleResultDao())
     val databaseModel: DatabaseViewModel = ViewModelProvider(
@@ -59,7 +57,6 @@ fun Routes(
     val statisticModel: StatisticViewModel = viewModel()
     val matchmakingModel: MatchmakingViewModel = viewModel()
     val accountModel: AccountViewModel = viewModel()
-    val timerModelForBuilder: TimerViewModel = viewModel()
 
     LaunchedEffect(Unit) {
         loadSettings(
@@ -89,8 +86,6 @@ fun Routes(
         builderNavGraph(
             navController = navController,
             empireViewModel = empireViewModel,
-            timerModel = timerModelForBuilder,
-            planetModel = planetModel,
             transportModel = transportModel,
             tradeModel = tradeModel
         )

@@ -7,10 +7,9 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.marks2games.gravitygame.battle_game.data.BattleGameRepositoryFactory
+import com.marks2games.gravitygame.battle_game.data.SharedPlayerDataRepository
 import com.marks2games.gravitygame.building_game.data.repository.EmpireRepositoryImpl
-import com.marks2games.gravitygame.building_game.data.repository.PlanetRepositoryImpl
 import com.marks2games.gravitygame.building_game.domain.repository.EmpireRepository
-import com.marks2games.gravitygame.building_game.domain.repository.PlanetRepository
 import com.marks2games.gravitygame.core.data.RealTimeProvider
 import com.marks2games.gravitygame.core.domain.TimeProvider
 import com.marks2games.gravitygame.core.data.datasource.GoogleAuthHelper
@@ -61,15 +60,6 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providePlanetRepository(
-        firestore: FirebaseFirestore,
-        user: FirebaseUser?
-    ): PlanetRepository {
-        return PlanetRepositoryImpl(firestore, user)
-    }
-
-    @Provides
-    @Singleton
     fun provideAuthRepository(
         auth: FirebaseAuth,
         setHasSignInUseCase: SetHasSignInUseCase,
@@ -98,8 +88,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideBattleGameRepositoryFactory(auth: FirebaseAuth): BattleGameRepositoryFactory {
-        return BattleGameRepositoryFactory(auth)
+    fun provideBattleGameRepositoryFactory(
+        auth: FirebaseAuth,
+        sharedPlayerDataRepository: SharedPlayerDataRepository
+    ): BattleGameRepositoryFactory {
+        return BattleGameRepositoryFactory(
+            sharedPlayerDataRepository = sharedPlayerDataRepository,
+            auth = auth
+        )
     }
 
     @Provides
@@ -118,5 +114,11 @@ object AppModule {
     @Singleton
     fun provideFirebaseFirestore(): FirebaseFirestore{
         return FirebaseFirestore.getInstance()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSharedPlayerDataRepository(): SharedPlayerDataRepository {
+        return SharedPlayerDataRepository()
     }
 }

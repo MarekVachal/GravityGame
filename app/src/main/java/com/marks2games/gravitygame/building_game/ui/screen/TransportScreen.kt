@@ -15,13 +15,5 @@ fun TransportScreen(
     updatePlanets: (List<Planet>) -> Unit
 ){
 
-    val transportUiState by transportModel.transportUiState.collectAsState()
-
-    //OkButton
-    Button(
-        onClick = { transportModel.transport(planets, updatePlanets) }
-    ) {
-        Text(text = "Transport")
-    }
 
 }

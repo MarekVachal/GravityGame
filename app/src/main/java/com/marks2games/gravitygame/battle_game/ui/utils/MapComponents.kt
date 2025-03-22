@@ -20,8 +20,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.battle_game.data.model.Location
+import com.marks2games.gravitygame.battle_game.data.model.enum_class.Players
 import com.marks2games.gravitygame.core.data.model.Ship
 import com.marks2games.gravitygame.core.data.model.enum_class.ShipType
 import com.marks2games.gravitygame.battle_game.ui.screens.battleMapScreen.BattleViewModel
@@ -45,8 +44,6 @@ fun MapBox(
     location: Int,
     planetImage: Int
 ) {
-
-    val playerData by battleModel.playerData.collectAsState()
 
     Box(
         modifier = modifier
@@ -128,7 +125,7 @@ fun MapBox(
         }
         //Enemy Ships
         ArmyInfo(
-            modifier = Modifier.align(if (playerData.player == com.marks2games.gravitygame.battle_game.data.model.enum_class.Players.PLAYER1) Alignment.CenterEnd else Alignment.CenterStart) /*Alignment.CenterEnd*/,
+            modifier = Modifier.align(if (battleModel.getPlayer() == Players.PLAYER1) Alignment.CenterEnd else Alignment.CenterStart) /*Alignment.CenterEnd*/,
             numberCruisers = battleModel.getNumberOfShip(
                 location = location,
                 shipType = ShipType.CRUISER,
@@ -156,7 +153,7 @@ fun MapBox(
         )
         //My Ships
         ArmyInfo(
-            modifier = Modifier.align(if (playerData.player == com.marks2games.gravitygame.battle_game.data.model.enum_class.Players.PLAYER1) Alignment.CenterStart else Alignment.CenterEnd),//
+            modifier = Modifier.align(if (battleModel.getPlayer() == Players.PLAYER1) Alignment.CenterStart else Alignment.CenterEnd),//
             numberCruisers = battleModel.getNumberOfShip(
                 location = location,
                 shipType = ShipType.CRUISER,

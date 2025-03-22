@@ -2,7 +2,6 @@ package com.marks2games.gravitygame.battle_game.domain
 
 import android.app.Activity
 import android.content.Context
-import android.util.Log
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
@@ -53,7 +52,6 @@ fun NavGraphBuilder.battleNavGraph (
                 matchmakingModel = matchmakingModel,
                 onMatchConfirmed = {
                     navController.navigate(Destinations.BATTLEMAP.name)
-                    Log.d("Player", "Player: ${battleModel.playerData.value.player}")
                 },
                 timerModel = timerModel,
                 onBackMainMenuScreen = {

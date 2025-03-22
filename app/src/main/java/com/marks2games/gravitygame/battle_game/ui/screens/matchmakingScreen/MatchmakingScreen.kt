@@ -44,12 +44,12 @@ fun MatchmakingScreen(
     roomId: String?
 ){
     val matchmakingUiStates by matchmakingModel.matchmakingUiStates.collectAsState()
-    val playerData by matchmakingModel.playerData.collectAsState()
     val timerUiState by timerModel.timerUiState.collectAsState()
 
     LaunchedEffect(roomId) {
         Log.d("FCM", "Room id in MatchmakingScreen: $roomId")
-        if(playerData.roomRef == null){
+        if(matchmakingModel.getRoomRef() == null){
+            Log.d("FCM", "Room ref MatchmakingScreen: ${matchmakingModel.getRoomRef()}")
             if(!roomId.isNullOrEmpty()){
                 matchmakingModel.restoreGameSession(roomId)
                 matchmakingModel.handleRoomStateAfterNotification(context)

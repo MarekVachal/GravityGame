@@ -63,7 +63,6 @@ fun SelectArmyScreen(
         selectArmyModel.cleanUiStates()
     }
 
-    val playerData by battleModel.playerData.collectAsState()
     val selectArmyUiState by selectArmyModel.selectArmyUiState.collectAsState()
     val tutorialUiState by tutorialModel.tutorialUiState.collectAsState()
     val settingsUiState by settingsModel.settingUiState.collectAsState()
@@ -258,7 +257,7 @@ fun SelectArmyScreen(
                         battleModel.createArmyList(
                             selectArmyUiState = selectArmyModel.selectArmyUiState.value
                         )
-                        if(playerData.isOnline){
+                        if(selectArmyModel.isOnlineGame()){
                             onOnlineButtonClicked()
                         } else {
                             onOfflineButtonClicked()

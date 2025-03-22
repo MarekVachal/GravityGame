@@ -159,6 +159,7 @@ fun MainMenuScreen(
                 style = MaterialTheme.typography.titleMedium
             )
         }
+        /*
         OutlinedButton(
             onClick = {
                 onEmpireButtonClick()
@@ -175,6 +176,8 @@ fun MainMenuScreen(
                 style = MaterialTheme.typography.titleMedium
             )
         }
+
+         */
     }
 
     Row(

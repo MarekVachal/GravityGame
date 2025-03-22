@@ -1,10 +1,9 @@
 package com.marks2games.gravitygame.building_game.data.repository
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Source
 import com.marks2games.gravitygame.building_game.data.model.Empire
-import com.marks2games.gravitygame.building_game.data.model.EmpireResource
 import com.marks2games.gravitygame.building_game.data.model.Planet
 import com.marks2games.gravitygame.building_game.domain.repository.EmpireRepository
 import io.sentry.Sentry
@@ -45,9 +44,24 @@ class EmpireRepositoryImpl @Inject constructor(
         return Empire()
     }
 
+    override suspend fun getPlanet(planetId: Int): Planet {
+        if(user == null) return Planet()
+        val planetDoc = firestore
+            .collection("empires")
+            .document(user.uid)
+            .collection("planets")
+            .document(planetId.toString())
+            .get()
+            .await()
+
+        return planetDoc.data?.let { Planet.fromMap(it) }
+            ?: throw IllegalStateException ("Planet not found")
+    }
+
     override suspend fun updateEmpire(empire: Empire) {
         if (user == null) return
         try {
+            Log.d("Firebase", "Updating empire: ${empire.toMap()}")
             firestore
                 .collection("empires")
                 .document(user.uid)
@@ -63,63 +77,20 @@ class EmpireRepositoryImpl @Inject constructor(
                     .set(planet.toMap())
                     .await()
             }
+            Log.d("Firebase", "Empire updated successfully.")
         } catch (e: Exception) {
             Sentry.captureException(e)
         }
     }
 
-    override suspend fun getEmpireResource(resource: EmpireResource): Double {
-        if (user == null) return 0.0
-        return try {
-            val snapshot = firestore
-                .collection("empires")
-                .document(user.uid)
-                .get(Source.SERVER)
-                .await()
-            snapshot.getDouble(resource.name) ?: 0.0
-        } catch (e: Exception) {
-            Sentry.captureException(e)
-            0.0
-        }
-    }
-
-    override suspend fun updateEmpireResource(resource: EmpireResource, value: Double) {
+    override suspend fun updatePlanet(planet: Planet) {
         if(user == null) return
-        try{
-            firestore
-                .collection("empires")
-                .document(user.uid)
-                .update(resource.name, value)
-                .await()
-        } catch (e: Exception){
-            Sentry.captureException(e)
-        }
+        firestore
+            .collection("empires")
+            .document(user.uid)
+            .collection("planets")
+            .document(planet.id.toString())
+            .set(planet)
+            .await()
     }
-
-    override suspend fun saveTurn(value: Int) {
-        if(user == null) return
-        try{
-            firestore
-                .collection("empires")
-                .document(user.uid)
-                .update("savedTurns", value)
-                .await()
-        } catch (e: Exception){
-            Sentry.captureException(e)
-        }
-    }
-
-    override suspend fun updateUpdateTime(value: Long) {
-        if(user == null) return
-        try{
-            firestore
-                .collection("empires")
-                .document(user.uid)
-                .update("lastUpdated", value)
-                .await()
-        } catch (e: Exception){
-            Sentry.captureException(e)
-        }
-    }
-
 }

@@ -50,7 +50,6 @@ import com.marks2games.gravitygame.core.ui.utils.ProgressIndicator
 import com.marks2games.gravitygame.core.ui.utils.TimerCard
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import okhttp3.internal.wait
 
 @Composable
 fun BattleMapScreen(
@@ -65,7 +64,6 @@ fun BattleMapScreen(
     endOfGame: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val playerData by battleModel.playerData.collectAsState()
     val movementUiState by battleModel.movementUiState.collectAsState()
     val selectArmyUiState by selectArmyModel.selectArmyUiState.collectAsState()
     val locationListUiState by battleModel.locationListUiState.collectAsState()
@@ -94,13 +92,13 @@ fun BattleMapScreen(
         timerModel.stopTimer()
         battleModel.resetUiStateForNewBattle()
         battleModel.createArmyList(selectArmyUiState = selectArmyUiState)
-        if(!playerData.isOnline && locationListUiState.locationList[battleModel.findOpponentBaseLocation()].enemyShipList.isEmpty()){
+        if(!battleModel.getSharedPlayerModel().getIsOnline() && locationListUiState.locationList[battleModel.findOpponentBaseLocation()].enemyShipList.isEmpty()){
             val enemyShipList = createAiArmy(battleMap = battleModel.battleMap)
             battleModel.initializeEnemyShipList(enemyShipList = enemyShipList)
             battleModel.showTimer(false)
         }
-        if(playerData.isOnline){
-            battleModel.initializeBattleGameRepository(playerData).wait()
+        if(battleModel.getSharedPlayerModel().getIsOnline()){
+            battleModel.initializeBattleGameRepository()
             battleModel.updateLocations(
                 isSetup = true,
                 timerModel = timerModel,

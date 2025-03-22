@@ -1,13 +1,13 @@
 package com.marks2games.gravitygame.battle_game.ui.screens.matchmakingScreen
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.marks2games.gravitygame.core.domain.Notification
 import com.marks2games.gravitygame.battle_game.data.model.realtime_database.Room
-import com.marks2games.gravitygame.battle_game.data.model.PlayerData
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.Players
 import com.marks2games.gravitygame.battle_game.data.SharedPlayerDataRepository
 import com.marks2games.gravitygame.battle_game.ui.utils.timer.CoroutineTimer
@@ -16,7 +16,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -41,13 +40,15 @@ class MatchmakingViewModel @Inject constructor(
 
     private val _matchmakingUiStates = MutableStateFlow(MatchmakingUiStates())
     val matchmakingUiStates = _matchmakingUiStates.asStateFlow()
-    val playerData: StateFlow<PlayerData> = sharedPlayerModel.playerData
+
+    fun getRoomRef() = sharedPlayerModel.playerData.value.roomRef
 
     fun restoreGameSession(roomId: String){
         val roomRef = database.reference.child("rooms").child(roomId)
         roomRef.get().addOnSuccessListener { snapshot ->
             val room = snapshot.getValue(Room::class.java)
             if(room != null){
+                Log.d("Room ref", "onMatchFound: ${roomRef.key}")
                 sharedPlayerModel.updateRoomRef(roomRef)
                 room.gameType.toGameType()?.let { sharedPlayerModel.updateGameType(it) }
                 room.battleMap.toBattleMap()?.let { sharedPlayerModel.updateBattleMap(it) }
@@ -101,8 +102,8 @@ class MatchmakingViewModel @Inject constructor(
     }
 
     private fun findOrCreateRoom(context: Context) {
-        val battleMapEnum = playerData.value.battleMap
-        val gameType = playerData.value.gameType
+        val battleMapEnum = sharedPlayerModel.playerData.value.battleMap//playerData.value.battleMap
+        val gameType = sharedPlayerModel.playerData.value.gameType
         val parameters = "$battleMapEnum - $gameType"
         val roomsRef = database.reference.child("rooms")
         val playerId: String = auth.uid ?: return
@@ -190,7 +191,7 @@ class MatchmakingViewModel @Inject constructor(
     }
 
     fun handleRoomStateAfterNotification(context: Context) {
-        val roomRef = playerData.value.roomRef ?: return
+        val roomRef = sharedPlayerModel.playerData.value.roomRef ?: return
         roomRef.get()
             .addOnSuccessListener { snapshot ->
                 val room = snapshot.getValue(Room::class.java)
@@ -211,7 +212,7 @@ class MatchmakingViewModel @Inject constructor(
         playerId: String,
         context: Context
     ) {
-        val roomRef = playerData.value.roomRef ?: return
+        val roomRef = sharedPlayerModel.playerData.value.roomRef ?: return
         roomRef.get()
             .addOnSuccessListener { snapshot ->
                 val room = snapshot.getValue(Room::class.java)
@@ -293,7 +294,7 @@ class MatchmakingViewModel @Inject constructor(
         context: Context
     ) {
         val playerId = auth.uid ?: return
-        val roomRef = playerData.value.roomRef ?: return
+        val roomRef = sharedPlayerModel.playerData.value.roomRef ?: return
 
         roomRef.runTransaction(object : Transaction.Handler {
             override fun doTransaction(currentData: MutableData): Transaction.Result {
@@ -418,7 +419,7 @@ class MatchmakingViewModel @Inject constructor(
 
     fun cancelMatchmaking(){
         updateListener(null)
-        playerData.value.roomRef?.let { deleteRoom(it) }
+        sharedPlayerModel.playerData.value.roomRef?.let { deleteRoom(it) }
     }
 
     private fun startMatchmakingAfterFail(context: Context){
@@ -428,6 +429,7 @@ class MatchmakingViewModel @Inject constructor(
     }
 
     private fun onMatchFound(roomRef: DatabaseReference){
+        Log.d("Room ref", "onMatchFound: ${roomRef.key}")
         sharedPlayerModel.updateRoomRef(roomRef)
         opponentFound(true)
     }

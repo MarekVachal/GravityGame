@@ -6,6 +6,8 @@ import com.marks2games.gravitygame.battle_game.data.model.enum_class.BattleMapEn
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.BattleResultEnum
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.GameType
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.Players
+import com.marks2games.gravitygame.battle_game.ui.maps.BattleMap
+import com.marks2games.gravitygame.battle_game.ui.maps.TinyMap
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +26,24 @@ class SharedPlayerDataRepository @Inject constructor() {
                 opponent = opponent
             )
         }
+    }
+
+    fun getBattleMap(): BattleMap{
+        return when (playerData.value.battleMap) {
+            BattleMapEnum.TINY -> TinyMap()
+        }
+    }
+
+    fun getPlayer(): Players {
+        return playerData.value.player
+    }
+
+    fun getRoomRef(): DatabaseReference? {
+        return playerData.value.roomRef
+    }
+
+    fun getIsOnline(): Boolean {
+        return playerData.value.isOnline
     }
 
     fun updateRoomRef(roomRef: DatabaseReference?){

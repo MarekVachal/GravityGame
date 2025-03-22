@@ -26,7 +26,6 @@ import com.marks2games.gravitygame.core.data.model.Ship
 import com.marks2games.gravitygame.core.data.model.enum_class.ShipType
 import com.marks2games.gravitygame.core.data.model.Warper
 import com.marks2games.gravitygame.battle_game.ui.utils.timer.TimerViewModel
-import com.marks2games.gravitygame.battle_game.data.model.PlayerData
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.Players
 import com.marks2games.gravitygame.battle_game.domain.calculateBattle
 import com.marks2games.gravitygame.battle_game.data.model.MovementRecord
@@ -55,12 +54,17 @@ class BattleViewModel @Inject constructor(
     val locationListUiState: StateFlow<LocationList> = _locationListUiState.asStateFlow()
     private val _movementRecord = MutableStateFlow(MovementRecord())
     val movementRecord: StateFlow<MovementRecord> = _movementRecord.asStateFlow()
-    val playerData: StateFlow<PlayerData> = sharedPlayerModel.playerData
-    var battleMap: BattleMap = when(playerData.value.battleMap){
-        BattleMapEnum.TINY -> TinyMap()
-    }
+    var battleMap: BattleMap = sharedPlayerModel.getBattleMap()
     private val mctsIterations = 500
     private val difficulty = 5
+
+    fun getSharedPlayerModel(): SharedPlayerDataRepository {
+        return sharedPlayerModel
+    }
+
+    fun getPlayer(): Players {
+        return sharedPlayerModel.getPlayer()
+    }
 
     fun showTimer(toShow: Boolean){
         _movementUiState.update { state ->
@@ -79,10 +83,10 @@ class BattleViewModel @Inject constructor(
         }
     }
 
-    fun initializeBattleGameRepository(playerData: PlayerData){
+    fun initializeBattleGameRepository(){
         _movementUiState.update { state ->
             state.copy(
-                battleGameRepository = battleGameRepositoryFactory.create(playerData)
+                battleGameRepository = battleGameRepositoryFactory.create()
             )
         }
     }
@@ -372,24 +376,28 @@ class BattleViewModel @Inject constructor(
 
     fun createArmyList(selectArmyUiState: SelectArmyUiState) {
         val newLocationList = locationListUiState.value.locationList
-        newLocationList.forEach { it.myShipList.clear() }
-        newLocationList.forEach { it.enemyShipList.clear() }
-        var indexNumber = 0
+        newLocationList.forEach { location ->
+            location.myShipList.clear()
+            location.enemyShipList.clear()
+        }
+
         val startingLocationIndex = findPlayerBaseLocation()
         val location = newLocationList[startingLocationIndex]
-        for (i in 1..selectArmyUiState.numberCruisers) {
-            location.myShipList.add(Cruiser(indexNumber))
-            indexNumber++
-        }
-        for (i in 1..selectArmyUiState.numberDestroyers) {
-            location.myShipList.add(Destroyer(indexNumber))
-            indexNumber++
-        }
-        for (i in 1..selectArmyUiState.numberGhosts) {
-            location.myShipList.add(Ghost(indexNumber))
-            indexNumber++
+
+        val shipTypes = listOf(
+            selectArmyUiState.numberCruisers to ::Cruiser,
+            selectArmyUiState.numberDestroyers to ::Destroyer,
+            selectArmyUiState.numberGhosts to ::Ghost
+        )
+
+        var indexNumber = 0
+        shipTypes.forEach { (count, constructor) ->
+            repeat(count) {
+                location.myShipList.add(constructor(indexNumber++))
+            }
         }
         location.myShipList.add(Warper(indexNumber))
+
         location.myShipList.forEach { ship ->
             ship.currentPosition = startingLocationIndex
             ship.startingPosition = startingLocationIndex
@@ -584,7 +592,7 @@ class BattleViewModel @Inject constructor(
             randomMoveForFirstTurn()
         }
         turnCounter()
-        if (playerData.value.isOnline) {
+        if (sharedPlayerModel.getIsOnline()) {
             showProgressIndicator(
                 toShow = true,
                 progressIndicatorType = ProgressIndicatorType.WAITING_FOR_MOVE
@@ -1248,11 +1256,11 @@ class BattleViewModel @Inject constructor(
             locationListUiState.value.locationList[it].myShipList.any { ship ->
                 ship.type == ShipType.WARPER && ship.currentPosition == location
             }
-        } ?: false
+        } == true
     }
 
     private fun checkArmyReach(position: Int?): Boolean {
-        return position?.let { locationListUiState.value.locationList[it].accessible } ?: false
+        return position?.let { locationListUiState.value.locationList[it].accessible } == true
     }
 
     private fun cleanHasMoved() {
@@ -1285,14 +1293,14 @@ class BattleViewModel @Inject constructor(
         return location?.let {
             val locationInstance = locationListUiState.value.locationList[it]
             locationInstance.canAddMoreShips(battleMap.shipLimitOnPosition)
-        } ?: false
+        } == true
     }
 
     private fun hasExceededShipLimit(location: Int?): Boolean {
         return location?.let {
             val locationInstance = locationListUiState.value.locationList[it]
             locationInstance.hasExceededShipLimit(battleMap.shipLimitOnPosition)
-        } ?: false
+        } == true
     }
 
     private fun cleanMovingShip() {
@@ -1378,7 +1386,7 @@ class BattleViewModel @Inject constructor(
     }
 
     private fun randomMoveForFirstTurn() {
-        val startingIndex = if (playerData.value.player == Players.PLAYER1) {
+        val startingIndex = if (sharedPlayerModel.getPlayer() == Players.PLAYER1) {
             battleMap.player1Base
         } else {
             battleMap.player2Base
