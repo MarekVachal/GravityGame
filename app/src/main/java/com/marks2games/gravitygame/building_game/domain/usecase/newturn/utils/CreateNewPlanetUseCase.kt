@@ -1,7 +1,11 @@
 package com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils
 
 import com.marks2games.gravitygame.building_game.data.model.Empire
+import com.marks2games.gravitygame.building_game.data.model.LargePlanet
+import com.marks2games.gravitygame.building_game.data.model.MediumPlanet
 import com.marks2games.gravitygame.building_game.data.model.Planet
+import com.marks2games.gravitygame.building_game.data.model.SmallPlanet
+import com.marks2games.gravitygame.building_game.domain.usecase.utils.GeneratePlanetIdUseCase
 import javax.inject.Inject
 
 /**
@@ -13,26 +17,29 @@ import javax.inject.Inject
  * @property calculatePlanetCost An instance of [CalculatePlanetCost] to determine the cost of creating a new planet.
  */
 class CreateNewPlanetUseCase @Inject constructor(
-    private val calculatePlanetCost: CalculatePlanetCost
+    private val calculatePlanetCost: CalculatePlanetCost,
+    private val generatePlanetIdUseCase: GeneratePlanetIdUseCase,
+    private val calculateBorderForPlanetGrowth: CalculateBorderForPlanetGrowth
 ) {
-    /**
-     *  This function simulates the process of acquiring a new planet by an empire.
-     *  It calculates the cost of the new planet based on the empire's current planet count,
-     *  deducts the cost from the empire's expeditions, and adds the new planet to the empire's list of planets.
-     *
-     * @param empire The [com.marks2games.gravitygame.building_game.data.model.Empire] object representing the empire that is acquiring a new planet.
-     * @return A [Pair] containing:
-     *         - A [List] of [Planet] representing the updated list of planets after acquiring the new planet.
-     *         - An [Int] representing the updated number of expeditions remaining after the purchase.
-     */
     operator fun invoke(empire: Empire): Pair<List<Planet>, Int>{
         val planetCost = calculatePlanetCost.invoke(empire.planetsCount)
-        val planetId = empire.planetsCount -1
+        val planetId = generatePlanetIdUseCase.invoke(empire.planets)
         val updatedExpeditions = empire.expeditions - planetCost
-        val newPlanet = Planet(id = planetId, name = "Planet ${empire.planetsCount}")
+        val planetType = when(empire.lastGetPlanet){
+            SmallPlanet -> MediumPlanet
+            MediumPlanet -> LargePlanet
+            LargePlanet -> SmallPlanet
+            else -> SmallPlanet
+        }
+        val newPlanet = Planet(
+            id = planetId,
+            name = "Planet ${empire.planetsCount}",
+            type = planetType,
+            planetGrowthBorder = calculateBorderForPlanetGrowth.invoke(planetType.startingLevel)
+        )
         val updatedPlanets = empire.planets.toMutableList().apply {
             add(newPlanet)
         }
-        return Pair(updatedPlanets, updatedExpeditions)
+        return Pair(updatedPlanets.toList(), updatedExpeditions)
     }
 }

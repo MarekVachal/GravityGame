@@ -6,7 +6,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.marks2games.gravitygame.building_game.ui.screen.EmpireOverview
 import com.marks2games.gravitygame.building_game.ui.screen.TradeScreen
-import com.marks2games.gravitygame.building_game.ui.screen.TransportScreen
 import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TradeViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TransportViewModel
@@ -24,21 +23,13 @@ fun NavGraphBuilder.builderNavGraph(
         composable(NavRoute.EmpireOverview.route){
             EmpireOverview(
                 empireModel = empireViewModel,
-                onBackButtonClicked = { navController.navigate(Destinations.MAINMENU.name) }
-            )
-        }
-        composable(NavRoute.TransportScreen.route){
-            TransportScreen(
-                planets = empireViewModel.getPlanetsState(),
                 transportModel = transportModel,
-                updatePlanets = empireViewModel::updatePlanets
+                onBackButtonClicked = { navController.navigate(Destinations.MAINMENU.name) }
             )
         }
         composable(NavRoute.TradeScreen.route){
             TradeScreen(
-                empire = empireViewModel.getEmpireState(),
                 tradeModel = tradeModel,
-                updateEmpire = empireViewModel::updateEmpire
             )
         }
     }

@@ -1,8 +1,10 @@
 package com.marks2games.gravitygame.building_game.data.model
 
 import io.sentry.Sentry
+import java.util.UUID
 
 sealed class Action {
+    abstract val id: String
     abstract val planetId: Int
     abstract val type: ActionEnum
     abstract fun toMap(): Map<String, Any>
@@ -11,10 +13,12 @@ sealed class Action {
         data class ExpeditionProduction(
             val value: Int,
             override val planetId: Int,
+            override val id: String = UUID.randomUUID().toString(),
             override val type: ActionEnum = ActionEnum.EXPEDITIONS_ACTION
         ) : SetProduction() {
             override fun toMap(): Map<String, Any> = mapOf(
                 "type" to type.name,
+                "id" to id,
                 "value" to value,
                 "planetId" to planetId
             )
@@ -22,10 +26,12 @@ sealed class Action {
         data class ProgressProduction(
             val value: Int,
             override val planetId: Int,
+            override val id: String = UUID.randomUUID().toString(),
             override val type: ActionEnum = ActionEnum.PROGRESS_ACTION
         ) : SetProduction() {
             override fun toMap(): Map<String, Any> = mapOf(
                 "type" to type.name,
+                "id" to id,
                 "value" to value,
                 "planetId" to planetId
             )
@@ -33,10 +39,12 @@ sealed class Action {
         data class ArmyProduction(
             val value: Int,
             override val planetId: Int,
+            override val id: String = UUID.randomUUID().toString(),
             override val type: ActionEnum = ActionEnum.ARMY_ACTION
         ) : SetProduction() {
             override fun toMap(): Map<String, Any> = mapOf(
                 "type" to type.name,
+                "id" to id,
                 "value" to value,
                 "planetId" to planetId
             )
@@ -44,10 +52,12 @@ sealed class Action {
         data class ResearchProduction(
             val value: Int,
             override val planetId: Int,
+            override val id: String = UUID.randomUUID().toString(),
             override val type: ActionEnum = ActionEnum.RESEARCH_ACTION
         ) : SetProduction() {
             override fun toMap(): Map<String, Any> = mapOf(
                 "type" to type.name,
+                "id" to id,
                 "value" to value,
                 "planetId" to planetId
             )
@@ -55,10 +65,12 @@ sealed class Action {
         data class InfrastructureProduction(
             val value: InfrastructureSetting,
             override val planetId: Int,
+            override val id: String = UUID.randomUUID().toString(),
             override val type: ActionEnum = ActionEnum.INFRA_ACTION
         ) : SetProduction() {
             override fun toMap(): Map<String, Any> = mapOf(
                 "type" to type.name,
+                "id" to id,
                 "value" to value.name,
                 "planetId" to planetId
             )
@@ -66,10 +78,12 @@ sealed class Action {
         data class RocketMaterialsProduction(
             val value: RocketMaterialsSetting,
             override val planetId: Int,
+            override val id: String = UUID.randomUUID().toString(),
             override val type: ActionEnum = ActionEnum.ROCKET_MATERIALS_ACTION
         ) : SetProduction(){
             override fun toMap(): Map<String, Any> = mapOf(
                 "type" to type.name,
+                "id" to id,
                 "value" to value.name,
                 "planetId" to planetId
             )
@@ -79,17 +93,20 @@ sealed class Action {
         abstract val districtId: Int
         data class BuildDistrict(
             override val planetId: Int,
+            override val id: String = UUID.randomUUID().toString(),
             override val districtId: Int,
             val district: DistrictEnum,
             override val type: ActionEnum = ActionEnum.BUILD_DISTRICT_ACTION
         ) : DistrictAction()
         data class DestroyDistrict(
             override val planetId: Int,
+            override val id: String = UUID.randomUUID().toString(),
             override val districtId: Int,
             override val type: ActionEnum = ActionEnum.DESTROY_DISTRICT_ACTION
         ) : DistrictAction()
         data class ChangeDistrictMode(
             override val planetId: Int,
+            override val id: String = UUID.randomUUID().toString(),
             override val districtId: Int,
             val districtType: DistrictEnum,
             val newMode: Enum<*>,
@@ -97,6 +114,7 @@ sealed class Action {
         ) : DistrictAction()
         override fun toMap(): Map<String, Any> = mapOf(
             "type" to type.name,
+            "id" to id,
             "planetId" to planetId,
             "districtId" to districtId,
             *when(this){
@@ -111,22 +129,26 @@ sealed class Action {
     }
     data class TradeAction(
         override val planetId: Int,
+        override val id: String = UUID.randomUUID().toString(),
         val trade: Trade,
         override val type: ActionEnum = ActionEnum.TRADE_ACTION
     ) : Action() {
         override fun toMap(): Map<String, Any> = mapOf(
             "type" to type.name,
             "planetId" to planetId,
+            "id" to id,
             "trade" to trade.toMap()
         )
     }
     data class TransportAction(
         override val planetId: Int,
+        override val id: String = UUID.randomUUID().toString(),
         val transport: Transport,
         override val type: ActionEnum = ActionEnum.TRANSPORT_ACTION
     ) : Action() {
         override fun toMap(): Map<String, Any> = mapOf(
             "type" to type.name,
+            "id" to id,
             "planetId" to planetId,
             "transport" to transport.toMap()
         )
@@ -136,19 +158,67 @@ sealed class Action {
         fun fromMap(map: Map<String, Any>): Action {
             val type = (map["type"] as String).toActionEnum() ?: throw IllegalArgumentException("Unknown action type.")
             val planetId = (map["planetId"] as Long).toInt()
+            val id = map["id"] as? String ?: UUID.randomUUID().toString()
             @Suppress("UNCHECKED_CAST")
             return when (type) {
-                ActionEnum.EXPEDITIONS_ACTION -> SetProduction.ExpeditionProduction((map["value"] as Long).toInt(), planetId)
-                ActionEnum.PROGRESS_ACTION-> SetProduction.ProgressProduction((map["value"] as Long).toInt(), planetId)
-                ActionEnum.ARMY_ACTION -> SetProduction.ArmyProduction((map["value"] as Long).toInt(), planetId)
-                ActionEnum.RESEARCH_ACTION -> SetProduction.ResearchProduction((map["value"] as Long).toInt(), planetId)
-                ActionEnum.INFRA_ACTION -> SetProduction.InfrastructureProduction((map["value"] as String).toInfrastructureSettingEnum()?: throw IllegalArgumentException("Unknown infrastructure setting."), planetId)
-                ActionEnum.ROCKET_MATERIALS_ACTION -> SetProduction.RocketMaterialsProduction((map["value"] as String).toRocketMaterialsSettingEnum()?: throw IllegalArgumentException("Unknown rocket materials setting."), planetId)
-                ActionEnum.BUILD_DISTRICT_ACTION -> DistrictAction.BuildDistrict(planetId, (map["districtId"] as Long).toInt(), (map["district"] as String).toDistrictEnum()?: throw IllegalArgumentException("Unknown district type."))
-                ActionEnum.DESTROY_DISTRICT_ACTION -> DistrictAction.DestroyDistrict(planetId, (map["districtId"] as Long).toInt())
-                ActionEnum.CHANGE_MODE_ACTION -> DistrictAction.ChangeDistrictMode(planetId, (map["districtId"] as Long).toInt(), (map["districtType"] as String).toDistrictEnum()?: throw IllegalArgumentException("Unknown district type."), (map["newMode"] as String).toDistrictModeEnum()?: throw IllegalArgumentException("Unknown district mode."))
-                ActionEnum.TRADE_ACTION -> TradeAction(planetId, Trade.fromMap(map["trade"] as Map<String, Any>))
-                ActionEnum.TRANSPORT_ACTION -> TransportAction(planetId, Transport.fromMap(map["transport"] as Map<String, Any>))
+                ActionEnum.EXPEDITIONS_ACTION -> SetProduction.ExpeditionProduction(
+                    value = (map["value"] as Long).toInt(),
+                    planetId = planetId,
+                    id = id
+                )
+                ActionEnum.PROGRESS_ACTION-> SetProduction.ProgressProduction(
+                    value = (map["value"] as Long).toInt(),
+                    planetId = planetId,
+                    id = id
+                )
+                ActionEnum.ARMY_ACTION -> SetProduction.ArmyProduction(
+                    value = (map["value"] as Long).toInt(),
+                    planetId = planetId,
+                    id = id
+                )
+                ActionEnum.RESEARCH_ACTION -> SetProduction.ResearchProduction(
+                    value = (map["value"] as Long).toInt(),
+                    planetId = planetId,
+                    id = id
+                )
+                ActionEnum.INFRA_ACTION -> SetProduction.InfrastructureProduction(
+                    value = (map["value"] as String).toInfrastructureSettingEnum()?: throw IllegalArgumentException("Unknown infrastructure setting."),
+                    planetId = planetId,
+                    id = id
+                )
+                ActionEnum.ROCKET_MATERIALS_ACTION -> SetProduction.RocketMaterialsProduction(
+                    value = (map["value"] as String).toRocketMaterialsSettingEnum()?: throw IllegalArgumentException("Unknown rocket materials setting."),
+                    planetId = planetId,
+                    id = id
+                )
+                ActionEnum.BUILD_DISTRICT_ACTION -> DistrictAction.BuildDistrict(
+                    planetId = planetId,
+                    districtId = (map["districtId"] as Long).toInt(),
+                    district = (map["district"] as String).toDistrictEnum()?: throw IllegalArgumentException("Unknown district type."),
+                    id = id
+                )
+                ActionEnum.DESTROY_DISTRICT_ACTION -> DistrictAction.DestroyDistrict(
+                    planetId = planetId,
+                    districtId = (map["districtId"] as Long).toInt(),
+                    id = id
+                )
+                ActionEnum.CHANGE_MODE_ACTION -> DistrictAction.ChangeDistrictMode(
+                    planetId = planetId,
+                    districtId = (map["districtId"] as Long).toInt(),
+                    districtType = (map["districtType"] as String).toDistrictEnum()?: throw IllegalArgumentException("Unknown district type."),
+                    newMode = (map["newMode"] as String).toDistrictModeEnum()?: throw IllegalArgumentException("Unknown district mode."),
+                    id = id
+                )
+                ActionEnum.TRADE_ACTION -> TradeAction(
+                    planetId = planetId,
+                    trade = Trade.fromMap(map["trade"] as Map<String, Any>),
+                    id = id
+                )
+                ActionEnum.TRANSPORT_ACTION -> TransportAction(
+                    planetId = planetId,
+                    transport = Transport.fromMap(map["transport"] as Map<String, Any>),
+                    id = id
+                )
             }
         }
     }

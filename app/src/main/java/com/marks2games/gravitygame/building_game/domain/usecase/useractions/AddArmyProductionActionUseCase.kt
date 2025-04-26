@@ -6,6 +6,8 @@ import javax.inject.Inject
 class AddArmyProductionActionUseCase @Inject constructor() {
     operator fun invoke(actions: List<Action>, planetId: Int, value: Int): List<Action> {
         val action = Action.SetProduction.ArmyProduction(value, planetId)
-        return actions + action
+        val newActions = actions.toMutableList()
+        newActions.add(action)
+        return newActions.toList()
     }
 }

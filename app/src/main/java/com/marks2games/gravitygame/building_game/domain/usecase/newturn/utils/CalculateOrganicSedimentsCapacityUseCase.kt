@@ -2,6 +2,7 @@ package com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils
 
 import com.marks2games.gravitygame.building_game.data.model.DistrictEnum
 import com.marks2games.gravitygame.building_game.data.model.Planet
+import com.marks2games.gravitygame.building_game.data.model.Resource
 import javax.inject.Inject
 
 /**
@@ -23,9 +24,7 @@ class CalculateOrganicSedimentsCapacityUseCase @Inject constructor() {
      * of empty or capitol districts multiplied by 10.
      */
     operator fun invoke(planet: Planet): Float {
-        val districts = planet.districts.count {
-            it.type == DistrictEnum.EMPTY || it.type == DistrictEnum.CAPITOL
-        }
-        return districts.toFloat() * 10f
+        return planet.districts
+            .sumOf { it.getCapacities().capacity[Resource.ORGANIC_SEDIMENTS] ?: 0 }.toFloat()
     }
 }

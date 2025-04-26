@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 class GetIdForNewDistrictUseCase @Inject constructor() {
     operator fun invoke(districts: Int): Int {
-        return districts - 1
+        return districts
 
     }
 }

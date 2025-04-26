@@ -44,6 +44,10 @@ class MainMenuViewModel @Inject constructor(
         }
     }
 
+    fun isSignIn(): Boolean{
+        return auth.currentUser != null
+    }
+
     fun shouldSignIn(){
         viewModelScope.launch {
             val hasSignIn = getHasSignInUseCase.invoke()

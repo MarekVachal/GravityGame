@@ -12,6 +12,7 @@ sealed class District{
     abstract fun toMap(): Map<String, Any>
     abstract fun copyWithUpdatedWorking(isWorking: Boolean): District
     abstract fun generateResources(): ResourceChange
+    abstract fun getCapacities(): DistrictCapacities
 
     data class Capitol(
         override val nameId: Int = R.string.capitolDistrictName,
@@ -35,8 +36,17 @@ sealed class District{
                 )
             )
         }
+        override fun getCapacities(): DistrictCapacities {
+            return DistrictCapacities(
+                capacity = mapOf(
+                    Resource.BIOMASS to 100,
+                    Resource.ORGANIC_SEDIMENTS to 100,
+                    Resource.METAL to 100,
+                    Resource.ROCKET_MATERIALS to 100,
+                )
+            )
+        }
     }
-
 
     data class Prospectors(
         override val nameId: Int = R.string.prospectorsDistrictName,
@@ -56,12 +66,20 @@ sealed class District{
 
             return when (mode) {
                 ProspectorsMode.METAL -> ResourceChange(
-                    produced = mapOf(Resource.METAL to 10) //From 10 Planet metals
+                    produced = mapOf(Resource.METAL to 20) //From 20 Planet metals
                 )
                 ProspectorsMode.ORGANIC_SEDIMENTS -> ResourceChange(
                     produced = mapOf(Resource.ORGANIC_SEDIMENTS to 10) //From 10 Planet OS
                 )
             }
+        }
+        override fun getCapacities(): DistrictCapacities {
+            return DistrictCapacities(
+                capacity = mapOf(
+                    Resource.METAL to 100,
+                    Resource.ORGANIC_SEDIMENTS to 100
+                )
+            )
         }
     }
 
@@ -77,7 +95,44 @@ sealed class District{
         )
         override fun copyWithUpdatedWorking(isWorking: Boolean) = copy(isWorking = isWorking)
         override fun generateResources(): ResourceChange {
-            TODO("Not yet implemented")
+            return ResourceChange(
+                produced = emptyMap()
+            )
+        }
+        override fun getCapacities(): DistrictCapacities {
+            return DistrictCapacities(
+                capacity = mapOf(
+                    Resource.BIOMASS to 100
+                )
+            )
+        }
+    }
+
+    data class InConstruction(
+        override val nameId: Int = 1,
+        override val districtId: Int,
+        override val type: DistrictEnum = DistrictEnum.IN_CONSTRUCTION,
+        override val isWorking: Boolean = true,
+        val infra: Int = 0,
+        val buildingDistrict: DistrictEnum = DistrictEnum.EMPTY
+    ): District(){
+        override fun toMap() = mapOf(
+            "type" to type.name,
+            "infra" to infra,
+            "buildingDistrict" to buildingDistrict.name,
+            "districtId" to districtId
+        )
+
+        override fun copyWithUpdatedWorking(isWorking: Boolean) = copy(isWorking = isWorking)
+        override fun generateResources(): ResourceChange {
+            return ResourceChange(
+                produced = emptyMap()
+            )
+        }
+        override fun getCapacities(): DistrictCapacities {
+            return DistrictCapacities(
+                capacity = emptyMap()
+            )
         }
     }
 
@@ -104,11 +159,22 @@ sealed class District{
                 IndustrialMode.ROCKET_MATERIALS -> ResourceChange(
                     produced = mapOf(Resource.ROCKET_MATERIALS to 10),
                     consumed = mapOf(
-                        Resource.BIOMASS to 20,
+                        Resource.METAL to 20,
                         Resource.ORGANIC_SEDIMENTS to 20
                     )
                 )
+                IndustrialMode.METAL -> ResourceChange(
+                    produced = mapOf(Resource.METAL to 10),
+                    consumed = mapOf(Resource.ORGANIC_SEDIMENTS to 20)
+                )
             }
+        }
+        override fun getCapacities(): DistrictCapacities {
+            return DistrictCapacities(
+                capacity = mapOf(
+                    Resource.ROCKET_MATERIALS to 100
+                )
+            )
         }
     }
 
@@ -135,13 +201,18 @@ sealed class District{
                 )
             )
         }
+        override fun getCapacities(): DistrictCapacities {
+            return DistrictCapacities(
+                capacity = emptyMap()
+            )
+        }
     }
 
     data class UrbanCenter(
         override val nameId: Int = R.string.urbanCenterDistrictName,
         override val districtId: Int,
         override val type: DistrictEnum = DistrictEnum.URBAN_CENTER,
-        val mode: UrbanCenterMode = UrbanCenterMode.INFLUENCE,
+        val mode: UrbanCenterMode = UrbanCenterMode.RESEARCH,
         override val isWorking: Boolean = true
     ) : District() {
         override fun toMap() = mapOf(
@@ -162,6 +233,11 @@ sealed class District{
                     consumed = mapOf(Resource.BIOMASS to 10)
                 )
             }
+        }
+        override fun getCapacities(): DistrictCapacities {
+            return DistrictCapacities(
+                capacity = emptyMap()
+            )
         }
     }
 
@@ -189,13 +265,18 @@ sealed class District{
                         ?: UrbanCenterMode.INFLUENCE,
                     districtId = districtId
                 )
+                DistrictEnum.IN_CONSTRUCTION -> InConstruction(
+                    districtId = districtId,
+                    infra = (map["infra"] as? String?)?.toInt() ?: 0,
+                    buildingDistrict = (map["buildingDistrict"] as? String?)?.toDistrictEnum()?: DistrictEnum.EMPTY
+                )
             }
         }
     }
 }
 
 enum class ProspectorsMode {METAL, ORGANIC_SEDIMENTS}
-enum class IndustrialMode {INFRASTRUCTURE, ROCKET_MATERIALS}
+enum class IndustrialMode {INFRASTRUCTURE, ROCKET_MATERIALS, METAL}
 enum class UrbanCenterMode {INFLUENCE, RESEARCH}
 enum class DistrictEnum {
     CAPITOL,
@@ -203,10 +284,11 @@ enum class DistrictEnum {
     EMPTY,
     INDUSTRIAL,
     EXPEDITION_PLATFORM,
-    URBAN_CENTER
+    URBAN_CENTER,
+    IN_CONSTRUCTION
 }
 enum class RocketMaterialsSetting {NOTHING, MAXIMUM, USAGE}
-enum class InfrastructureSetting {MAXIMUM, USAGE}
+enum class InfrastructureSetting {NOTHING, MAXIMUM, USAGE}
 
 fun String.toDistrictEnum(): DistrictEnum? {
     return try{
@@ -220,6 +302,10 @@ fun String.toDistrictEnum(): DistrictEnum? {
 data class ResourceChange(
     val produced: Map<Resource, Int> = emptyMap(),
     val consumed: Map<Resource, Int> = emptyMap()
+)
+
+data class DistrictCapacities(
+    val capacity: Map<Resource, Int> = emptyMap(),
 )
 
 inline fun <reified T : Enum<T>> String.toEnumOrNull(): T? {

@@ -222,6 +222,19 @@
     <string name="fleet">Fleet</string>
     <string name="turnsBank">Turns</string>
     <string name="biomass">Biomass</string>
+    <string name="writeNumber">0</string>
+    <string name="setProduction">Set production</string>
+    <string name="transport">Transport</string>
+    <string name="destroyDistrict">Destroy district</string>
+    <string name="buildDistrict">Build district</string>
+    <string name="progress">Progress</string>
+    <string name="army">Army</string>
+    <string name="actionAdded">Action added to your plan</string>
+    <string name="metal">Metal</string>
+    <string name="organic_sediments">Organic sediments</string>
+    <string name="infrastructure">Infrastructure</string>
+    <string name="rocket_materials">Rocket materials</string>
+    <string name="influence">Influence</string>
 
 
 </resources>

@@ -1,7 +1,10 @@
 package com.marks2games.gravitygame.building_game.data.model
 
 data class EmpireResources(
-    val research: Int = 0,
-    val expeditions: Int = 0,
-    val tradepower: Int = 0
+    val resources: Map<Resource, Int> = mapOf(
+        Resource.RESEARCH to 0,
+        Resource.CREDITS to 0,
+        Resource.EXPEDITIONS to 0,
+        Resource.TRADE_POWER to 0
+    )
 )

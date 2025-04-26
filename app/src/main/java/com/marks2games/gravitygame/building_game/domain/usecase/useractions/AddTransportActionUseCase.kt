@@ -6,7 +6,9 @@ import javax.inject.Inject
 
 class AddTransportActionUseCase @Inject constructor()  {
     operator fun invoke(actions: List<Action>, planetId: Int, transport: Transport): List<Action> {
-        val action = Action.TransportAction(planetId, transport)
-        return actions + action
+        val action = Action.TransportAction(planetId = planetId, transport = transport)
+        val newActions = actions.toMutableList()
+        newActions.add(action)
+        return newActions.toList()
     }
 }

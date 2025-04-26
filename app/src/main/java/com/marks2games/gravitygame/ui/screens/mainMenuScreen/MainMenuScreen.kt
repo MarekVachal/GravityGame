@@ -159,10 +159,18 @@ fun MainMenuScreen(
                 style = MaterialTheme.typography.titleMedium
             )
         }
-        /*
+
+        Spacer(
+            modifier = modifier.size(8.dp)
+        )
+
         OutlinedButton(
             onClick = {
-                onEmpireButtonClick()
+                if(mainMenuModel.isSignIn()){
+                    onEmpireButtonClick()
+                } else {
+                    mainMenuModel.showSignInDialog(true)
+                }
             },
             modifier = modifier,
             colors = ButtonDefaults.outlinedButtonColors(
@@ -176,8 +184,6 @@ fun MainMenuScreen(
                 style = MaterialTheme.typography.titleMedium
             )
         }
-
-         */
     }
 
     Row(

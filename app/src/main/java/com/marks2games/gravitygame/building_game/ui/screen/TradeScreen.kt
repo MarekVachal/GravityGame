@@ -7,13 +7,15 @@ import com.marks2games.gravitygame.building_game.ui.viewmodel.TradeViewModel
 
 @Composable
 fun TradeScreen(
-    empire: Empire,
+    //empire: Empire,
     tradeModel: TradeViewModel,
-    updateEmpire: (Empire) -> Unit
+    //updateEmpire: (Empire) -> Unit
 ){
-
+/*
     Button(
         onClick = {tradeModel.trade(empire, updateEmpire)}
     ) { }
+
+ */
 
 }

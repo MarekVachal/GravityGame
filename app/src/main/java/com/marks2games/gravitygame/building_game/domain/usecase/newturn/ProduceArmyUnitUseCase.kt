@@ -1,5 +1,6 @@
 package com.marks2games.gravitygame.building_game.domain.usecase.newturn
 
+import android.util.Log
 import com.marks2games.gravitygame.building_game.data.model.District
 import com.marks2games.gravitygame.building_game.data.model.Planet
 import com.marks2games.gravitygame.building_game.data.model.Resource
@@ -47,8 +48,16 @@ class ProduceArmyUnitUseCase @Inject constructor() {
             .firstOrNull() ?: return Pair(planet.army, planet.rocketMaterials)
         val productionRate = district.generateResources().produced[Resource.ARMY] ?: 1
         val consumptionRate = district.generateResources().consumed[Resource.ARMY] ?: 1
-        val maxPossibleProduction = planet.rocketMaterials / consumptionRate
-        val availableProduction = min(maxPossibleProduction * productionRate, planet.armyConstructionSetting)
-        return Pair(availableProduction, planet.rocketMaterials - (maxPossibleProduction * consumptionRate))
+        val maxPossibleProductionOnResource = planet.rocketMaterials / consumptionRate * productionRate
+        Log.d("ProduceArmyUnitUseCase", "maxPossibleProductionOnResource: $maxPossibleProductionOnResource")
+        val maxPossibleProduction = min(maxPossibleProductionOnResource, planet.rocketMaterials)
+        Log.d("ProduceArmyUnitUseCase", "maxPossibleProduction: $maxPossibleProduction")
+        val availableProduction = min(maxPossibleProduction, planet.armyConstructionSetting)
+        Log.d("ProduceArmyUnitUseCase", "availableProduction: $availableProduction")
+        val newArmy = planet.army + availableProduction
+        Log.d("ProduceArmyUnitUseCase", "newArmy: $newArmy")
+        val newRocketMaterials = planet.rocketMaterials - availableProduction
+        Log.d("ProduceArmyUnitUseCase", "newRocketMaterials: $newRocketMaterials")
+        return Pair(planet.army + availableProduction, planet.rocketMaterials - availableProduction)
     }
 }

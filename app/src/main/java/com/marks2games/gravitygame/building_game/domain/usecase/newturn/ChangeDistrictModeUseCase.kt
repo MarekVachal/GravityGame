@@ -15,14 +15,14 @@ class ChangeDistrictModeUseCase @Inject constructor() {
         planet: Planet,
         districtId: Int,
         districtForChange: DistrictEnum,
-        newMode: Enum<*>
+        newMode: Enum<*>,
+        continueOnError: Boolean = false
     ): ChangeDistrictModeResult {
-        var infrastructure = planet.infrastructure
+        var infrastructure = planet.infrastructure - CHANGE_DISTRICT_MODE_COST
         val updatedDistricts = planet.districts.toMutableList()
         val index = updatedDistricts.indexOfFirst { district ->
             district.districtId == districtId && district.type == districtForChange
         }
-        if(infrastructure < CHANGE_DISTRICT_MODE_COST) return ChangeDistrictModeResult.Error.InsufficientInfrastructure
         updatedDistricts[index] = when (val district = updatedDistricts[index]) {
             is District.Prospectors -> district.copy(
                 mode = newMode as ProspectorsMode,
@@ -38,7 +38,14 @@ class ChangeDistrictModeUseCase @Inject constructor() {
             )
             else -> district
         }
-        infrastructure -= CHANGE_DISTRICT_MODE_COST
+        if(infrastructure < 0) {
+            return if(continueOnError) {
+                ChangeDistrictModeResult.FailureWithSuccess(
+                    ChangeDistrictModeResult.Error.InsufficientInfrastructureForModeChange,
+                    ChangeDistrictModeResult.Success(infrastructure, updatedDistricts)
+                )
+            } else ChangeDistrictModeResult.Error.InsufficientInfrastructureForModeChange
+        }
         return ChangeDistrictModeResult.Success(
             updatedInfrastructure = infrastructure,
             districts = updatedDistricts

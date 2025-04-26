@@ -28,8 +28,8 @@ android {
         applicationId = "com.marks2games.gravitygame"
         minSdk = 26
         targetSdk = 35
-        versionCode = 9
-        versionName = "1.2.6"
+        versionCode = 10
+        versionName = "1.2.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -105,7 +105,7 @@ dependencies {
     val hiltVersion = "2.55"
     val ktorVersion = "3.0.3"
     val coroutineVersion = "1.10.1"
-    val sentryVersion = "8.4.0"
+    val sentryVersion = "8.5.0"
 
     //Ktor
     implementation ("io.ktor:ktor-client-core:$ktorVersion")
@@ -139,7 +139,7 @@ dependencies {
     //implementation ("com.google.android.gms:play-services-tasks:18.2.0")
 
     //Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.11.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
     implementation("com.google.firebase:firebase-common")
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")

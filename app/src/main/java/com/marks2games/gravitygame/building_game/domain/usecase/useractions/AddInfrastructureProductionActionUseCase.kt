@@ -7,6 +7,8 @@ import javax.inject.Inject
 class AddInfrastructureProductionActionUseCase @Inject constructor() {
     operator fun invoke(actions: List<Action>, planetId: Int, value: InfrastructureSetting): List<Action> {
         val action = Action.SetProduction.InfrastructureProduction(value, planetId)
-        return actions + action
+        val newActions = actions.toMutableList()
+        newActions.add(action)
+        return newActions.toList()
     }
 }

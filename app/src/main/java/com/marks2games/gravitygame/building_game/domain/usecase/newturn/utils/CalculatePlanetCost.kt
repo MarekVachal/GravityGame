@@ -24,6 +24,6 @@ class CalculatePlanetCost @Inject constructor() {
      * @throws IllegalArgumentException if planetsCount is negative.
      */
     operator fun invoke(planetsCount: Int): Int {
-        return ceil(50 * 1.15.pow(planetsCount)).toInt()
+        return ceil(100 * 1.4.pow(planetsCount - 1)).toInt()
     }
 }

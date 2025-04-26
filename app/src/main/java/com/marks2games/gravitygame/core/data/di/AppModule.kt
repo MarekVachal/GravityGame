@@ -10,6 +10,7 @@ import com.marks2games.gravitygame.battle_game.data.BattleGameRepositoryFactory
 import com.marks2games.gravitygame.battle_game.data.SharedPlayerDataRepository
 import com.marks2games.gravitygame.building_game.data.repository.EmpireRepositoryImpl
 import com.marks2games.gravitygame.building_game.domain.repository.EmpireRepository
+import com.marks2games.gravitygame.building_game.domain.usecase.utils.CreateNewEmpireUseCase
 import com.marks2games.gravitygame.core.data.RealTimeProvider
 import com.marks2games.gravitygame.core.domain.TimeProvider
 import com.marks2games.gravitygame.core.data.datasource.GoogleAuthHelper
@@ -53,9 +54,10 @@ object AppModule {
     @Singleton
     fun provideEmpireRepository(
         firestore: FirebaseFirestore,
-        user: FirebaseUser?
+        user: FirebaseUser?,
+        createNewEmpireUseCase: CreateNewEmpireUseCase
     ): EmpireRepository {
-        return EmpireRepositoryImpl(firestore, user)
+        return EmpireRepositoryImpl(firestore, user, createNewEmpireUseCase)
     }
 
     @Provides

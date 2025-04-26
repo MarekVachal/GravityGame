@@ -6,7 +6,9 @@ import javax.inject.Inject
 
 class BuildDistrictActionUseCase @Inject constructor()  {
     operator fun invoke(actions: List<Action>, planetId: Int, districtId: Int, district: DistrictEnum): List<Action> {
-        val action = Action.DistrictAction.BuildDistrict(planetId, districtId, district)
-        return actions + action
+        val action = Action.DistrictAction.BuildDistrict(planetId = planetId, districtId = districtId, district = district)
+        val newActions = actions.toMutableList()
+        newActions.add(action)
+        return newActions.toList()
     }
 }

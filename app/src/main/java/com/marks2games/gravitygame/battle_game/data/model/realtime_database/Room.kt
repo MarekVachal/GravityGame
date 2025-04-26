@@ -1,5 +1,8 @@
 package com.marks2games.gravitygame.battle_game.data.model.realtime_database
 
+import androidx.annotation.Keep
+
+@Keep
 data class Room(
     var player1Id: String = "",
     var player2Id: String = "",

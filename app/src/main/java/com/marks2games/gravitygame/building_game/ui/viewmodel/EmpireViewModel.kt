@@ -1,19 +1,27 @@
 package com.marks2games.gravitygame.building_game.ui.viewmodel
 
-import android.util.Log
+import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.marks2games.gravitygame.building_game.data.model.ActionEnum
+import com.marks2games.gravitygame.R
+import com.marks2games.gravitygame.building_game.data.model.Action
+import com.marks2games.gravitygame.building_game.data.model.District
 import com.marks2games.gravitygame.building_game.data.model.DistrictEnum
 import com.marks2games.gravitygame.building_game.data.model.Empire
 import com.marks2games.gravitygame.building_game.data.model.EmpireUiState
+import com.marks2games.gravitygame.building_game.data.model.IndustrialMode
 import com.marks2games.gravitygame.building_game.data.model.InfrastructureSetting
 import com.marks2games.gravitygame.building_game.data.model.Planet
+import com.marks2games.gravitygame.building_game.data.model.ProspectorsMode
+import com.marks2games.gravitygame.building_game.data.model.Resource
 import com.marks2games.gravitygame.building_game.data.model.RocketMaterialsSetting
 import com.marks2games.gravitygame.building_game.data.model.Trade
 import com.marks2games.gravitygame.building_game.data.model.Transport
+import com.marks2games.gravitygame.building_game.data.model.UrbanCenterMode
 import com.marks2games.gravitygame.building_game.domain.usecase.GetEmpireUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.NewTurnUseClass
+import com.marks2games.gravitygame.building_game.domain.usecase.transport.GetAllTransports
 import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddArmyProductionActionUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddExpeditionProductionActionUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddInfrastructureProductionActionUseCase
@@ -23,10 +31,12 @@ import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddR
 import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddTradeActionUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddTransportActionUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.useractions.BuildDistrictActionUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.useractions.CancelTransportUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.useractions.ChangeDistrictModeActionUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.useractions.DestroyDistrictActionUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.useractions.SaveEmpireUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.utils.CreateNewEmpireUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.utils.DeleteActionUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.utils.DeleteTransportUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -49,53 +59,126 @@ class EmpireViewModel @Inject constructor(
     private val addTradeActionUseCase: AddTradeActionUseCase,
     private val addTransportActionUseCase: AddTransportActionUseCase,
     private val buildDistrictActionUseCase: BuildDistrictActionUseCase,
-    private val cancelTransportUseCase: CancelTransportUseCase,
     private val changeDistrictModeActionUseCase: ChangeDistrictModeActionUseCase,
-    private val destroyDistrictActionUseCase: DestroyDistrictActionUseCase
-): ViewModel () {
+    private val destroyDistrictActionUseCase: DestroyDistrictActionUseCase,
+    private val deleteActionUseCase: DeleteActionUseCase,
+    private val deleteTransportUseCase: DeleteTransportUseCase,
+    private val getAllTransports: GetAllTransports,
+    createNewEmpireUseCase: CreateNewEmpireUseCase
+) : ViewModel() {
 
-    private val _empire = MutableStateFlow(Empire())
+    private val _empire = MutableStateFlow(createNewEmpireUseCase.invoke())
     val empire: StateFlow<Empire> = _empire.asStateFlow()
+    private val _testEmpire = MutableStateFlow(createNewEmpireUseCase.invoke())
+    val testEmpire: StateFlow<Empire> = _testEmpire.asStateFlow()
     private val _empireUiState = MutableStateFlow(EmpireUiState())
     val empireUiState: StateFlow<EmpireUiState> = _empireUiState.asStateFlow()
 
-
-    fun getEmpireFromDatabase() {
-        viewModelScope.launch {
-            _empire.value = getEmpireUseCase.invoke().copy()
-        }
-    }
-
-    fun getEmpireState(): Empire {
-        return empire.value
-    }
-
-    fun getPlanetsState(): List<Planet> {
-        return empire.value.planets
-    }
-
-    fun updateEmpire(empire: Empire) {
-        viewModelScope.launch {
-            _empire.value = empire
-        }
-    }
-
-    fun updatePlanets(planets: List<Planet>) {
+    fun deleteAction(action: Action){
         _empire.update { state ->
             state.copy(
-                planets = planets
+                actions = deleteActionUseCase.invoke(
+                    action = action,
+                    actions = empire.value.actions
+                )
+            )
+        }
+        val updatedEmpire = _empire.value
+        testEmpireAfterActionChange(updatedEmpire)
+    }
+
+    fun deleteTransport(transport: Transport){
+        _empire.update { state ->
+            state.copy(
+                transports = deleteTransportUseCase.invoke(
+                    transport = transport,
+                    transports = empire.value.transports
+                )
+            )
+        }
+        val updatedEmpire = _empire.value
+        testEmpireAfterActionChange(updatedEmpire)
+    }
+
+    fun deleteAllActions(){
+        _empire.update { state ->
+            state.copy(
+                actions = emptyList()
+            )
+        }
+        val updatedEmpire = _empire.value
+        testEmpireAfterActionChange(updatedEmpire)
+    }
+
+    fun closeTransportDialog(){
+        _empireUiState.update { state ->
+            state.copy(
+                isTransportDialogShown = false,
+                planetForTransport = null
             )
         }
     }
 
-    fun testNewTurn() {
-        val newTurnTestResult = newTurnUseCase.invoke(empire.value, false)
-        val updatedEmpire = newTurnTestResult.first
-        _empire.update { state -> updatedEmpire }
+    fun openTransportDialog(planet: Planet){
+        _empireUiState.update { state ->
+            state.copy(
+                isTransportDialogShown = true,
+                isDistrictDialogShown = false,
+                planetForTransport = planet
+            )
+        }
+    }
+
+    fun updateDistrictDialogShown(isShown: Boolean, district: District?) {
+        _empireUiState.update { state ->
+            state.copy(
+                isDistrictDialogShown = isShown,
+                districtForDialog = district
+
+            )
+        }
+    }
+
+    fun updateShowDistrictList(isShown: Boolean, planet: Planet?) {
+        val planetId = planet?.id ?: return
+        _empireUiState.update { state ->
+            state.copy(
+                isShownDistrictList = isShown,
+                planetIdForDetails = planetId
+            )
+        }
+    }
+
+    fun launchEmpireScreen() {
+        viewModelScope.launch {
+            val newEmpire = getEmpireUseCase.invoke()
+            _empire.update { newEmpire }
+            testNewTurn(newEmpire)
+        }
+    }
+
+    private fun testNewTurn(empire: Empire) {
+        val newTurnTestResult = newTurnUseCase.invoke(empire, true)
+        _testEmpire.update { newTurnTestResult.first }
         _empireUiState.update { state ->
             state.copy(
                 errors = newTurnTestResult.second
             )
+        }
+    }
+
+    fun newTurn() {
+        viewModelScope.launch {
+            val newTurnResult = newTurnUseCase.invoke(empire.value, false)
+            val updatedEmpire = newTurnResult.first
+            _empire.update { updatedEmpire }
+            _empireUiState.update { state ->
+                state.copy(
+                    errors = emptyList()
+                )
+            }
+            saveEmpireUseCase.invoke(updatedEmpire)
+            testNewTurn(updatedEmpire)
         }
     }
 
@@ -115,247 +198,340 @@ class EmpireViewModel @Inject constructor(
         }
     }
 
-    fun newTurn(){
-        viewModelScope.launch {
-            val newTurnResult = newTurnUseCase.invoke(empire.value, false)
-            val updatedEmpire = newTurnResult.first
-            Log.d("NewTurn", "New empire state: ${newTurnResult.first}")
-            _empire.update { updatedEmpire }
-            _empireUiState.update { state ->
-                state.copy(
-                    errors = emptyList()
-                )
+    fun updateTransportMenuShown(isShown: Boolean){
+        _empireUiState.update{ state ->
+            state.copy(
+                isTransportMenuShown = isShown
+            )
+        }
+    }
+
+    fun deleteAllTransports(){
+        _empire.update { state ->
+            state.copy(
+                transports = emptyList()
+            )
+        }
+        val updatedEmpire = _empire.value
+        testEmpireAfterActionChange(updatedEmpire)
+    }
+
+    fun updateRocketMaterialsSetting(setting: RocketMaterialsSetting) {
+        _empireUiState.update { state ->
+            state.copy(
+                rocketMaterialsProductionSet = setting
+            )
+        }
+    }
+
+    fun updateDistrictToBuild(district: DistrictEnum) {
+        _empireUiState.update { state ->
+            state.copy(
+                districtToBuild = district
+            )
+        }
+    }
+
+    fun openDistrictDetails(planetId: Int, district: District) {
+        val planet = testEmpire.value.planets.find { it.id == planetId }
+        if (planet == null) {
+            return
+        }
+        val modeIsSelected = if(district is District.Industrial){
+             when(district.mode){
+                 IndustrialMode.ROCKET_MATERIALS -> IndustrialMode.ROCKET_MATERIALS
+                 IndustrialMode.INFRASTRUCTURE -> IndustrialMode.INFRASTRUCTURE
+                 IndustrialMode.METAL -> IndustrialMode.METAL
+             }
+        } else if (district is District.Prospectors) {
+            when(district.mode){
+                ProspectorsMode.METAL -> ProspectorsMode.METAL
+                ProspectorsMode.ORGANIC_SEDIMENTS -> ProspectorsMode.ORGANIC_SEDIMENTS
             }
-            saveEmpireUseCase.invoke(updatedEmpire)
-            Log.d("ViewModel", "Empire saved")
-        }
-    }
+        } else if(district is District.UrbanCenter){
+            when(district.mode){
+                UrbanCenterMode.INFLUENCE -> UrbanCenterMode.INFLUENCE
+                UrbanCenterMode.RESEARCH -> UrbanCenterMode.RESEARCH
+            }
+        } else null
 
-    fun updateIntStates(value: Int, action: ActionEnum, planetId: Int){
-        _empire.update { state ->
+        _empireUiState.update { state ->
             state.copy(
-                planets = state.planets.map{ planet ->
-                    when (action){
-                        ActionEnum.EXPEDITIONS_ACTION -> planet.copy(expeditionsSetting = value)
-                        ActionEnum.PROGRESS_ACTION -> planet.copy(progressSetting = value)
-                        ActionEnum.ARMY_ACTION -> planet.copy(armyConstructionSetting = value)
-                        ActionEnum.RESEARCH_ACTION -> planet.copy(researchSetting = value)
-                        else -> throw Exception("Unsupported action.")
-                    }
-                }
-            )
-
-        }
-    }
-
-    fun updateInfrastructureStates(value: InfrastructureSetting, planetId: Int){
-        _empire.update { state ->
-            state.copy(
-                planets = state.planets.map { planet ->
-                    if (planet.id == planetId) planet.copy(infrastructureSetting = value)
-                    else planet
-                }
+                isDistrictDialogShown = true,
+                planetIdForDetails = planetId,
+                districtForDialog = district,
+                modeIsChecked = modeIsSelected,
+                armyProductionSet = planet.armyConstructionSetting,
+                expeditionsProductionSet = planet.expeditionsSetting,
+                progressProductionSet = planet.progressSetting,
+                researchProductionSet = planet.researchSetting,
+                infrastructureProductionSet = planet.infrastructureSetting,
+                rocketMaterialsProductionSet = planet.rocketMaterialsSetting
             )
         }
     }
 
-    fun updateRocketMaterialsStates(value: RocketMaterialsSetting, planetId: Int){
-        _empire.update { state ->
+    fun updateInfrastructureSetting(setting: InfrastructureSetting) {
+        _empireUiState.update { state ->
             state.copy(
-                planets = state.planets.map { planet ->
-                    if (planet.id == planetId) planet.copy(rocketMaterialsSetting = value)
-                    else planet
-                }
+                infrastructureProductionSet = setting
             )
         }
     }
 
-    fun addArmyProductionAction(planetId: Int){
-        _empire.update { state ->
-            state.copy(
-                planets = state.planets.map { planet ->
-                    if (planet.id == planetId) planet.copy(
-                        actions = addArmyProductionActionUseCase.invoke(
-                            planet.actions,
-                            planet.id,
-                            state.planets[planetId].armyConstructionSetting
-                        )
-                    ) else planet
-                }
-            )
+    fun updateIntProductionState(resource: Resource, value: Int) {
+        _empireUiState.update { state ->
+            when (resource) {
+                Resource.ARMY -> state.copy(armyProductionSet = value)
+                Resource.EXPEDITIONS -> state.copy(expeditionsProductionSet = value)
+                Resource.RESEARCH -> state.copy(researchProductionSet = value)
+                Resource.PROGRESS -> state.copy(progressProductionSet = value)
+                else -> state
+            }
         }
     }
 
-    fun addExpeditionProductionAction(planetId: Int){
-        _empire.update { state ->
-            state.copy(
-                planets = state.planets.map { planet ->
-                    if(planet.id == planetId) planet.copy(
-                        actions = addExpeditionProductionActionUseCase.invoke(
-                            planet.actions,
-                            planet.id,
-                            state.planets[planetId].expeditionsSetting
-                        )
-                    ) else planet
-                }
-            )
-        }
+    fun getAllTransports(): List<Transport> {
+        return getAllTransports.invoke(empire.value)
     }
 
-    fun addInfrastructureProductionAction(planetId: Int){
-        _empire.update { state ->
+    private fun testEmpireAfterActionChange(empire: Empire){
+        val result =
+            newTurnUseCase.invoke(empire, true)
+        _empireUiState.update { state ->
             state.copy(
-                planets = state.planets.map { planet ->
-                    if(planet.id == planetId) planet.copy(
-                        actions = addInfrastructureProductionActionUseCase.invoke(
-                            planet.actions,
-                            planet.id,
-                            state.planets[planetId].infrastructureSetting
-                        )
-                    ) else planet
-                }
+                errors = result.second
             )
         }
+        _testEmpire.update { result.first }
     }
 
-    fun addProgressProductionAction(planetId: Int){
+    fun addArmyProductionAction(context: Context, planetId: Int, value: Int) {
         _empire.update { state ->
             state.copy(
-                planets = state.planets.map { planet ->
-                    if(planet.id == planetId) planet.copy(
-                        actions = addProgressProductionActionUseCase.invoke(
-                            planet.actions,
-                            planet.id,
-                            state.planets[planetId].progressSetting
-                        )
-                    ) else planet
-                }
+                actions = addArmyProductionActionUseCase.invoke(
+                    testEmpire.value.actions,
+                    planetId,
+                    value
+                )
             )
         }
+        val updatedEmpire = _empire.value
+        Toast.makeText(
+            context,
+            context.getString(R.string.actionAdded),
+            Toast.LENGTH_SHORT
+        ).show()
+        testEmpireAfterActionChange(updatedEmpire)
     }
 
-    fun addResearchProductionAction(planetId: Int){
+    fun addExpeditionProductionAction(context: Context, planetId: Int, value: Int) {
         _empire.update { state ->
             state.copy(
-                planets = state.planets.map { planet ->
-                    if(planet.id == planetId) planet.copy(
-                        actions = addResearchProductionActionUseCase.invoke(
-                            planet.actions,
-                            planet.id,
-                            state.planets[planetId].researchSetting
-                        )
-                    ) else planet
-                }
+                actions = addExpeditionProductionActionUseCase.invoke(
+                    testEmpire.value.actions,
+                    planetId,
+                    value
+                )
             )
         }
+        val updatedEmpire = _empire.value
+        Toast.makeText(
+            context,
+            context.getString(R.string.actionAdded),
+            Toast.LENGTH_SHORT
+        ).show()
+        testEmpireAfterActionChange(updatedEmpire)
     }
 
-    fun addRocketMaterialsProductionAction(planetId: Int){
+    fun addInfrastructureProductionAction(context: Context, planetId: Int, value: InfrastructureSetting) {
         _empire.update { state ->
             state.copy(
-                planets = state.planets.map { planet ->
-                    if(planet.id == planetId) planet.copy(
-                        actions = addRocketMaterialsProductionActionUseCase.invoke(
-                            planet.actions,
-                            planet.id,
-                            state.planets[planetId].rocketMaterialsSetting
-                        )
-                    ) else planet
-                }
+                actions = addInfrastructureProductionActionUseCase.invoke(
+                    testEmpire.value.actions,
+                    planetId,
+                    value
+                )
             )
         }
+        val updatedEmpire = _empire.value
+        Toast.makeText(
+            context,
+            context.getString(R.string.actionAdded),
+            Toast.LENGTH_SHORT
+        ).show()
+        testEmpireAfterActionChange(updatedEmpire)
     }
 
-    fun addTradeAction(planetId: Int, trade: Trade){
+    fun addProgressProductionAction(context: Context, planetId: Int, value: Int) {
         _empire.update { state ->
             state.copy(
-                planets = state.planets.map { planet ->
-                    if(planet.id == planetId) planet.copy(
-                        actions = addTradeActionUseCase.invoke(
-                            planet.actions,
-                            planet.id,
-                            trade
-                        )
-                    ) else planet
-                }
+                actions = addProgressProductionActionUseCase.invoke(
+                    empire.value.actions,
+                    planetId,
+                    value
+                )
             )
         }
+        val updatedEmpire = _empire.value
+        Toast.makeText(
+            context,
+            context.getString(R.string.actionAdded),
+            Toast.LENGTH_SHORT
+        ).show()
+        testEmpireAfterActionChange(updatedEmpire)
     }
 
-    fun addTransportAction(planetId: Int, transport: Transport){
+    fun addResearchProductionAction(context: Context, planetId: Int, value: Int) {
         _empire.update { state ->
             state.copy(
-                planets = state.planets.map { planet ->
-                    if(planet.id == planetId) planet.copy(
-                        actions = addTransportActionUseCase.invoke(
-                            planet.actions,
-                            planet.id,
-                            transport
-                        )
-                    ) else planet
-                }
+                actions = addResearchProductionActionUseCase.invoke(
+                    testEmpire.value.actions,
+                    planetId,
+                    value
+                )
+
             )
         }
+        val updatedEmpire = _empire.value
+        Toast.makeText(
+            context,
+            context.getString(R.string.actionAdded),
+            Toast.LENGTH_SHORT
+        ).show()
+        testEmpireAfterActionChange(updatedEmpire)
     }
 
-    fun buildDistrictAction(planetId: Int, district: DistrictEnum, districtId: Int){
+    fun addRocketMaterialsProductionAction(context: Context, planetId: Int, value: RocketMaterialsSetting) {
         _empire.update { state ->
             state.copy(
-                planets = state.planets.map { planet ->
-                    if(planet.id == planetId) planet.copy(
-                        actions = buildDistrictActionUseCase.invoke(
-                            actions = planet.actions,
-                            planetId = planet.id,
-                            districtId = districtId,
-                            district = district
-                        )
-                    ) else planet
-                }
+                actions = addRocketMaterialsProductionActionUseCase.invoke(
+                    testEmpire.value.actions,
+                    planetId,
+                    value
+                )
             )
         }
+        val updatedEmpire = _empire.value
+        Toast.makeText(
+            context,
+            context.getString(R.string.actionAdded),
+            Toast.LENGTH_SHORT
+        ).show()
+        testEmpireAfterActionChange(updatedEmpire)
     }
 
-    fun cancelTransportAction(){
-        cancelTransportUseCase.invoke()
+    fun addTradeAction(context: Context, planetId: Int, trade: Trade) {
+        _empire.update { state ->
+            state.copy(
+                actions = addTradeActionUseCase.invoke(
+                    testEmpire.value.actions,
+                    planetId,
+                    trade
+                )
+
+            )
+        }
+        val updatedEmpire = _empire.value
+        Toast.makeText(
+            context,
+            context.getString(R.string.actionAdded),
+            Toast.LENGTH_SHORT
+        ).show()
+        testEmpireAfterActionChange(updatedEmpire)
+    }
+
+    fun addTransportAction(context: Context ,planetId: Int, transport: Transport) {
+        _empire.update { state ->
+            state.copy(
+                actions = addTransportActionUseCase.invoke(
+                    testEmpire.value.actions,
+                    planetId,
+                    transport
+                )
+            )
+        }
+        val updatedEmpire = _empire.value
+        Toast.makeText(
+            context,
+            context.getString(R.string.actionAdded),
+            Toast.LENGTH_SHORT
+        ).show()
+        testEmpireAfterActionChange(updatedEmpire)
+    }
+
+    fun buildDistrictAction(context: Context, planetId: Int, district: DistrictEnum, districtId: Int) {
+        _empire.update { state ->
+            state.copy(
+                actions = buildDistrictActionUseCase.invoke(
+                    actions = empire.value.actions,
+                    planetId = planetId,
+                    districtId = districtId,
+                    district = district
+                )
+            )
+        }
+        val updatedEmpire = _empire.value
+        Toast.makeText(
+            context,
+            context.getString(R.string.actionAdded),
+            Toast.LENGTH_SHORT
+        ).show()
+        testEmpireAfterActionChange(updatedEmpire)
+    }
+
+    fun updateModeIsChecked(mode: Enum<*>) {
+        _empireUiState.update { state ->
+            state.copy(
+                modeIsChecked = mode
+            )
+        }
     }
 
     fun changeDistrictModeAction(
         district: DistrictEnum,
         districtId: Int,
-        mode: Enum<*>,
-        planetId: Int
+        mode: Enum<*>?,
+        planetId: Int,
+        context: Context
     ) {
         _empire.update { state ->
             state.copy(
-                planets = state.planets.map { planet ->
-                    if(planet.id == planetId) planet.copy(
-                        actions = changeDistrictModeActionUseCase.invoke(
-                            planet.actions,
-                            planet.id,
-                            districtId,
-                            district,
-                            mode
-                        )
-                    ) else planet
-                }
+                actions = changeDistrictModeActionUseCase.invoke(
+                    testEmpire.value.actions,
+                    planetId,
+                    districtId,
+                    district,
+                    mode
+                )
             )
         }
+        val updatedEmpire = _empire.value
+        Toast.makeText(
+            context,
+            context.getString(R.string.actionAdded),
+            Toast.LENGTH_SHORT
+        ).show()
+        testEmpireAfterActionChange(updatedEmpire)
     }
 
-    fun destroyDistrictAction(planetId: Int,districtId: Int){
+    fun destroyDistrictAction(context: Context, planetId: Int, districtId: Int) {
         _empire.update { state ->
             state.copy(
-                planets = state.planets.map { planet ->
-                    if(planet.id == planetId) planet.copy(
-                        actions = destroyDistrictActionUseCase.invoke(
-                            planet.actions,
-                            planet.id,
-                            districtId
-                        )
-                    ) else planet
-                }
+                actions = destroyDistrictActionUseCase.invoke(
+                    testEmpire.value.actions,
+                    planetId,
+                    districtId
+                )
             )
         }
+        val updatedEmpire = _empire.value
+        Toast.makeText(
+            context,
+            context.getString(R.string.actionAdded),
+            Toast.LENGTH_SHORT
+        ).show()
+        testEmpireAfterActionChange(updatedEmpire)
     }
 
 }

@@ -9,6 +9,8 @@ sealed class TransportOutResult {
         val planet1RocketMaterials: Int
     ) : TransportOutResult()
 
+    data class FailureWithSuccess(val error: Error, val success: Success): TransportOutResult()
+
     data class Error(
         val type: String = "TransportOutError",
         val transportId: Int,

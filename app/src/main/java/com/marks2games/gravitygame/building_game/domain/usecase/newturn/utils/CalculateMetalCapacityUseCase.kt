@@ -1,7 +1,9 @@
 package com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils
 
+import android.util.Log
 import com.marks2games.gravitygame.building_game.data.model.DistrictEnum
 import com.marks2games.gravitygame.building_game.data.model.Planet
+import com.marks2games.gravitygame.building_game.data.model.Resource
 import javax.inject.Inject
 
 /**
@@ -22,8 +24,7 @@ class CalculateMetalCapacityUseCase @Inject constructor() {
      * @return An [Int] representing the total score contribution of the planet's prospector districts.
      */
     operator fun invoke(planet: Planet): Int {
-        return planet.districts.count {
-            it.type == DistrictEnum.PROSPECTORS && it.type == DistrictEnum.CAPITOL
-        } * 10
+        return planet.districts
+            .sumOf { it.getCapacities().capacity[Resource.METAL] ?: 0 }
     }
 }
