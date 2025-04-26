@@ -1,6 +1,5 @@
 package com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils
 
-import android.util.Log
 import com.marks2games.gravitygame.building_game.data.model.Action
 import com.marks2games.gravitygame.building_game.data.model.District
 import com.marks2games.gravitygame.building_game.data.model.Planet

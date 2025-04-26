@@ -99,13 +99,13 @@ sentry {
 
 dependencies {
 
-    val composeBomVersion = "2025.03.00"
-    val roomVersion = "2.6.1"
+    val composeBomVersion = "2025.04.01"
+    val roomVersion = "2.7.1"
     val credentialVersion = "1.5.0"
     val hiltVersion = "2.55"
     val ktorVersion = "3.0.3"
     val coroutineVersion = "1.10.1"
-    val sentryVersion = "8.5.0"
+    val sentryVersion = "8.7.0"
 
     //Ktor
     implementation ("io.ktor:ktor-client-core:$ktorVersion")
@@ -139,7 +139,7 @@ dependencies {
     //implementation ("com.google.android.gms:play-services-tasks:18.2.0")
 
     //Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
     implementation("com.google.firebase:firebase-common")
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
@@ -163,7 +163,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
 
     //Core
-    implementation("androidx.core:core-ktx:1.15.0")
+    implementation("androidx.core:core-ktx:1.16.0")
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation(platform("androidx.compose:compose-bom:$composeBomVersion"))
     implementation("androidx.compose.ui:ui")

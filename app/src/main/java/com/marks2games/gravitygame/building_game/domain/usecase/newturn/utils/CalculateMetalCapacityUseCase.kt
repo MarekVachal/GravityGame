@@ -1,7 +1,5 @@
 package com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils
 
-import android.util.Log
-import com.marks2games.gravitygame.building_game.data.model.DistrictEnum
 import com.marks2games.gravitygame.building_game.data.model.Planet
 import com.marks2games.gravitygame.building_game.data.model.Resource
 import javax.inject.Inject

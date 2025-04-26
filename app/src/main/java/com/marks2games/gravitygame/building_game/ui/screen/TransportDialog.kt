@@ -1,6 +1,5 @@
 package com.marks2games.gravitygame.building_game.ui.screen
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement

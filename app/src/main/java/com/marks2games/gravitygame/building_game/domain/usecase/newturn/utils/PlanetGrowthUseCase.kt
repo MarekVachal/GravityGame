@@ -5,7 +5,6 @@ import com.marks2games.gravitygame.building_game.data.model.District
 import com.marks2games.gravitygame.building_game.data.model.DistrictEnum
 import com.marks2games.gravitygame.building_game.data.model.Planet
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.BuildDistrictUseCase
-import com.marks2games.gravitygame.core.domain.error.BuildDistrictResult
 import javax.inject.Inject
 
 /**
