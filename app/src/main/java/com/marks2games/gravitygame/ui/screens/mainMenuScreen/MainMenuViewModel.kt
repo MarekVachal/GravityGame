@@ -11,6 +11,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.core.domain.usecases.authentication.AnonymousSignInUseCase
+import com.marks2games.gravitygame.core.domain.usecases.authentication.RegisterWithEmailUseCase
+import com.marks2games.gravitygame.core.domain.usecases.authentication.SignInWithEmailUseCase
 import com.marks2games.gravitygame.core.domain.usecases.authentication.SignInWithGoogleUseCase
 import com.marks2games.gravitygame.core.domain.usecases.sharedRepository.GetHasSignInUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,14 +32,82 @@ class MainMenuViewModel @Inject constructor(
     private val auth: FirebaseAuth,
     private val anonymousSignInUseCase: AnonymousSignInUseCase,
     private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
+    private val signInWithEmailUseCase: SignInWithEmailUseCase,
+    private val registerWithEmailUseCase: RegisterWithEmailUseCase,
     private val getHasSignInUseCase: GetHasSignInUseCase
 ): ViewModel() {
 
-    private val _mainmenuUiState = MutableStateFlow(MainMenuUiStates())
-    val mainMenuUiStates: StateFlow<MainMenuUiStates> = _mainmenuUiState.asStateFlow()
+    private val _mainMenuUiState = MutableStateFlow(MainMenuUiStates())
+    val mainMenuUiStates: StateFlow<MainMenuUiStates> = _mainMenuUiState.asStateFlow()
+
+    fun updateErrorMessage(errorMessage: String?){
+        _mainMenuUiState.update { state ->
+            state.copy(
+                errorMessage = errorMessage
+            )
+        }
+    }
+
+    fun signInWithEmail() {
+        updateIsLoadingState(true)
+        viewModelScope.launch {
+            try {
+                signInWithEmailUseCase.invoke(
+                    mainMenuUiStates.value.email,
+                    mainMenuUiStates.value.password
+                )
+                showSignInDialog(false)
+            } catch (e: Exception) {
+                updateErrorMessage(e.localizedMessage)
+            } finally {
+                updateIsLoadingState(false)
+            }
+        }
+    }
+
+    fun registerWithEmail(){
+        updateIsLoadingState(true)
+        try{
+            viewModelScope.launch {
+                registerWithEmailUseCase.invoke(
+                    mainMenuUiStates.value.email,
+                    mainMenuUiStates.value.password
+                )
+            }
+            showSignInDialog(false)
+        } catch (e: Exception){
+            updateErrorMessage(e.localizedMessage)
+        } finally {
+            updateIsLoadingState(false)
+        }
+    }
+
+    fun updateEmailState(email: String){
+        _mainMenuUiState.update { state ->
+            state.copy(
+                email = email
+            )
+        }
+    }
+
+    fun updatePasswordState(password: String){
+        _mainMenuUiState.update { state ->
+            state.copy(
+                password = password
+            )
+        }
+    }
+
+    fun updateIsLoadingState(isLoading: Boolean){
+        _mainMenuUiState.update { state ->
+            state.copy(
+                isLoading = isLoading
+            )
+        }
+    }
 
     fun showSignInDialog(toShow: Boolean){
-        _mainmenuUiState.update { state ->
+        _mainMenuUiState.update { state ->
             state.copy(
                 showSignInDialog = toShow
             )
@@ -71,7 +141,7 @@ class MainMenuViewModel @Inject constructor(
             anonymousSignInUseCase.invoke()
         }
         showSignInDialog(false)
-        _mainmenuUiState.update { state ->
+        _mainMenuUiState.update { state ->
             state.copy(
                 alreadySignAsGuest = true
             )
@@ -89,7 +159,7 @@ class MainMenuViewModel @Inject constructor(
     private suspend fun getUserImage(){
         withContext(Dispatchers.Main){
             val userImage = auth.currentUser?.photoUrl
-            _mainmenuUiState.update { state ->
+            _mainMenuUiState.update { state ->
                 state.copy(
                     userImage = userImage
                 )
@@ -116,7 +186,7 @@ class MainMenuViewModel @Inject constructor(
     }
 
     fun showMenuList(toShow: Boolean){
-        _mainmenuUiState.update { state ->
+        _mainMenuUiState.update { state ->
             state.copy(showMenuList = toShow)
         }
     }
@@ -143,7 +213,7 @@ class MainMenuViewModel @Inject constructor(
     }
 
     fun openEmail(context: Context){
-        val emailAddress = context.getString(R.string.email)
+        val emailAddress = context.getString(R.string.gravityGameEmail)
         val intent = Intent(Intent.ACTION_SENDTO).apply {
             data = "mailto:$emailAddress".toUri()
             //putExtra(Intent.EXTRA_SUBJECT, "Subject of mail") // I can define a subject of the mail
@@ -194,7 +264,7 @@ class MainMenuViewModel @Inject constructor(
 
 
     fun openTextDialog(text: Text = Text.ABOUT_GAME, toShow: Boolean){
-        _mainmenuUiState.update { state ->
+        _mainMenuUiState.update { state ->
             state.copy(
                 showTextDialog = toShow,
                 textToShow = text

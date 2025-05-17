@@ -81,7 +81,7 @@ fun InfoTextDialog(
                         ){
                             Button(
                                 onClick = { mainMenuModel.openBuyMeACoffeeLink(context = context) },
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedCornerShape(24.dp),
                                 contentPadding = PaddingValues(0.dp)
                             ) {
                                 Image(

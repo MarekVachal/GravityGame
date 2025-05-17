@@ -4,6 +4,6 @@ import javax.inject.Inject
 
 class CalculatePlanetMaintenanceUseCase @Inject constructor() {
     operator fun invoke(level: Int): Int {
-        return if(level > 4) 5 *(level - 4) else 0
+        return if(level > 8) 5 * (level - 8) else 0
     }
 }

@@ -46,9 +46,9 @@ class ProduceArmyUnitUseCase @Inject constructor() {
         val district = planet.districts
             .filterIsInstance<District.ExpeditionPlatform>()
             .firstOrNull() ?: return Pair(planet.army, planet.rocketMaterials)
-        val productionRate = district.generateResources().produced[Resource.ARMY] ?: 1
-        val consumptionRate = district.generateResources().consumed[Resource.ARMY] ?: 1
-        val maxPossibleProductionOnResource = planet.rocketMaterials / consumptionRate * productionRate
+        val productionRate = district.generateResources().produced[Resource.ARMY] ?: 0
+        val consumptionRate = district.generateResources().consumed[Resource.ARMY] ?: 0
+        val maxPossibleProductionOnResource = (planet.rocketMaterials.toDouble() / consumptionRate * productionRate).toInt()
         Log.d("ProduceArmyUnitUseCase", "maxPossibleProductionOnResource: $maxPossibleProductionOnResource")
         val maxPossibleProduction = min(maxPossibleProductionOnResource, planet.rocketMaterials)
         Log.d("ProduceArmyUnitUseCase", "maxPossibleProduction: $maxPossibleProduction")
@@ -58,6 +58,6 @@ class ProduceArmyUnitUseCase @Inject constructor() {
         Log.d("ProduceArmyUnitUseCase", "newArmy: $newArmy")
         val newRocketMaterials = planet.rocketMaterials - availableProduction
         Log.d("ProduceArmyUnitUseCase", "newRocketMaterials: $newRocketMaterials")
-        return Pair(planet.army + availableProduction, planet.rocketMaterials - availableProduction)
+        return Pair(newArmy, newRocketMaterials)
     }
 }

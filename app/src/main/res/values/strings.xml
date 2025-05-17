@@ -3,7 +3,7 @@
     <string name="discordInviteLink" translatable="false">https://discord.gg/H4hFa3vgvZ</string>
     <string name="buyMeACoffeeLink" translatable="false">https://buymeacoffee.com/gravitygame</string>
     <string name="facebookLink" translatable="false">https://www.facebook.com/groups/979557247091776/</string>
-    <string name="email" translatable="false">gravitygame2024@gmail.com</string>
+    <string name="gravityGameEmail" translatable="false">gravitygame2024@gmail.com</string>
     <string name="privacyPolicyLink" translatable="false">https://docs.google.com/document/d/1XP6rsyd4VdUXliGmDUuSyLPMT89v0QqzR1r--vrvh7E/edit?usp=sharing</string>
     <string name="privacyPolicy">Privacy Policy</string>
     <string name="errorToOpenLink">The link can not be open</string>
@@ -211,7 +211,7 @@
     <string name="winViaOpponentDisconnection">Opponent has disconnected. You win the game.</string>
     <string name="capitolDistrictName">Capitol</string>
     <string name="prospectorsDistrictName">Prospectors</string>
-    <string name="emptyDistrictName">Empty district</string>
+    <string name="emptyDistrictName">Wilderness</string>
     <string name="industrialDistrictName">Industrial</string>
     <string name="expeditionPlatformDistrictName">Expedition platform</string>
     <string name="urbanCenterDistrictName">Urban center</string>
@@ -222,9 +222,9 @@
     <string name="fleet">Fleet</string>
     <string name="turnsBank">Turns</string>
     <string name="biomass">Biomass</string>
-    <string name="writeNumber">0</string>
+    <string name="writeNumber" translatable="false">0</string>
     <string name="setProduction">Set production</string>
-    <string name="transport">Transport</string>
+    <string name="transport" translatable="false">Transport</string>
     <string name="destroyDistrict">Destroy district</string>
     <string name="buildDistrict">Build district</string>
     <string name="progress">Progress</string>
@@ -235,6 +235,144 @@
     <string name="infrastructure">Infrastructure</string>
     <string name="rocket_materials">Rocket materials</string>
     <string name="influence">Influence</string>
+    <string name="register">Register</string>
+    <string name="password">password</string>
+    <string name="email" translatable="false">Email</string>
+    <string name="deleteAllTransports">Delete all transports</string>
+    <string name="inConstructionDistrictName">In construction</string>
+    <string name="deleteAllActions">Delete all actions</string>
+    <string name="expeditionProduction">expedition</string>
+    <string name="progressProductionName">progress</string>
+    <string name="armyProductionName">military compounds production</string>
+    <string name="researchProductionName">research production</string>
+    <string name="infrastructureProductionName">infrastructure production</string>
+    <string name="rocketMaterialsProductionName">rocket materials production</string>
 
+    <string name="changeDistrictModeDescription">Change district mode of</string>
+    <string name="tradeName">trade</string>
+    <string name="transportName">transport</string>
+    <string name="action_description_district">%1$s %2$s on planet %3$s</string>
+    <string name="errorNotAllowedSecondDistrict">Cannot build second %1$s on planet %2$s</string>
+    <string name="error_district_not_found">District where to build not found on planet %1$s</string>
+
+    <string name="missing_resource">missing %1$d %2$s</string>
+
+    <string name="error_insufficient_resources_army">Insufficient resources for army maintenance on planet %1$s</string>
+
+    <string name="error_transport_resources">Not enough resources for transport id %1$d on planet %2$s: %3$s</string>
+
+    <string name="error_insufficient_infra_district_mode">Insufficient %1$s for changing mode of %2$s on planet %3$s</string>
+
+    <string name="error_insufficient_metals">Insufficient planet resources of %1$s for %2$s produced by %3$s on planet %4$s</string>
+    <string name="error_no_industrials">No %1$s districts for %2$s on planet %3$s</string>
+    <string name="error_missing_infra">Missing %1$d %2$s on planet %3$s</string>
+
+    <string name="errorLackingRocketMaterialsForOneProduction">Lacking %1$d %2$s for %3$s on planet %4$s</string>
+    <string name="errorLackingRocketMaterialsForBothProduction">Lacking %1$d %2$s for %3$s and %4$d for %5$s on planet %6$s</string>
+
+    <string name="error_progress_max_level">Maximum level of planet %1$s has been reached. No need to generate %2$s.</string>
+    <string name="development">Development</string>
+    <string name="unknown_planet">Unknown planet</string>
+    <string name="unknown_district">Unknown district</string>
+    <string name="action_description_generic">Set %1$s on planet %2$s</string>
+    <string name="error_not_enough_resources_maintenance">Not enough resources for planet maintenance on planet %1$s: %2$s.</string>
+    <string name="error_progress_insufficient">Insufficient resources for %1$s on planet %2$s: %3$s</string>
+    <string name="nothing">Nothing</string>
+    <string name="maximum">Maximum</string>
+    <string name="usage">Usage</string>
+    <string name="changeDistrictModeName">Change mode</string>
+    <string name="buildDistrictName">Build district</string>
+    <string name="destroyDistrictName">Destroy district</string>
+    <string name="inConstruction">%1$s in construction: %2$d/%3$d</string>
+    <string name="districtToBuildDescription">Build district: %1$s</string>
+    <string name="researchGenitive">Research</string>
+    <string name="tradepowerGenitive">Tradepower</string>
+    <string name="armyGenitive">military compounds</string>
+    <string name="creditsGenitive">credits</string>
+    <string name="expeditionsGenitive">expeditions</string>
+    <string name="biomassGenitive">biomass</string>
+    <string name="metalGenitive">metal</string>
+    <string name="organic_sedimentsGenitive">organic sediments</string>
+    <string name="infrastructureGenitive">infrastructure</string>
+    <string name="rocketMaterialsGenitive">rocket materials</string>
+    <string name="progressGenitive">progress</string>
+    <string name="developmentGenitive">development</string>
+    <string name="influenceGenitive">influence</string>
+    <string name="capitolDistrictGenitive">Capitol</string>
+    <string name="prospectorsDistrictGenitive">Prospectors</string>
+    <string name="emptyDistrictGenitive">Wilderness</string>
+    <string name="industrialDistrictGenitive">Industrials</string>
+    <string name="expeditionPlatformDistrictGenitive">Expedition platform</string>
+    <string name="urbanCenterDistrictGenitive">Urban center</string>
+    <string name="inConstructionDistrictGenitive">In construction</string>
+    <string name="infrastructureAccusative">infrastructure</string>
+    <string name="capitolDistrictInstrumental">Capitol</string>
+    <string name="prospectorsDistrictInstrumental">Prospectors</string>
+    <string name="emptyDistrictInstrumental">Wilderness</string>
+    <string name="industrialDistrictInstrumental">Industrials</string>
+    <string name="expeditionPlatformDistrictInstrumental">Expedition platform</string>
+    <string name="urbanCenterDistrictInstrumental">Urban Center</string>
+    <string name="inConstructionDistrictInstrumental">In construction</string>
+    <string name="armyProductionAccusative">military compounds production</string>
+    <string name="expeditionProductionAccusative">expedition</string>
+    <string name="progressProductionAccusative">progress</string>
+    <string name="isLongTermTransport">Is long term transport?</string>
+    <string name="cost">"Cost: %1$d"</string>
+    <string name="rocketScienceNominative">Rocket science</string>
+    <string name="syntheticMaterialsNominative">Synthetic materials</string>
+    <string name="spaceTravellingNominative">Space travelling</string>
+    <string name="transportTechnologyNominative">Transport</string>
+    <string name="influenceTechnologyNominative">Influence</string>
+    <string name="tradeTechnologyNominative">Trade</string>
+    <string name="cruiserTechnologyNominative">Cruiser</string>
+    <string name="destroyerTechnologyNominative">Destroyer</string>
+    <string name="ghostTechnologyNominative">Ghost</string>
+    <string name="warperTechnologyNominative">Warper</string>
+    <string name="prospectorSynergyNominative">Prospectors synergy</string>
+    <string name="industrialSynergyNominative">Industrials synergy</string>
+    <string name="expeditionSynergyNominative">Expeditions synergy</string>
+    <string name="urbanCenterSynergyNominative">Urban center synergy</string>
+    <string name="cyberneticsNominative">Cybernetics</string>
+    <string name="terraformNominative">Terraform</string>
+    <string name="diversityNominative">Diversity</string>
+    <string name="gravityManipulationNominative">Gravity manipulation</string>
+    <string name="rocketScienceGenitive">rocket science</string>
+    <string name="syntheticMaterialsGenitive">synthetic materials</string>
+    <string name="spaceTravellingGenitive">space travelling</string>
+    <string name="transportTechnologyGenitive">transport</string>
+    <string name="influenceTechnologyGenitive">influence</string>
+    <string name="tradeTechnologyGenitive">trade</string>
+    <string name="cruiserTechnologyGenitive">cruiser</string>
+    <string name="destroyerTechnologyGenitive">destroyer</string>
+    <string name="ghostTechnologyGenitive">ghost</string>
+    <string name="warperTechnologyGenitive">warper</string>
+    <string name="prospectorSynergyGenitive">prospectors synergy</string>
+    <string name="industrialSynergyGenitive">industrials synergy</string>
+    <string name="expeditionSynergyGenitive">expeditions synergy</string>
+    <string name="urbanCenterSynergyGenitive">urban center synergy</string>
+    <string name="cyberneticsGenitive">cybernetics</string>
+    <string name="terraformGenitive">terraform</string>
+    <string name="diversityGenitive">diversity</string>
+    <string name="gravityManipulationGenitive">gravity manipulation</string>
+    <string name="rocketScienceDescription">Unlocks Prospectors Mode 2 (mining organic sediments).\n\nUnlocks Industrials Mode 2 (production of rocket materials).</string>
+    <string name="syntheticMaterialsDescription">Unlocks Industrials Mode 3 (production of metals from organic sediments).</string>
+    <string name="spaceTravellingDescription">Unlocks construction of the Expedition Platform.\n\nExpeditions can be produced in the Expedition Platform.</string>
+    <string name="transportTechnologyDescription">Unlocks the ability to establish Transports in the Expedition Platform.</string>
+    <string name="influenceTechnologyDescription">Unlocks Urban Center Mode 2 (generation of Influence).</string>
+    <string name="tradeTechnologyDescription">Grants access to the Trade Center. Trading is possible there.</string>
+    <string name="cruiserTechnologyDescription">Cruiser military units can be built in the Expedition Platform instead of Expeditions.</string>
+    <string name="destroyerTechnologyDescription">Destroyer military units can be built in the Expedition Platform instead of Expeditions.</string>
+    <string name="ghostTechnologyDescription">Ghost military units can be built in the Expedition Platform instead of Expeditions.</string>
+    <string name="warperTechnologyDescription">Warper military units can be built in the Expedition Platform instead of Expeditions.</string>
+    <string name="prospectorSynergyDescription">Each Prospector mines +2 metals and +1 organic sediments in each mode for every adjacent Wilderness district.</string>
+    <string name="industrialSynergyDescription">Each Industrial produces +10 infrastructure, +2 rocket materials, and +2 metals in each mode for every adjacent Prospectors district.\nIncreased production does not increase material consumption.</string>
+    <string name="expeditionSynergyDescription">The Expedition Platform produces +2 Expeditions and +2 Army units for every adjacent Industrial district.\n\nIncreased production does not increase material consumption.</string>
+    <string name="urbanCenterSynergyDescription">The Urban Center produces +2 Research and +2 Influence in each mode for every adjacent Wilderness district.\n\nIncreased production does not increase material consumption.</string>
+    <string name="cyberneticsDescription">Reduces planet maintenance by 5 for each resource. Can be researched repeatedly.</string>
+    <string name="terraformDescription">Multiplies the cost of discovering a new planet in Expedition Points by ×0.8. Can be researched repeatedly.</string>
+    <string name="diversityDescription">Each district multiplies its production by (1 + 0.01 × number of districts of a different type).\\n\nCan be researched repeatedly. Increased production does not raise resource consumption\n(but increased mining by Prospectors increases extracted resources from reserves).\\n\nCapitols do not benefit from this bonus in any way.</string>
+    <string name="gravityManipulationDescription">Increases the number of planets in the \"inner sphere\" by 1.\nA planet in the inner sphere cannot be lost in battle.</string>
+    <string name="unknownTechnology">Unknown technology</string>
+    <string name="getTechnologyDescriptionError">Something went wrong way.</string>
 
 </resources>

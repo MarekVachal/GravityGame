@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,6 +42,8 @@ fun ErrorMenu(
                 empireModel.updateErrorsShown(false)
             } else {
                 empireModel.updateErrorsShown(true)
+                empireModel.updateActionsShown(false)
+                empireModel.updateTransportMenuShown(false)
             }
         }
     ) {
@@ -69,7 +72,12 @@ fun ErrorMenu(
 }
 
 @Composable
-fun ErrorList(modifier: Modifier, errors: List<NewTurnError>, empire: Empire) {
+fun ErrorList(
+    modifier: Modifier,
+    errors: List<NewTurnError>,
+    empire: Empire,
+    empireModel: EmpireViewModel
+) {
     Card (
         modifier = modifier.padding(8.dp)
     ){
@@ -82,11 +90,15 @@ fun ErrorList(modifier: Modifier, errors: List<NewTurnError>, empire: Empire) {
                 modifier = modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ){
-                Icon(
-                    painter = painterResource(R.drawable.close),
-                    contentDescription = "Close icon",
-                    tint = Color.Black
-                )
+                IconButton(
+                    onClick = { empireModel.updateErrorsShown(false) }
+                ){
+                    Icon(
+                        painter = painterResource(R.drawable.close),
+                        contentDescription = "Close icon",
+                        tint = Color.Black
+                    )
+                }
             }
             LazyColumn {
                 items(errors.size) {
@@ -110,5 +122,4 @@ private fun ErrorRow(modifier: Modifier = Modifier, error: NewTurnError, empire:
             thickness = 1.dp
         )
     }
-
 }

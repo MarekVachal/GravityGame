@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -298,6 +297,10 @@ private fun ShipRow(
     numberOfShip: Int,
     isEnabled: Boolean
 ){
+    val removeEnable = numberOfShip != 0
+    val removeIcon = painterResource(if (removeEnable) R.drawable.remove else R.drawable.remove_disable)
+    val addIcon = painterResource(if (isEnabled) R.drawable.add else R.drawable.add_disable)
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
@@ -324,13 +327,17 @@ private fun ShipRow(
                 }
         )
 
-        Button(
+        IconButton(
             onClick = onRemoveButtonClick,
-            enabled = numberOfShip != 0,
+            enabled = removeEnable,
             modifier = Modifier
                 .weight(buttonWeight)
         ) {
-            Icon(painter = painterResource(id = R.drawable.remove), contentDescription = "Remove $shipName")
+            Icon(
+                painter = removeIcon,
+                contentDescription = "Remove $shipName",
+                tint = Color.Unspecified
+            )
         }
 
         Text(
@@ -340,13 +347,17 @@ private fun ShipRow(
                 .weight(column3Weight)
         )
 
-        Button(
+        IconButton(
             onClick = onAddButtonClick,
             enabled = isEnabled,
             modifier = Modifier
                 .weight(buttonWeight)
         ) {
-            Icon(painter = painterResource(id = R.drawable.add), contentDescription = "Add $shipName")
+            Icon(
+                painter = addIcon,
+                contentDescription = "Add $shipName",
+                tint = Color.Unspecified
+            )
         }
     }
 }

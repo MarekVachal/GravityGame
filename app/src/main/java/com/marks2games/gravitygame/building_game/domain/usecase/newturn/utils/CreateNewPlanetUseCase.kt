@@ -18,14 +18,13 @@ import javax.inject.Inject
  */
 class CreateNewPlanetUseCase @Inject constructor(
     private val calculatePlanetCost: CalculatePlanetCost,
-    private val generatePlanetIdUseCase: GeneratePlanetIdUseCase,
-    private val calculateBorderForPlanetGrowth: CalculateBorderForPlanetGrowth
+    private val generatePlanetIdUseCase: GeneratePlanetIdUseCase
 ) {
-    operator fun invoke(empire: Empire): Pair<List<Planet>, Int>{
+    operator fun invoke(empire: Empire): Empire {
         val planetCost = calculatePlanetCost.invoke(empire.planetsCount)
         val planetId = generatePlanetIdUseCase.invoke(empire.planets)
         val updatedExpeditions = empire.expeditions - planetCost
-        val planetType = when(empire.lastGetPlanet){
+        val planetType = when (empire.lastGetPlanet) {
             SmallPlanet -> MediumPlanet
             MediumPlanet -> LargePlanet
             LargePlanet -> SmallPlanet
@@ -33,13 +32,19 @@ class CreateNewPlanetUseCase @Inject constructor(
         }
         val newPlanet = Planet(
             id = planetId,
-            name = "Planet ${empire.planetsCount}",
-            type = planetType,
-            planetGrowthBorder = calculateBorderForPlanetGrowth.invoke(planetType.startingLevel)
+            name = "Planet ${empire.planetsCount+1}",
+            type = planetType
         )
         val updatedPlanets = empire.planets.toMutableList().apply {
             add(newPlanet)
         }
-        return Pair(updatedPlanets.toList(), updatedExpeditions)
+
+        return empire.copy(
+            expeditions = updatedExpeditions,
+            planets = updatedPlanets,
+            borderForNewPlanet = calculatePlanetCost.invoke(empire.planetsCount + 1),
+            lastGetPlanet = planetType,
+            planetsCount = empire.planetsCount + 1
+        )
     }
 }

@@ -5,8 +5,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.marks2games.gravitygame.building_game.ui.screen.EmpireOverview
+import com.marks2games.gravitygame.building_game.ui.screen.ResearchScreen
 import com.marks2games.gravitygame.building_game.ui.screen.TradeScreen
 import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
+import com.marks2games.gravitygame.building_game.ui.viewmodel.ResearchViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TradeViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TransportViewModel
 import com.marks2games.gravitygame.core.data.navigation.NavRoute
@@ -16,7 +18,8 @@ fun NavGraphBuilder.builderNavGraph(
     navController: NavController,
     empireViewModel: EmpireViewModel,
     transportModel: TransportViewModel,
-    tradeModel: TradeViewModel
+    tradeModel: TradeViewModel,
+    researchModel: ResearchViewModel
 ){
 
     navigation(startDestination = NavRoute.EmpireOverview.route, route = "BuilderGame"){
@@ -24,12 +27,20 @@ fun NavGraphBuilder.builderNavGraph(
             EmpireOverview(
                 empireModel = empireViewModel,
                 transportModel = transportModel,
-                onBackButtonClicked = { navController.navigate(Destinations.MAINMENU.name) }
+                onBackButtonClicked = { navController.navigate(Destinations.MAINMENU.name) },
+                toResearchScreen = { navController.navigate(NavRoute.ResearchScreen.route) }
             )
         }
         composable(NavRoute.TradeScreen.route){
             TradeScreen(
                 tradeModel = tradeModel,
+            )
+        }
+        composable(NavRoute.ResearchScreen.route){
+            ResearchScreen(
+                empireModel = empireViewModel,
+                researchModel = researchModel,
+                toEmpireScreenClicked = { navController.navigate(NavRoute.EmpireOverview.route) }
             )
         }
     }

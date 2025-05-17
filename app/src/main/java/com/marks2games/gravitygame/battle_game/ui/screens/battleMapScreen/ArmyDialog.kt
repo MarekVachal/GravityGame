@@ -1,5 +1,6 @@
 package com.marks2games.gravitygame.battle_game.ui.screens.battleMapScreen
 
+import android.content.ContentValues
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,6 +25,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -32,6 +35,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -377,37 +383,48 @@ fun ArmyDialogRow(
         )
 
         if (!isInfo) {
+            val removeEnabled = battleModel.checkRemoveShip(shipType = shipType)
+            val removeIcon = painterResource(if(removeEnabled) R.drawable.remove else R.drawable.remove_disable)
+            val addEnabled = battleModel.checkAddShip(
+                isWarperPresent = isWarperPresent,
+                shipType = shipType,
+                startLocation = startLocation,
+                endLocation = endLocation
+            )
+            val addIcon = painterResource(if(addEnabled) R.drawable.add else R.drawable.add_disable)
 
             Button(
                 onClick = { battleModel.removeShip(shipType = shipType) },
-                enabled = battleModel.checkRemoveShip(shipType = shipType),
-                modifier = modifier
+                enabled = removeEnabled,
+                modifier = Modifier
+                    .aspectRatio(1f)
+                    .padding(8.dp)
                     .weight(weightOfButtons),
-                contentPadding = PaddingValues(4.dp)
+                shape = RectangleShape,
+                contentPadding = PaddingValues(0.dp)
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.remove),
-                    contentDescription = "Remove icon"
+                    painter = removeIcon,
+                    contentDescription = "Remove icon",
+                    tint = Color.Unspecified
                 )
             }
 
 
             Button(
                 onClick = { battleModel.addShip(shipType = shipType) },
-                enabled = battleModel.checkAddShip(
-                    isWarperPresent = isWarperPresent,
-                    shipType = shipType,
-                    startLocation = startLocation,
-                    endLocation = endLocation
-                ),
+                enabled = addEnabled,
                 modifier = Modifier
+                    .aspectRatio(1f)
+                    .padding(8.dp)
                     .weight(weightOfButtons),
-                contentPadding = PaddingValues(4.dp)
-
+                shape = RectangleShape,
+                contentPadding = PaddingValues(0.dp)
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.add),
-                    contentDescription = "Add icon"
+                    painter = addIcon,
+                    contentDescription = "Add icon",
+                    tint = Color.Unspecified
                 )
             }
         }

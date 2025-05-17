@@ -50,6 +50,7 @@ fun NavGraphBuilder.battleNavGraph (
         ) { backStackEntry ->
             MatchmakingScreen(
                 matchmakingModel = matchmakingModel,
+                mainMenuModel = mainMenuModel,
                 onMatchConfirmed = {
                     navController.navigate(Destinations.BATTLEMAP.name)
                 },

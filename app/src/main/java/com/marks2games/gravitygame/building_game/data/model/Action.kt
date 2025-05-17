@@ -1,5 +1,6 @@
 package com.marks2games.gravitygame.building_game.data.model
 
+import com.marks2games.gravitygame.R
 import io.sentry.Sentry
 import java.util.UUID
 
@@ -7,6 +8,7 @@ sealed class Action {
     abstract val id: String
     abstract val planetId: Int
     abstract val type: ActionEnum
+    abstract val name: Int
     abstract fun toMap(): Map<String, Any>
 
     sealed class SetProduction : Action() {
@@ -14,6 +16,7 @@ sealed class Action {
             val value: Int,
             override val planetId: Int,
             override val id: String = UUID.randomUUID().toString(),
+            override val name: Int = R.string.expeditionProduction,
             override val type: ActionEnum = ActionEnum.EXPEDITIONS_ACTION
         ) : SetProduction() {
             override fun toMap(): Map<String, Any> = mapOf(
@@ -27,6 +30,7 @@ sealed class Action {
             val value: Int,
             override val planetId: Int,
             override val id: String = UUID.randomUUID().toString(),
+            override val name: Int = R.string.progressProductionName,
             override val type: ActionEnum = ActionEnum.PROGRESS_ACTION
         ) : SetProduction() {
             override fun toMap(): Map<String, Any> = mapOf(
@@ -40,6 +44,7 @@ sealed class Action {
             val value: Int,
             override val planetId: Int,
             override val id: String = UUID.randomUUID().toString(),
+            override val name: Int = R.string.armyProductionName,
             override val type: ActionEnum = ActionEnum.ARMY_ACTION
         ) : SetProduction() {
             override fun toMap(): Map<String, Any> = mapOf(
@@ -53,6 +58,7 @@ sealed class Action {
             val value: Int,
             override val planetId: Int,
             override val id: String = UUID.randomUUID().toString(),
+            override val name: Int = R.string.researchProductionName,
             override val type: ActionEnum = ActionEnum.RESEARCH_ACTION
         ) : SetProduction() {
             override fun toMap(): Map<String, Any> = mapOf(
@@ -66,6 +72,7 @@ sealed class Action {
             val value: InfrastructureSetting,
             override val planetId: Int,
             override val id: String = UUID.randomUUID().toString(),
+            override val name: Int = R.string.infrastructureProductionName,
             override val type: ActionEnum = ActionEnum.INFRA_ACTION
         ) : SetProduction() {
             override fun toMap(): Map<String, Any> = mapOf(
@@ -79,6 +86,7 @@ sealed class Action {
             val value: RocketMaterialsSetting,
             override val planetId: Int,
             override val id: String = UUID.randomUUID().toString(),
+            override val name: Int = R.string.rocketMaterialsProductionName,
             override val type: ActionEnum = ActionEnum.ROCKET_MATERIALS_ACTION
         ) : SetProduction(){
             override fun toMap(): Map<String, Any> = mapOf(
@@ -94,6 +102,7 @@ sealed class Action {
         data class BuildDistrict(
             override val planetId: Int,
             override val id: String = UUID.randomUUID().toString(),
+            override val name: Int = R.string.buildDistrict,
             override val districtId: Int,
             val district: DistrictEnum,
             override val type: ActionEnum = ActionEnum.BUILD_DISTRICT_ACTION
@@ -101,12 +110,14 @@ sealed class Action {
         data class DestroyDistrict(
             override val planetId: Int,
             override val id: String = UUID.randomUUID().toString(),
+            override val name: Int = R.string.destroyDistrict,
             override val districtId: Int,
             override val type: ActionEnum = ActionEnum.DESTROY_DISTRICT_ACTION
         ) : DistrictAction()
         data class ChangeDistrictMode(
             override val planetId: Int,
             override val id: String = UUID.randomUUID().toString(),
+            override val name: Int = R.string.changeDistrictModeDescription,
             override val districtId: Int,
             val districtType: DistrictEnum,
             val newMode: Enum<*>,
@@ -130,6 +141,7 @@ sealed class Action {
     data class TradeAction(
         override val planetId: Int,
         override val id: String = UUID.randomUUID().toString(),
+        override val name: Int = R.string.tradeName,
         val trade: Trade,
         override val type: ActionEnum = ActionEnum.TRADE_ACTION
     ) : Action() {
@@ -143,6 +155,7 @@ sealed class Action {
     data class TransportAction(
         override val planetId: Int,
         override val id: String = UUID.randomUUID().toString(),
+        override val name: Int = R.string.transportName,
         val transport: Transport,
         override val type: ActionEnum = ActionEnum.TRANSPORT_ACTION
     ) : Action() {

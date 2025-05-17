@@ -6,10 +6,10 @@ import com.marks2games.gravitygame.building_game.data.model.Empire
 import com.marks2games.gravitygame.building_game.data.model.Transport
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CalculateMetalCapacityUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CalculateOrganicSedimentsCapacityUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CalculatePlanetCost
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CalculatePlanetOSCapacityUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CalculateRocketMaterialCapacityUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CheckForNewPlanetUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CheckForResearchFinishUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.PlanetGrowthUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CloseDistrictIsWorkingUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CreateNewPlanetUseCase
@@ -63,8 +63,8 @@ class NewTurnUseClass @Inject constructor(
     private val finishDistrictConstructionUseCase: FinishDistrictConstructionUseCase,
     private val updatePossiblePlanetResourcesIncomeUseCase: UpdatePossiblePlanetResourcesIncomeUseCase,
     private val updatePossibleEmpireResourcesIncomeUseCase: UpdatePossibleEmpireResourcesIncomeUseCase,
-    private val calculateNewPlanetCost: CalculatePlanetCost,
-    private val calculatePlanetOSCapacityUseCase: CalculatePlanetOSCapacityUseCase
+    private val calculatePlanetOSCapacityUseCase: CalculatePlanetOSCapacityUseCase,
+    private val checkForResearchFinish: CheckForResearchFinishUseCase
 ) {
     operator fun invoke(empire: Empire, isPlanning: Boolean): Pair<Empire, List<NewTurnError>> {
         Log.d("NewTurn", "Starting new turn for empire: $empire")
@@ -242,6 +242,7 @@ class NewTurnUseClass @Inject constructor(
             Log.d("NewTurn", "After planet maintenance: $updatedPlanet")
 
             //10 Army maintenance
+            /*
             val armyMaintenanceResult = armyMaintenanceUseCase.invoke(updatedPlanet, isPlanning)
             Log.d("NewTurn", "Army maintenance result: $armyMaintenanceResult")
             when (armyMaintenanceResult) {
@@ -284,6 +285,8 @@ class NewTurnUseClass @Inject constructor(
                 }
             }
             Log.d("NewTurn", "After army maintenance: $updatedPlanet")
+
+             */
 
             //11 Produce ROCKET MATERIALS
             val rocketMaterialsResult = produceRocketMaterialsUseCase.invoke(updatedPlanet)
@@ -557,31 +560,22 @@ class NewTurnUseClass @Inject constructor(
         Log.d("NewTurn", "After updating empire: $updatedEmpire")
 
         //Check for new Planet from Expeditions
-        if(checkForNewPlanetUseCase.invoke(updatedEmpire)){
-            Log.d("NewTurn", "New planet is adding to Empire")
-            val result = createNewPlanetUseCase.invoke(updatedEmpire)
-            updatedEmpire = updatedEmpire.copy(
-                expeditions = result.second,
-                planets = result.first
-            )
-            updatedEmpire = updatedEmpire.copy(
-                borderForNewPlanet = calculateNewPlanetCost.invoke(updatedEmpire.planetsCount)
-            )
-            Log.d("NewTurn", "After new planet is added to empire: $updatedEmpire")
-        }
-
         if(!isPlanning){
+            if(checkForNewPlanetUseCase.invoke(updatedEmpire)){
+                Log.d("NewTurn", "New planet is adding to Empire")
+                updatedEmpire = createNewPlanetUseCase.invoke(updatedEmpire)
+                Log.d("NewTurn", "After new planet is added to empire: $updatedEmpire")
+            }
             updatedEmpire = updatedEmpire.copy(
                 actions = emptyList()
             )
             Log.d("NewTurn", "Action list for empire is cleaned.")
-        }
-
-        if(!isPlanning){
             val newTurns = empire.turns + 1
             updatedEmpire = updatedEmpire.copy(
                 turns = newTurns
             )
+            updatedEmpire = checkForResearchFinish.invoke(updatedEmpire)
+
         }
 
         if(isPlanning){

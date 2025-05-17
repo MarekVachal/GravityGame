@@ -17,13 +17,17 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.building_game.data.model.Action
 import com.marks2games.gravitygame.building_game.data.model.Empire
 import com.marks2games.gravitygame.building_game.data.model.EmpireUiState
+import com.marks2games.gravitygame.building_game.data.util.ActionDescriptionData
 import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
 import com.marks2games.gravitygame.core.ui.utils.SwipeUtil
 
@@ -40,6 +44,8 @@ fun ActionMenu(
                 empireModel.updateActionsShown(false)
             } else {
                 empireModel.updateActionsShown(true)
+                empireModel.updateErrorsShown(false)
+                empireModel.updateTransportMenuShown(false)
             }
         }
     ) {
@@ -69,7 +75,6 @@ fun ActionMenu(
 fun ActionList(
     modifier: Modifier,
     actions: List<Action>,
-    empire: Empire,
     empireModel: EmpireViewModel
 ){
     Card(
@@ -88,7 +93,7 @@ fun ActionList(
                 verticalAlignment = Alignment.Top
             ){
                 Text(
-                    text = "Delete all actions",
+                    text = stringResource(R.string.deleteAllActions),
                     modifier = modifier.clickable { empireModel.deleteAllActions() }
                 )
             }
@@ -102,7 +107,6 @@ fun ActionList(
                 { ActionRow(
                         modifier = modifier,
                         action = actions[it],
-                        empire = empire,
                         empireModel = empireModel
                     )
                 }
@@ -115,9 +119,23 @@ fun ActionList(
 private fun ActionRow(
     modifier: Modifier,
     action: Action,
-    empire: Empire,
     empireModel: EmpireViewModel
 ){
+    val descriptionData = remember { empireModel.getActionDescription(action) }
+
+    val description = when (descriptionData) {
+        is ActionDescriptionData.GenericDescription -> {
+            val actionName = stringResource(descriptionData.actionNameRes)
+            stringResource(R.string.action_description_generic, actionName, descriptionData.planetName)
+        }
+
+        is ActionDescriptionData.DistrictDescription -> {
+            val actionName = stringResource(descriptionData.actionNameRes)
+            val districtName = stringResource(descriptionData.districtNameRes)
+            stringResource(R.string.action_description_district, actionName, districtName, descriptionData.planetName)
+        }
+    }
+
     SwipeUtil(
         delete = {empireModel.deleteAction(action)},
         edit = { },
@@ -125,7 +143,7 @@ private fun ActionRow(
     ) {
         Column {
             Row {
-                Text("${action.type.name} on planet ${empire.planets.find { it.id == action.planetId }?.name ?: ""}")
+                Text(description)
             }
             HorizontalDivider(
                 modifier = modifier.padding(bottom = 4.dp),

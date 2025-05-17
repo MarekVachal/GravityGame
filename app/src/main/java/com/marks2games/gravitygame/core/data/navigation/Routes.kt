@@ -22,6 +22,7 @@ import com.marks2games.gravitygame.battle_game.ui.tutorial.TutorialViewModel
 import com.marks2games.gravitygame.battle_game.ui.utils.timer.TimerViewModel
 import com.marks2games.gravitygame.building_game.domain.builderNavGraph
 import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
+import com.marks2games.gravitygame.building_game.ui.viewmodel.ResearchViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TradeViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TransportViewModel
 import com.marks2games.gravitygame.core.domain.repository.SharedPreferencesRepository
@@ -44,6 +45,7 @@ fun Routes(
     val tradeModel: TradeViewModel = viewModel()
     val transportModel: TransportViewModel = viewModel()
     val empireViewModel: EmpireViewModel = viewModel()
+    val researchModel: ResearchViewModel = viewModel()
     val repository = BattleRepository(database.battleResultDao())
     val databaseModel: DatabaseViewModel = ViewModelProvider(
         owner, ViewModelFactory(repository)
@@ -87,7 +89,8 @@ fun Routes(
             navController = navController,
             empireViewModel = empireViewModel,
             transportModel = transportModel,
-            tradeModel = tradeModel
+            tradeModel = tradeModel,
+            researchModel = researchModel
         )
     }
 }

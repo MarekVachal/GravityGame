@@ -38,15 +38,14 @@ fun PlanetList(
     isForTransport: Boolean = false,
     onPlanetClick: (Planet?) -> Unit
 ) {
-    Log.d("Empire", "$empire")
     var planets = empire.planets
     var testPlanets = testEmpire.planets
     if (excludedPlanet != null) {
         planets = planets.filterNot { it.id == excludedPlanet.id }
         testPlanets = testPlanets.filterNot { it.id == excludedPlanet.id }
     }
-    Log.d("Planets", "$planets")
-    Log.d("TestPlanets", "$testPlanets")
+    Log.d("PlanetList", "Planets: $planets")
+    Log.d("PlanetList", "TestPlanets: $testPlanets")
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(16.dp),

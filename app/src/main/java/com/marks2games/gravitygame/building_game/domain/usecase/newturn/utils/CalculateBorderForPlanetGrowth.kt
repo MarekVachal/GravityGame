@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 class CalculateBorderForPlanetGrowth @Inject constructor() {
     operator fun invoke(planetLevel: Int): Int {
-        val newBorder = (planetLevel + 1) * 100
+        val newBorder = 100 * (planetLevel - 3)
         return newBorder
     }
 }

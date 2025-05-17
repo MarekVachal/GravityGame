@@ -5,17 +5,14 @@ import com.marks2games.gravitygame.building_game.data.model.Empire
 import com.marks2games.gravitygame.building_game.data.model.Planet
 import com.marks2games.gravitygame.building_game.data.model.SmallPlanet
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CalculatePlanetCost
-import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CalculateBorderForPlanetGrowth
 import javax.inject.Inject
 
 class CreateNewEmpireUseCase @Inject constructor(
-    private val calculatePlanetCost: CalculatePlanetCost,
-    private val calculatePlanetGrowthBorder: CalculateBorderForPlanetGrowth
+    private val calculatePlanetCost: CalculatePlanetCost
 ) {
     operator fun invoke(): Empire {
         val gamePlanet = Planet(
             id = 0,
-            planetGrowthBorder = calculatePlanetGrowthBorder.invoke(SmallPlanet.startingLevel),
             metal = 100,
             districts = listOf(
             District.Capitol(districtId = 0),
@@ -27,7 +24,6 @@ class CreateNewEmpireUseCase @Inject constructor(
         )
         val testPlanet = Planet(
             id = 0,
-            planetGrowthBorder = calculatePlanetGrowthBorder.invoke(SmallPlanet.startingLevel),
             districts = listOf(
                 District.Capitol(districtId = 0),
                 District.Prospectors(districtId = 1),
@@ -42,7 +38,6 @@ class CreateNewEmpireUseCase @Inject constructor(
         val testPlanet2 = Planet(
             name = "Planet 1",
             id = 1,
-            planetGrowthBorder = calculatePlanetGrowthBorder.invoke(SmallPlanet.startingLevel),
             districts = listOf(
                 District.Capitol(districtId = 0),
                 District.Prospectors(districtId = 1),

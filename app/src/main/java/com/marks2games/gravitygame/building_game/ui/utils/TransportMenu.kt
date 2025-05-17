@@ -19,7 +19,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.building_game.data.model.Empire
 import com.marks2games.gravitygame.building_game.data.model.EmpireUiState
 import com.marks2games.gravitygame.building_game.data.model.Transport
@@ -39,6 +41,8 @@ fun TransportMenu(
                 empireModel.updateTransportMenuShown(false)
             } else {
                 empireModel.updateTransportMenuShown(true)
+                empireModel.updateErrorsShown(false)
+                empireModel.updateActionsShown(false)
             }
         }
     ) {
@@ -77,13 +81,16 @@ fun TransportsList(
 
     ){
         Column (
-            modifier = modifier.wrapContentSize()
+            modifier = modifier
+                .wrapContentSize()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ){
             Row(
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.Top
             ){
                 Text(
-                    text = "Delete all transports",
+                    text = stringResource(R.string.deleteAllTransports),
                     modifier = modifier.clickable {empireModel.deleteAllTransports()}
                 )
             }

@@ -1,6 +1,7 @@
 package com.marks2games.gravitygame.building_game.data.model
 
 import com.marks2games.gravitygame.R
+import androidx.annotation.StringRes
 import io.sentry.Sentry
 
 sealed class District{
@@ -109,7 +110,7 @@ sealed class District{
     }
 
     data class InConstruction(
-        override val nameId: Int = 1,
+        override val nameId: Int = R.string.inConstructionDistrictName,
         override val districtId: Int,
         override val type: DistrictEnum = DistrictEnum.IN_CONSTRUCTION,
         override val isWorking: Boolean = true,
@@ -267,7 +268,7 @@ sealed class District{
                 )
                 DistrictEnum.IN_CONSTRUCTION -> InConstruction(
                     districtId = districtId,
-                    infra = (map["infra"] as? String?)?.toInt() ?: 0,
+                    infra = (map["infra"] as? Number?)?.toInt() ?: 0,
                     buildingDistrict = (map["buildingDistrict"] as? String?)?.toDistrictEnum()?: DistrictEnum.EMPTY
                 )
             }
@@ -278,17 +279,23 @@ sealed class District{
 enum class ProspectorsMode {METAL, ORGANIC_SEDIMENTS}
 enum class IndustrialMode {INFRASTRUCTURE, ROCKET_MATERIALS, METAL}
 enum class UrbanCenterMode {INFLUENCE, RESEARCH}
-enum class DistrictEnum {
-    CAPITOL,
-    PROSPECTORS,
-    EMPTY,
-    INDUSTRIAL,
-    EXPEDITION_PLATFORM,
-    URBAN_CENTER,
-    IN_CONSTRUCTION
+enum class DistrictEnum (
+    @StringRes val nameIdNominative: Int,
+    @StringRes val nameIdGenitive: Int,
+    @StringRes val nameIdInstrumental: Int
+){
+    CAPITOL(R.string.capitolDistrictName, R.string.capitolDistrictGenitive, R.string.capitolDistrictInstrumental),
+    PROSPECTORS(R.string.prospectorsDistrictName, R.string.prospectorsDistrictGenitive, R.string.prospectorsDistrictInstrumental),
+    EMPTY(R.string.emptyDistrictName, R.string.emptyDistrictGenitive, R.string.emptyDistrictInstrumental),
+    INDUSTRIAL(R.string.industrialDistrictName, R.string.industrialDistrictGenitive, R.string.industrialDistrictInstrumental),
+    EXPEDITION_PLATFORM(R.string.expeditionPlatformDistrictName, R.string.expeditionPlatformDistrictGenitive, R.string.expeditionPlatformDistrictInstrumental),
+    URBAN_CENTER(R.string.urbanCenterDistrictName, R.string.urbanCenterDistrictGenitive, R.string.urbanCenterDistrictInstrumental),
+    IN_CONSTRUCTION(R.string.inConstructionDistrictName, R.string.inConstructionDistrictGenitive, R.string.inConstructionDistrictInstrumental)
 }
-enum class RocketMaterialsSetting {NOTHING, MAXIMUM, USAGE}
-enum class InfrastructureSetting {NOTHING, MAXIMUM, USAGE}
+enum class RocketMaterialsSetting (@StringRes val nameId: Int)
+{NOTHING (R.string.nothing), MAXIMUM(R.string.maximum), USAGE(R.string.usage)}
+enum class InfrastructureSetting (@StringRes val nameId: Int)
+{NOTHING (R.string.nothing), MAXIMUM(R.string.maximum), USAGE(R.string.usage)}
 
 fun String.toDistrictEnum(): DistrictEnum? {
     return try{

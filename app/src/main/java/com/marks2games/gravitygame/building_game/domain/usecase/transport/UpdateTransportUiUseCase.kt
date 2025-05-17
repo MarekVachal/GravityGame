@@ -13,30 +13,35 @@ class UpdateTransportUiUseCase @Inject constructor() {
         transport: Transport,
         isForPlanet1: Boolean,
         isAdding: Boolean,
-        modifiedEmpire: Empire
-    ): Empire {
-        val planet1 = modifiedEmpire.planets.firstOrNull { it.id == transport.planet1Id }?: return modifiedEmpire
-        val planet2 = modifiedEmpire.planets.firstOrNull { it.id == transport.planet2Id }?: return modifiedEmpire
-        var updatedEmpire = modifiedEmpire
+        modifiedEmpire: Empire?
+    ): Empire? {
+        if(modifiedEmpire != null){
+            val planet1 = modifiedEmpire.planets.firstOrNull { it.id == transport.planet1Id }?: return modifiedEmpire
+            val planet2 = modifiedEmpire.planets.firstOrNull { it.id == transport.planet2Id }?: return modifiedEmpire
+            var updatedEmpire = modifiedEmpire
 
-        val (exported, imported) = if (isForPlanet1) planet1 to planet2 else planet2 to planet1
-        val d = delta(isAdding)
-        val updatedExported = exported.updateStock(resource, -d)
-        val updatedImported = if (!isCostChange) {
-            imported.updatePossibleIncome(resource, +d)
-        } else {
-            imported
-        }
-
-        val newPlanets = modifiedEmpire.planets.map {
-            when (it.id) {
-                updatedExported.id -> updatedExported
-                updatedImported.id -> updatedImported
-                else               -> it
+            val (exported, imported) = if (isForPlanet1) planet1 to planet2 else planet2 to planet1
+            val d = delta(isAdding)
+            val updatedExported = exported.updateStock(resource, -d)
+            val updatedImported = if (!isCostChange) {
+                imported.updatePossibleIncome(resource, +d)
+            } else {
+                imported
             }
+
+            val newPlanets = modifiedEmpire.planets.map {
+                when (it.id) {
+                    updatedExported.id -> updatedExported
+                    updatedImported.id -> updatedImported
+                    else               -> it
+                }
+            }
+            updatedEmpire = updatedEmpire.copy(planets = newPlanets)
+            return updatedEmpire
+        } else {
+            return null
         }
-        updatedEmpire = updatedEmpire.copy(planets = newPlanets)
-        return updatedEmpire
+
     }
 }
 

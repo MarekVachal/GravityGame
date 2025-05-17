@@ -1,6 +1,7 @@
 package com.marks2games.gravitygame.building_game.data.model
 
 data class Empire(
+    val hasLaunched: Boolean = false,
     val research: Int = 0,
     val tradePower: Int = 0,
     val army: Int = 0,
@@ -13,9 +14,10 @@ data class Empire(
     val empireResourcesPossibleIncome: EmpireResources = EmpireResources(),
     val borderForNewPlanet: Int,
     val turns: Int = 0,
-    val lastGetPlanet: PlanetType
+    val lastGetPlanet: PlanetType,
+    val technologies: List<Technology> = createAllTechnologies()
 ){
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         Resource.RESEARCH.name to research,
         Resource.TRADE_POWER.name to tradePower,
         Resource.ARMY.name to army,
@@ -26,7 +28,8 @@ data class Empire(
         "transports" to transports.map { it.toMap() },
         "borderForNewPlanet" to borderForNewPlanet,
         "turns" to turns,
-        "lastGetPlanet" to lastGetPlanet.name
+        "lastGetPlanet" to lastGetPlanet.name,
+        "technologies" to technologies.toFirebaseMap()
     )
 
     companion object {
@@ -45,6 +48,8 @@ data class Empire(
                 LargePlanet.name -> LargePlanet
                 else -> SmallPlanet
             }
+            val techsMap = map["technologies"] as? Map<String, Map<String, Any>> ?: emptyMap()
+            val technologies = technologiesFromFirebaseMap(techsMap)
 
             return Empire(
                 research = (map[Resource.RESEARCH.name] as Long).toInt(),
@@ -57,24 +62,10 @@ data class Empire(
                 borderForNewPlanet = (map["borderForNewPlanet"] as? Long)?.toInt() ?: 1000,
                 turns = (map["turns"] as? Long)?.toInt() ?: 0,
                 lastGetPlanet = lastGetPlanet,
-                planets = emptyList()
+                planets = emptyList(),
+                planetsCount = (map["planetsCount"] as Number?)?.toInt()?: 1,
+                technologies = technologies
             )
         }
     }
-}
-
-enum class Resource {
-    RESEARCH,
-    TRADE_POWER,
-    ARMY,
-    CREDITS,
-    EXPEDITIONS,
-    BIOMASS,
-    METAL,
-    ORGANIC_SEDIMENTS,
-    INFRASTRUCTURE,
-    ROCKET_MATERIALS,
-    PROGRESS,
-    DEVELOPMENT,
-    INFLUENCE
 }

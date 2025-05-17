@@ -16,11 +16,16 @@ import com.marks2games.gravitygame.building_game.data.model.Planet
 import com.marks2games.gravitygame.building_game.data.model.ProspectorsMode
 import com.marks2games.gravitygame.building_game.data.model.Resource
 import com.marks2games.gravitygame.building_game.data.model.RocketMaterialsSetting
+import com.marks2games.gravitygame.building_game.data.model.Technology
+import com.marks2games.gravitygame.building_game.data.model.TechnologyEnum
 import com.marks2games.gravitygame.building_game.data.model.Trade
 import com.marks2games.gravitygame.building_game.data.model.Transport
 import com.marks2games.gravitygame.building_game.data.model.UrbanCenterMode
+import com.marks2games.gravitygame.building_game.data.util.ActionDescriptionData
 import com.marks2games.gravitygame.building_game.domain.usecase.GetEmpireUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.NewTurnUseClass
+import com.marks2games.gravitygame.building_game.domain.usecase.technology.GetTechnologyPriceUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.technology.UpdateResearchingTechnologyUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.transport.GetAllTransports
 import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddArmyProductionActionUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddExpeditionProductionActionUseCase
@@ -37,6 +42,11 @@ import com.marks2games.gravitygame.building_game.domain.usecase.useractions.Save
 import com.marks2games.gravitygame.building_game.domain.usecase.utils.CreateNewEmpireUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.utils.DeleteActionUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.utils.DeleteTransportUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.utils.GetActionDescriptionUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.utils.GetConsumedResourceUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.utils.GetResourceValueUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.utils.MaxProgressProductionUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.utils.MaxResearchProductionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -64,6 +74,13 @@ class EmpireViewModel @Inject constructor(
     private val deleteActionUseCase: DeleteActionUseCase,
     private val deleteTransportUseCase: DeleteTransportUseCase,
     private val getAllTransports: GetAllTransports,
+    private val maxProgressProduction: MaxProgressProductionUseCase,
+    private val getActionDescription: GetActionDescriptionUseCase,
+    private val getResourceValue: GetResourceValueUseCase,
+    private val getConsumedResource: GetConsumedResourceUseCase,
+    private val maxResearchProduction: MaxResearchProductionUseCase,
+    private val getTechnologyPrice: GetTechnologyPriceUseCase,
+    private val updateResearchingTechnology: UpdateResearchingTechnologyUseCase,
     createNewEmpireUseCase: CreateNewEmpireUseCase
 ) : ViewModel() {
 
@@ -73,6 +90,28 @@ class EmpireViewModel @Inject constructor(
     val testEmpire: StateFlow<Empire> = _testEmpire.asStateFlow()
     private val _empireUiState = MutableStateFlow(EmpireUiState())
     val empireUiState: StateFlow<EmpireUiState> = _empireUiState.asStateFlow()
+
+    fun getTechnologyPrice(): Int{
+        return getTechnologyPrice.invoke(
+            empire.value.technologies
+        )
+    }
+
+    fun setResearchingTechnology(newTechnologies: List<Technology>){
+        _empire.update { it.copy(technologies = newTechnologies) }
+    }
+
+    fun getConsumedResource(resource: Resource, isForProspectors: Boolean): Pair<Resource?, Resource?>{
+        return getConsumedResource.invoke(resource, isForProspectors)
+    }
+
+    fun getResourceValue(resource: Resource, isForProspectors: Boolean): Triple<Int?, Int?, Int?>{
+        return getResourceValue.invoke(resource, isForProspectors)
+    }
+
+    fun getActionDescription(action: Action): ActionDescriptionData {
+        return getActionDescription.invoke(action, empire.value)
+    }
 
     fun deleteAction(action: Action){
         _empire.update { state ->
@@ -119,6 +158,14 @@ class EmpireViewModel @Inject constructor(
         }
     }
 
+    fun calculateMaxProgressProduction(planet: Planet): Int{
+        return maxProgressProduction(planet, empire.value.actions)
+    }
+
+    fun calculateMaxResearchProduction(planet: Planet): Int{
+        return maxResearchProduction.invoke(planet)
+    }
+
     fun openTransportDialog(planet: Planet){
         _empireUiState.update { state ->
             state.copy(
@@ -154,6 +201,12 @@ class EmpireViewModel @Inject constructor(
             val newEmpire = getEmpireUseCase.invoke()
             _empire.update { newEmpire }
             testNewTurn(newEmpire)
+
+            _empire.update { state ->
+                state.copy(
+                    hasLaunched = true
+                )
+            }
         }
     }
 
@@ -261,10 +314,10 @@ class EmpireViewModel @Inject constructor(
                 planetIdForDetails = planetId,
                 districtForDialog = district,
                 modeIsChecked = modeIsSelected,
-                armyProductionSet = planet.armyConstructionSetting,
-                expeditionsProductionSet = planet.expeditionsSetting,
-                progressProductionSet = planet.progressSetting,
-                researchProductionSet = planet.researchSetting,
+                armyProductionSet = planet.armyConstructionSetting.toString(),
+                expeditionsProductionSet = planet.expeditionsSetting.toString(),
+                progressProductionSet = planet.progressSetting.toString(),
+                researchProductionSet = planet.researchSetting.toString(),
                 infrastructureProductionSet = planet.infrastructureSetting,
                 rocketMaterialsProductionSet = planet.rocketMaterialsSetting
             )
@@ -279,7 +332,7 @@ class EmpireViewModel @Inject constructor(
         }
     }
 
-    fun updateIntProductionState(resource: Resource, value: Int) {
+    fun updateIntProductionState(resource: Resource, value: String) {
         _empireUiState.update { state ->
             when (resource) {
                 Resource.ARMY -> state.copy(armyProductionSet = value)

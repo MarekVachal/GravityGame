@@ -28,8 +28,8 @@ android {
         applicationId = "com.marks2games.gravitygame"
         minSdk = 26
         targetSdk = 35
-        versionCode = 10
-        versionName = "1.2.7"
+        versionCode = 11
+        versionName = "1.2.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -105,7 +105,7 @@ dependencies {
     val hiltVersion = "2.55"
     val ktorVersion = "3.0.3"
     val coroutineVersion = "1.10.1"
-    val sentryVersion = "8.7.0"
+    val sentryVersion = "8.11.1"
 
     //Ktor
     implementation ("io.ktor:ktor-client-core:$ktorVersion")

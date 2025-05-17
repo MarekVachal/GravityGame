@@ -26,6 +26,35 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun registerWithEmail(email: String, password: String) {
+        try {
+            auth.createUserWithEmailAndPassword(email, password).await()
+            setHasSignInUseCase(true)
+        } catch (e: Exception) {
+            Sentry.captureException(e)
+            throw e
+        }
+    }
+
+    override suspend fun signInWithEmail(email: String, password: String) {
+        try {
+            auth.signInWithEmailAndPassword(email, password).await()
+            setHasSignInUseCase(true)
+        } catch (e: Exception) {
+            Sentry.captureException(e)
+            throw e
+        }
+    }
+
+    override suspend fun resetPassword(email: String) {
+        try {
+            auth.sendPasswordResetEmail(email).await()
+        } catch (e: Exception) {
+            Sentry.captureException(e)
+            throw e
+        }
+    }
+
     override suspend fun linkQuestAccountWithGoogle(onUserUpdated: () -> Unit) {
         try {
             val token = googleAuthHelper.getGoogleIdToken()

@@ -24,18 +24,18 @@ class ProduceProgressUseCase @Inject constructor() {
         }
         val exampleDistrict = planet.districts.filterIsInstance<District.Capitol>().first()
         val resources = exampleDistrict.generateResources()
-        val productionRate = resources.produced[Resource.PROGRESS] ?: 1
-        val consumptionBiomassRate = resources.consumed[Resource.BIOMASS]?: 1
-        val consumptionInfrastructureRate = resources.consumed[Resource.INFRASTRUCTURE]?: 1
+        val productionRate = resources.produced[Resource.PROGRESS] ?: 0
+        val consumptionBiomassRate = resources.consumed[Resource.BIOMASS]?: 0
+        val consumptionInfrastructureRate = resources.consumed[Resource.INFRASTRUCTURE]?: 0
 
-        val maxBiomassBasedProduction = floor(planet.biomass / consumptionBiomassRate).toInt() * productionRate
-        val maxInfrastructureBasedProduction = planet.infrastructure / consumptionInfrastructureRate * productionRate
+        val maxBiomassBasedProduction = floor((planet.biomass / consumptionBiomassRate) * productionRate).toInt()
+        val maxInfrastructureBasedProduction = floor((planet.infrastructure.toDouble() / consumptionInfrastructureRate) * productionRate).toInt()
         val availableResource = min(maxBiomassBasedProduction, maxInfrastructureBasedProduction)
         val availableProduction = min(availableResource, planet.progressSetting)
         val success = ProduceProgressResult.Success(
             planet.progress + availableProduction,
-            planet.infrastructure - (availableProduction / productionRate) * consumptionInfrastructureRate,
-            planet.biomass - ((availableProduction / productionRate) * consumptionBiomassRate).toFloat()
+            planet.infrastructure - ((availableProduction.toFloat() / productionRate) * consumptionInfrastructureRate).toInt(),
+            planet.biomass - ((availableProduction.toFloat() / productionRate) * consumptionBiomassRate)
         )
 
         return if(!isPlanning) {
@@ -52,11 +52,7 @@ class ProduceProgressUseCase @Inject constructor() {
             success
         } else {
             ProduceProgressResult.FailureWithSuccess(
-                success = ProduceProgressResult.Success(
-                    progress = planet.progress + planet.progressSetting,
-                    infrastructure = planet.infrastructure - ((planet.progressSetting / productionRate) * consumptionInfrastructureRate),
-                    biomass = planet.biomass - ((planet.progressSetting / productionRate) * consumptionBiomassRate).toFloat()
-                ),
+                success = success,
                 error = ProduceProgressResult.Error.InsufficientResources(
                     missingInfra = max(0, planet.progressSetting - maxInfrastructureBasedProduction),
                     missingBiomass = max(0, planet.progressSetting - maxBiomassBasedProduction)

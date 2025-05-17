@@ -5,7 +5,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -93,7 +96,7 @@ fun TransportDialog(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Is long term transport?")
+                        Text(stringResource(R.string.isLongTermTransport))
                         Checkbox(
                             checked = transportUiState.transport.isLongTime,
                             onCheckedChange = { transportModel.updateIsLongTermChosen(it) }
@@ -101,8 +104,9 @@ fun TransportDialog(
                     }
                     Row{
                         Text(
-                            text = "Cost: ${transportUiState.transport.cost.toInt()} "
+                            text = stringResource(R.string.cost, transportUiState.transport.cost.toInt())
                         )
+                        Spacer(modifier = modifier.width(12.dp))
                         Image(
                             painter = painterResource(R.drawable.organic_sediments_icon),
                             contentDescription = "Cost",
@@ -127,7 +131,7 @@ fun TransportDialog(
                                     isForTransport = true,
                                     onPlanetClick = { }
                                 )
-                            }?: onPlanetNotFound()
+                            }
                             if (transportUiState.isTransportReady){
                                 listOf(
                                     Resource.ORGANIC_SEDIMENTS,
@@ -152,19 +156,21 @@ fun TransportDialog(
                                         shape = RoundedCornerShape(4.dp)
                                     )
                             ) {
-                                PlanetList(
-                                    modifier = modifier,
-                                    isForTransport = true,
-                                    empire = empire,
-                                    testEmpire = transportEmpire,
-                                    excludedPlanet = planet,
-                                    onPlanetClick = {
-                                        transportModel.updateChosen2Planet(
-                                            planet = it,
-                                            onPlanetNotFound = { onPlanetNotFound() }
-                                        )
-                                    }
-                                )
+                                transportEmpire?.let{
+                                    PlanetList(
+                                        modifier = modifier,
+                                        isForTransport = true,
+                                        empire = empire,
+                                        testEmpire = it,
+                                        excludedPlanet = planet,
+                                        onPlanetClick = {
+                                            transportModel.updateChosen2Planet(
+                                                planet = it,
+                                                onPlanetNotFound = { onPlanetNotFound() }
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         } else {
                             Column(
@@ -183,8 +189,8 @@ fun TransportDialog(
                                                     isForTransport = true,
                                                     onPlanetClick = { }
                                                 )
-                                            }?: onPlanetNotFound()
-                                        }?: onPlanetNotFound()
+                                            }
+                                        }
 
                                     IconButton(
                                         modifier = modifier.align(Alignment.TopEnd),
@@ -217,13 +223,12 @@ fun TransportDialog(
                                                     transportUiState = transportUiState,
                                                     resource = it,
                                                     empire = empire,
-                                                    transportModel = transportModel,
-                                                    onPlanetNotFound = onPlanetNotFound
+                                                    transportModel = transportModel
                                                 )
                                             }
                                         }
-                                    }?: onPlanetNotFound()
-                                }?: onPlanetNotFound()
+                                    }
+                                }
                             }
                         }
                     }
@@ -271,7 +276,7 @@ private fun ResourceRowForPlanet1(
                     color = Color.Black,
                     shape = RoundedCornerShape(4.dp)
                 )
-                .width(24.dp)
+                .width(56.dp)
         ) {
             Text(
                 modifier = Modifier
@@ -287,9 +292,14 @@ private fun ResourceRowForPlanet1(
                 .padding(start = 12.dp)
                 .size(24.dp)
         )
-        IconButton(
+        Button(
             onClick = { transportModel.addResource(resource, true) },
-            enabled = transportModel.isAddButtonEnabled(planet, resource, true)
+            enabled = transportModel.isAddButtonEnabled(planet, resource, true),
+            modifier = Modifier
+                .padding(8.dp)
+                .size(24.dp),
+            shape = RectangleShape,
+            contentPadding = PaddingValues(0.dp)
         ) {
             Icon(
                 painter = addIcon,
@@ -297,9 +307,14 @@ private fun ResourceRowForPlanet1(
                 tint = Color.Unspecified
             )
         }
-        IconButton(
+        Button(
             onClick = { transportModel.removeResource(resource, true) },
-            enabled = transportModel.isRemoveButtonEnabled(planet, resource, true)
+            enabled = transportModel.isRemoveButtonEnabled(planet, resource, true),
+            modifier = Modifier
+                .padding(8.dp)
+                .size(24.dp),
+            shape = RectangleShape,
+            contentPadding = PaddingValues(0.dp)
         ) {
             Icon(
                 painter = removeIcon,
@@ -320,8 +335,7 @@ private fun ResourceRowForPlanet2(
     transportUiState: TransportUiState,
     transportModel: TransportViewModel,
     resource: Resource,
-    empire: Empire,
-    onPlanetNotFound: () -> Unit
+    empire: Empire
 ) {
     val planet = transportModel.getPlanet(
         planetId = transportUiState.transport.planet2Id!!,
@@ -339,9 +353,14 @@ private fun ResourceRowForPlanet2(
                 contentDescription = "Arrow",
                 tint = Color.Unspecified
             )
-            IconButton(
+            Button(
                 onClick = { transportModel.removeResource(resource, false) },
-                enabled = transportModel.isRemoveButtonEnabled(planet, resource, false)
+                enabled = transportModel.isRemoveButtonEnabled(planet, resource, false),
+                modifier = Modifier
+                    .padding(8.dp)
+                    .size(24.dp),
+                shape = RectangleShape,
+                contentPadding = PaddingValues(0.dp)
             ) {
                 Icon(
                     painter = removeIcon,
@@ -349,9 +368,14 @@ private fun ResourceRowForPlanet2(
                     tint = Color.Unspecified
                 )
             }
-            IconButton(
+            Button(
                 onClick = { transportModel.addResource(resource, false) },
-                enabled = transportModel.isAddButtonEnabled(planet, resource, false)
+                enabled = transportModel.isAddButtonEnabled(planet, resource, false),
+                modifier = Modifier
+                    .padding(8.dp)
+                    .size(24.dp),
+                shape = RectangleShape,
+                contentPadding = PaddingValues(0.dp)
             ) {
                 Icon(
                     painter = addIcon,
@@ -373,7 +397,7 @@ private fun ResourceRowForPlanet2(
                         color = Color.Black,
                         shape = RoundedCornerShape(4.dp)
                     )
-                    .width(24.dp)
+                    .width(56.dp)
             ) {
                 Text(
                     modifier = Modifier.padding(horizontal = 4.dp),
@@ -382,5 +406,5 @@ private fun ResourceRowForPlanet2(
                 )
             }
         }
-    } ?: onPlanetNotFound()
+    }
 }

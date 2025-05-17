@@ -1,5 +1,6 @@
 package com.marks2games.gravitygame.building_game.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.marks2games.gravitygame.building_game.data.model.Empire
 import com.marks2games.gravitygame.building_game.data.model.Planet
@@ -34,14 +35,13 @@ class TransportViewModel @Inject constructor(
     private val getPlanet: GetPlanetUseCase,
     private val canPlanet2Export: CanPlanet2ExportUseCase,
     private val updateModifiedEmpire: UpdateModifiedEmpireUseCase,
-    private val updateTransportUi: UpdateTransportUiUseCase,
-    createNewEmpireUseCase: CreateNewEmpireUseCase
+    private val updateTransportUi: UpdateTransportUiUseCase
 ) : ViewModel() {
 
     private val _transportUiState = MutableStateFlow(TransportUiState())
     val transportUiState: StateFlow<TransportUiState> = _transportUiState
-    private val _modifiedEmpire = MutableStateFlow(createNewEmpireUseCase.invoke())
-    val modifiedEmpire: StateFlow<Empire> = _modifiedEmpire
+    private val _modifiedEmpire = MutableStateFlow<Empire?>(null)
+    val modifiedEmpire: StateFlow<Empire?> = _modifiedEmpire
     private lateinit var realEmpire: Empire
 
     private fun updateTransportUi(isCostChange: Boolean, resource: Resource, isAdding: Boolean, isForPlanet1: Boolean){
@@ -88,16 +88,17 @@ class TransportViewModel @Inject constructor(
         return isRemoveButtonEnabled.invoke(planet, resource, map)
     }
 
-    fun getPlanet(planetId: Int, empire: Empire): Planet? {
+    fun getPlanet(planetId: Int, empire: Empire?): Planet? {
         return getPlanet.invoke(planetId, empire)
     }
 
     fun launchTransportDialog(empire: Empire, planet: Planet) {
         val testEmpire = testNewTurnUseClass.invoke(empire, true).first
+        Log.d("TransportModel", "launchTransportDialog: ${testEmpire.planets.size}")
         val modifiedEmpire = updateModifiedEmpire.invoke(testEmpire, planet.id, null)
+        Log.d("TransportModel", "launchTransportDialog: ${modifiedEmpire?.planets?.size}")
 
-        _modifiedEmpire.update { modifiedEmpire
-        }
+        _modifiedEmpire.update { modifiedEmpire }
         val newTransport = Transport(
             planet1Id = planet.id,
             transportId = generateTransportId.invoke(empire)
@@ -133,23 +134,34 @@ class TransportViewModel @Inject constructor(
     }
 
     fun updateChosen2Planet(planet: Planet?, onPlanetNotFound: () -> Unit) {
-        val testPlanet = planet?.let { getPlanet.invoke(it.id, modifiedEmpire.value) }
-        _modifiedEmpire.update { state ->
-            updateModifiedEmpire.invoke(state, null, testPlanet?.id)
-        }
-
-        return if (planet != null && testPlanet == null) {
-            onPlanetNotFound()
-        } else {
+        return if(planet == null){
             val newTransport = transportUiState.value.transport.copy(
-                planet2Id = planet?.id
+                planet2Id = null
             )
-
             _transportUiState.update { state ->
                 state.copy(
                     transport = newTransport,
-                    isTransportReady = true
+                    isTransportReady = false
                 )
+            }
+        } else {
+            val testPlanet = planet.let { getPlanet.invoke(it.id, modifiedEmpire.value) }
+            _modifiedEmpire.update { state ->
+                updateModifiedEmpire.invoke(state, null, testPlanet?.id)
+            }
+
+            if (testPlanet == null) {
+                onPlanetNotFound()
+            } else {
+                val newTransport = transportUiState.value.transport.copy(
+                    planet2Id = planet.id
+                )
+                _transportUiState.update { state ->
+                    state.copy(
+                        transport = newTransport,
+                        isTransportReady = true
+                    )
+                }
             }
         }
     }

@@ -41,7 +41,7 @@ class PlanetGrowthUseCase @Inject constructor(
         newDistricts.add(District.Empty(districtId = getIdForNewDistrictUseCase.invoke(planet.districts.size)))
         val oldGrowthBorder = planet.planetGrowthBorder
         Log.d("ProgressPlanetGrowth", "oldGrowthBorder: $oldGrowthBorder")
-        val newBorder = calculateBorderForPlanetGrowth.invoke(planet.level + 1)
+        val newBorder = calculateBorderForPlanetGrowth.invoke(planet.level+1)
         Log.d("ProgressPlanetGrowth", "newBorder: $newBorder")
         return planet.copy(
             level = planet.level + 1,

@@ -15,6 +15,7 @@ import com.marks2games.gravitygame.core.domain.error.ProduceInfraResult
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.ceil
 
 class ProduceInfrastructureUseCase @Inject constructor(
     private val maintenanceCost: CalculatePlanetMaintenanceUseCase
@@ -22,8 +23,10 @@ class ProduceInfrastructureUseCase @Inject constructor(
     operator fun invoke(planet: Planet, actions: List<Action>, isPlanning: Boolean): ProduceInfraResult {
         val capitolDistrict = planet.districts.filterIsInstance<District.Capitol>().first()
         val capitolResources = capitolDistrict.generateResources()
-        val infraProducedByCapitol = capitolResources.produced[Resource.INFRASTRUCTURE] ?: 1
         val planetMetals = planet.planetMetal
+        val possibleInfraProducedByCapitol = capitolResources.produced[Resource.INFRASTRUCTURE] ?: 0
+        val infraProducedByCapitol = min(possibleInfraProducedByCapitol, planetMetals)
+        Log.d("ProduceInfra", "Infra produced by capitol: $infraProducedByCapitol")
         val maxProductionFromIndustrials = planet.districts
             .filterIsInstance<District.Industrial>()
             .filter { it.mode == IndustrialMode.INFRASTRUCTURE && it.isWorking }
@@ -31,13 +34,7 @@ class ProduceInfrastructureUseCase @Inject constructor(
         Log.d("ProduceInfra", "Max infra from industrials: $maxProductionFromIndustrials")
 
         if(maxProductionFromIndustrials == 0 || planet.infrastructureSetting == InfrastructureSetting.NOTHING){
-            return if(planetMetals < infraProducedByCapitol){
-                Log.d("ProduceInfra", "Insufficient planet metals for infra from Capitol only")
-                ProduceInfraResult.Error.InsufficientPlanetMetalsForInfrastructure
-            } else {
-                Log.d("ProduceInfra", "Only Capitol produces infra: success")
-                ProduceInfraResult.Success(infraProducedByCapitol, planet.metal, planetMetals - infraProducedByCapitol)
-            }
+            return ProduceInfraResult.Success(infraProducedByCapitol, planet.metal, planetMetals - infraProducedByCapitol)
         }
 
         val industrialDistrict = planet.districts
@@ -48,7 +45,10 @@ class ProduceInfrastructureUseCase @Inject constructor(
         val consumptionRate = industrialResources.consumed[Resource.METAL] ?: 1
 
 
-        val maxIndustrialsProduction = min((planet.metal / consumptionRate) * productionRate, maxProductionFromIndustrials)
+        val maxIndustrialsProduction = min(
+            ceil((planet.metal.toDouble() / consumptionRate) * productionRate).toInt(),
+            maxProductionFromIndustrials
+        )
         val maxProduction = maxIndustrialsProduction + infraProducedByCapitol
         Log.d("ProduceInfra", "maxIndustrialsProduction=$maxIndustrialsProduction, maxProduction=$maxProduction")
 
@@ -60,7 +60,9 @@ class ProduceInfrastructureUseCase @Inject constructor(
 
         return if(planet.infrastructureSetting == InfrastructureSetting.USAGE){
             val realProduction = max(min(totalNeededInfra, maxProduction), infraProducedByCapitol)
-            val metalConsumption = ((realProduction - infraProducedByCapitol) / productionRate) * consumptionRate
+            val metalConsumption = ceil(
+                ((realProduction - infraProducedByCapitol).toDouble() / productionRate) * consumptionRate
+            ).toInt()
             Log.d("ProduceInfra", "USAGE setting: realProduction=$realProduction, metalConsumption=$metalConsumption")
             if(infraNeeded <= maxProduction){
                 Log.d("ProduceInfra", "USAGE: All infra needs met")
@@ -74,7 +76,7 @@ class ProduceInfrastructureUseCase @Inject constructor(
                 ProduceInfraResult.FailureWihSuccess(
                     success = ProduceInfraResult.Success(
                         infraNeeded,
-                        planet.metal - ((infraNeeded - infraProducedByCapitol) / productionRate) * consumptionRate,
+                        planet.metal - (((infraNeeded - infraProducedByCapitol).toFloat() / productionRate) * consumptionRate).toInt(),
                         planetMetals - infraProducedByCapitol
                     ),
                     error = ProduceInfraResult.Error.MissingInfra(
@@ -91,13 +93,15 @@ class ProduceInfrastructureUseCase @Inject constructor(
             }
         } else {
             Log.d("ProduceInfra", "Maximum setting")
-            val metalUsed = ((maxIndustrialsProduction / productionRate) * consumptionRate)
+            val metalUsed = ((maxIndustrialsProduction.toFloat() / productionRate) * consumptionRate).toInt()
             if(infraNeeded > maxProduction && isPlanning){
                 Log.d("ProduceInfra", "Planning mode: Not enough infra, fallback success")
                 ProduceInfraResult.FailureWihSuccess(
                     success = ProduceInfraResult.Success(
                         infraNeeded,
-                        planet.metal - (((infraNeeded - infraProducedByCapitol) / productionRate) * consumptionRate),
+                        planet.metal - (ceil(
+                            ((infraNeeded - infraProducedByCapitol).toDouble() / productionRate) * consumptionRate
+                        ).toInt()),
                         planetMetals - infraProducedByCapitol
                     ),
                     error = ProduceInfraResult.Error.MissingInfra(
@@ -126,7 +130,7 @@ private fun infraNeeded(
     Log.d("ProduceInfra", "Infra needed for maintenance: $infraForMaintenance")
     val progressProductionRate = capitolResources.produced[Resource.PROGRESS] ?:0
     val progressInfraConsumptionRate = capitolResources.consumed[Resource.INFRASTRUCTURE] ?: 0
-    val infraForProgress = planet.progressSetting / progressProductionRate * progressInfraConsumptionRate
+    val infraForProgress = (planet.progressSetting.toFloat() / progressProductionRate * progressInfraConsumptionRate).toInt()
     Log.d("ProduceInfra", "Infra for progress: $infraForProgress")
 
     var infraForBuilding = 0

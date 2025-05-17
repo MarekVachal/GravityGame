@@ -31,12 +31,14 @@ import com.marks2games.gravitygame.battle_game.ui.utils.timer.TimerViewModel
 import com.marks2games.gravitygame.core.ui.utils.SignInDialog
 import com.marks2games.gravitygame.core.ui.utils.ProgressIndicator
 import com.marks2games.gravitygame.core.data.model.enum_class.ProgressIndicatorType
+import com.marks2games.gravitygame.ui.screens.mainMenuScreen.MainMenuViewModel
 import java.util.Locale
 
 @Composable
 fun MatchmakingScreen(
     modifier: Modifier = Modifier,
     matchmakingModel: MatchmakingViewModel,
+    mainMenuModel: MainMenuViewModel,
     timerModel: TimerViewModel,
     onMatchConfirmed: () -> Unit,
     onBackMainMenuScreen: () -> Unit,
@@ -72,10 +74,8 @@ fun MatchmakingScreen(
         modifier = modifier,
         toShow = matchmakingUiStates.toShowSignInDialog,
         backToMainMenu = onBackMainMenuScreen,
-        signInAnonymously = { matchmakingModel.signInAnonymously() },
-        signInWithGoogle = {
-            matchmakingModel.signInWithGoogle(context = context)
-        }
+        mainMenuModel = mainMenuModel,
+        context = context
     )
 
     Box(

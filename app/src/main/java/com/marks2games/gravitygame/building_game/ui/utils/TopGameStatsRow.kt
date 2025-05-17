@@ -26,7 +26,8 @@ fun TopGameStatsRow(
     empire: Empire,
     testEmpire: Empire,
     empireModel: EmpireViewModel,
-    empireUiState: EmpireUiState
+    empireUiState: EmpireUiState,
+    toResearchScreen: () -> Unit
 ) {
     Row(
         modifier = modifier
@@ -59,18 +60,18 @@ fun TopGameStatsRow(
             }
         }
         Button(
-            onClick = { TODO() }
+            onClick = { toResearchScreen() }
         ) {
             StatText(
                 label = stringResource(R.string.research),
                 value = empire.research.toString(),
                 income = testEmpire.empireResourcesPossibleIncome.resources[Resource.RESEARCH] ?: 0,
                 isBordered = true,
-                border = 1000
+                border = empireModel.getTechnologyPrice()
             )
         }
         Button(
-            onClick = { TODO() }
+            onClick = { }
         ) {
             StatText(
                 label = stringResource(R.string.credits),

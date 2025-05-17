@@ -74,8 +74,8 @@ fun MainMenuScreen(
         modifier = modifier,
         toShow = mainMenuUiStates.showSignInDialog,
         backToMainMenu = { mainMenuModel.showSignInDialog(false) },
-        signInAnonymously = { mainMenuModel.anonymousSignIn() },
-        signInWithGoogle = { mainMenuModel.signInWithGoogle() }
+        mainMenuModel = mainMenuModel,
+        context = context
     )
 
     Image(

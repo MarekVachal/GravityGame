@@ -7,7 +7,6 @@ data class PlanetType(
     val planetMetal: Int,
     val biomassCapacityBonus: Float,
     val maxLevel: Int,
-    val startingLevel: Int,
     val capacityPlanetOS: Int,
     val districts: List<District> = listOf(
         District.Capitol(),
@@ -21,47 +20,47 @@ val SmallPlanet = PlanetType(
     name = "Small",
     planetMetal = 3000,
     biomassCapacityBonus = 1.5f,
-    maxLevel = 4,
-    startingLevel = 0,
+    maxLevel = 8,
     capacityPlanetOS = 1000
 )
+val MediumPlanetIds = getUniqueRandomNumbers()
 val MediumPlanet = PlanetType(
     name = "Medium",
     planetMetal = 1000,
     biomassCapacityBonus = 1f,
-    maxLevel = 8,
-    startingLevel = 2,
+    maxLevel = 12,
     capacityPlanetOS = 1000,
     districts = listOf(
         District.Capitol(),
-        District.Empty(districtId = 1),
-        District.Empty(districtId = 2),
-        District.Empty(districtId = 3),
-        District.Empty(districtId = 4),
-        District.Empty(districtId = 5)
+        District.Empty(districtId = MediumPlanetIds[0]),
+        District.Empty(districtId = MediumPlanetIds[1]),
+        District.Empty(districtId = MediumPlanetIds[2])
     )
 )
+
+private fun getUniqueRandomNumbers(): List<Int> {
+    return (1..5).shuffled().take(3)
+}
 val LargePlanet = PlanetType(
     name = "Large",
     planetMetal = 500,
     biomassCapacityBonus = 1f,
-    maxLevel = 16,
-    startingLevel = 0,
+    maxLevel = 20,
     capacityPlanetOS = 1000
 )
 
 data class Planet(
     val id: Int = 0,
-    val name: String = "Planet 0",
+    val name: String = "Planet 1",
     val type: PlanetType,
     val typeName: String = type.name,
-    val level: Int = type.startingLevel,
+    val level: Int = 4,
     val maxLevel: Int = type.maxLevel,
     val planetMetal: Int = type.planetMetal,
     val planetOrganicSediments: Float = 0f,
     val capacityPlanetOS: Int  = type.capacityPlanetOS,
     val biomassCapacityBonus: Float = type.biomassCapacityBonus,
-    val planetGrowthBorder: Int = 0,
+    val planetGrowthBorder: Int = 100,
     val biomass: Float  = 0.0f,
     val metal: Int = 0,
     val organicSediment: Float = 0.0f,
@@ -127,7 +126,7 @@ data class Planet(
                 id = (map["id"] as? Number)?.toInt() ?: 0,
                 name = map["name"] as? String ?: "Planet 0",
                 type = planetType,
-                level = (map["level"] as? Number)?.toInt() ?: planetType.startingLevel,
+                level = (map["level"] as? Number)?.toInt() ?: 4,
                 planetMetal = (map["planetMetal"] as? Number)?.toInt() ?: planetType.planetMetal,
                 planetOrganicSediments = (map["planetOrganicSediments"] as? Number)?.toFloat() ?: 0f,
                 planetGrowthBorder = (map["planetGrowthBorder"] as? Number)?.toInt() ?: 0,

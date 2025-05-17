@@ -1,5 +1,6 @@
 package com.marks2games.gravitygame.building_game.ui.screen
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,7 +43,8 @@ fun EmpireOverview(
     modifier: Modifier = Modifier,
     empireModel: EmpireViewModel,
     transportModel: TransportViewModel,
-    onBackButtonClicked: () -> Unit
+    onBackButtonClicked: () -> Unit,
+    toResearchScreen: () -> Unit
 ) {
     val empire by empireModel.empire.collectAsState()
     val empireUiState by empireModel.empireUiState.collectAsState()
@@ -51,18 +53,23 @@ fun EmpireOverview(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        empireModel.launchEmpireScreen()
+        if(!empire.hasLaunched){
+            empireModel.launchEmpireScreen()
+        }
+        Log.d("EmpireOverview", "Technologies: ${empire.technologies}")
     }
 
-    DistrictDialog(
-        modifier = modifier,
-        planet = empire.planets[empireUiState.planetIdForDetails],
-        district = empireUiState.districtForDialog,
-        empireModel = empireModel,
-        empireUiState = empireUiState,
-        toShow = empireUiState.isDistrictDialogShown,
-        planets = empire.planets
-    )
+    empire.planets.firstOrNull{it.id == empireUiState.planetIdForDetails}?.let{
+        DistrictDialog(
+            planet = it,
+            district = empireUiState.districtForDialog,
+            empireModel = empireModel,
+            empireUiState = empireUiState,
+            toShow = empireUiState.isDistrictDialogShown,
+            planets = empire.planets
+        )
+    }
+
 
 
     empireUiState.planetForTransport?.let {
@@ -108,7 +115,8 @@ fun EmpireOverview(
                 empire = empire,
                 testEmpire = testEmpire,
                 empireModel = empireModel,
-                empireUiState = empireUiState
+                empireUiState = empireUiState,
+                toResearchScreen = { toResearchScreen() }
             )
         }
 
@@ -160,8 +168,9 @@ fun EmpireOverview(
                 ) {
                     ErrorList(
                         modifier = modifier,
-                        empireUiState.errors,
-                        empire
+                        errors = empireUiState.errors,
+                        empire = empire,
+                        empireModel = empireModel
                     )
                 }
             }
@@ -175,7 +184,6 @@ fun EmpireOverview(
                     ActionList(
                         modifier = modifier,
                         actions = empire.actions,
-                        empire = empire,
                         empireModel = empireModel
                     )
                 }

@@ -1,25 +1,32 @@
 package com.marks2games.gravitygame.building_game.ui.screen
 
+import androidx.compose.ui.graphics.Color
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -71,23 +78,27 @@ fun DistrictDialog(
         ) {
             Card(
                 modifier = modifier
-                    .wrapContentSize()
                     .padding(16.dp)
+                    .wrapContentWidth()
                     .verticalScroll(rememberScrollState()),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Column(
                     modifier = modifier
-                        .wrapContentSize()
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .wrapContentWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Row{
-                        Text(district?.type?.name ?: "Unknown type")
+                        Text(stringResource(district?.type?.nameIdNominative?: R.string.unknown_district))
                     }
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .width(IntrinsicSize.Max)
+                    )
                     if (district?.type == DistrictEnum.PROSPECTORS || district?.type == DistrictEnum.INDUSTRIAL || district?.type == DistrictEnum.URBAN_CENTER) {
                         Row(
-                            modifier = modifier,
+                            modifier = modifier.wrapContentWidth(),
                             horizontalArrangement = Arrangement.SpaceEvenly,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -103,14 +114,19 @@ fun DistrictDialog(
 
                                 }
                             ) {
-                                Text(text = "Change mode")
+                                Text(text = stringResource(R.string.changeDistrictModeName))
                             }
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
                             ModeSelector(
                                 districtType = district.type,
                                 selectedMode = empireUiState.modeIsChecked,
                                 onCheckedChange = { checked ->
                                     empireModel.updateModeIsChecked(checked)
-                                }
+                                },
+                                empireModel = empireModel,
+                                modifier = Modifier.wrapContentWidth()
                             )
                         }
                     }
@@ -131,7 +147,7 @@ fun DistrictDialog(
                                             selected
                                         )
                                     },
-                                    label = empireUiState.infrastructureProductionSet.name
+                                    label = stringResource(empireUiState.infrastructureProductionSet.nameId)
                                 )
                             } else {
                                 SpinnerProductionRow(
@@ -147,71 +163,70 @@ fun DistrictDialog(
                                             selected
                                         )
                                     },
-                                    label = empireUiState.rocketMaterialsProductionSet.name
+                                    label = stringResource(empireUiState.rocketMaterialsProductionSet.nameId)
                                 )
                             }
                         }
 
                         is District.Capitol -> {
                             ProductionSetRow(
+                                modifier = Modifier.wrapContentWidth(),
                                 actionFunction = {
                                     empireModel.addProgressProductionAction(
                                         context = context,
-                                        planet.id, empireUiState.progressProductionSet
+                                        planet.id, empireUiState.progressProductionSet.toInt()
                                     )
                                 },
-                                value = empireUiState.progressProductionSet.toString(),
+                                value = empireUiState.progressProductionSet,
                                 onValueChange = { newValue ->
-                                    Log.d(
-                                        "DistrictDialog",
-                                        "NumberInputField changed to: $newValue"
-                                    )
                                     empireModel.updateIntProductionState(
                                         Resource.PROGRESS,
-                                        newValue.toIntOrNull() ?: 0
+                                        newValue
                                     )
                                 },
-                                icon = R.drawable.progress_icon,
-                                resourceName = R.string.progress,
-                                maxValue = 10
+                                producedResource = Resource.PROGRESS,
+                                empireModel = empireModel,
+                                maxValue = empireModel.calculateMaxProgressProduction(planet = planet)
                             )
                         }
 
                         is ExpeditionPlatform -> {
                             ProductionSetRow(
+                                modifier = Modifier.wrapContentWidth(),
                                 actionFunction = {
                                     empireModel.addArmyProductionAction(
                                         context = context,
-                                        planet.id, empireUiState.armyProductionSet
+                                        planet.id, empireUiState.armyProductionSet.toInt()
                                     )
                                 },
                                 value = empireUiState.armyProductionSet.toString(),
                                 onValueChange = { newValue ->
                                     empireModel.updateIntProductionState(
                                         Resource.ARMY,
-                                        newValue.toIntOrNull() ?: 0
+                                        newValue
                                     )
                                 },
-                                icon = R.drawable.army_icon,
-                                resourceName = R.string.army,
+                                producedResource = Resource.ARMY,
+                                empireModel = empireModel,
                                 maxValue = 10
                             )
                             ProductionSetRow(
+                                modifier = Modifier.wrapContentWidth(),
                                 actionFunction = {
                                     empireModel.addExpeditionProductionAction(
                                         context = context,
-                                        planet.id, empireUiState.expeditionsProductionSet
+                                        planet.id, empireUiState.expeditionsProductionSet.toInt()
                                     )
                                 },
                                 value = empireUiState.expeditionsProductionSet.toString(),
                                 onValueChange = { newValue ->
                                     empireModel.updateIntProductionState(
                                         Resource.EXPEDITIONS,
-                                        newValue.toIntOrNull() ?: 0
+                                        newValue
                                     )
                                 },
-                                icon = R.drawable.biomass_icon,
-                                resourceName = R.string.expeditions,
+                                producedResource = Resource.EXPEDITIONS,
+                                empireModel = empireModel,
                                 maxValue = 10
                             )
                             Row {
@@ -229,22 +244,23 @@ fun DistrictDialog(
                         is District.UrbanCenter -> {
                             if (district.mode == UrbanCenterMode.RESEARCH) {
                                 ProductionSetRow(
+                                    modifier = Modifier.wrapContentWidth(),
                                     actionFunction = {
                                         empireModel.addResearchProductionAction(
                                             context = context,
-                                            planet.id, empireUiState.researchProductionSet
+                                            planet.id, empireUiState.researchProductionSet.toInt()
                                         )
                                     },
                                     value = empireUiState.researchProductionSet.toString(),
                                     onValueChange = { newValue ->
                                         empireModel.updateIntProductionState(
                                             Resource.RESEARCH,
-                                            newValue.toIntOrNull() ?: 0
+                                            newValue
                                         )
                                     },
-                                    icon = R.drawable.influence_icon,
-                                    resourceName = R.string.research,
-                                    maxValue = 10
+                                    producedResource = Resource.RESEARCH,
+                                    empireModel = empireModel,
+                                    maxValue = empireModel.calculateMaxResearchProduction(planet)
                                 )
                             }
                         }
@@ -280,10 +296,29 @@ fun DistrictDialog(
                                         DistrictEnum.IN_CONSTRUCTION
                                     )
                                 },
-                                label = empireUiState.districtToBuild.name
+                                label = stringResource(empireUiState.districtToBuild.nameIdNominative)
                             )
                         }
-                        is District.InConstruction -> Text("Infrastructure in construction: ${district.infra}/$DISTRICT_BUILD_COST")
+                        is District.InConstruction -> {
+                            Row{
+                                Text(
+                                    stringResource(
+                                        R.string.inConstruction,
+                                        stringResource(R.string.infrastructure),
+                                        district.infra,
+                                        DISTRICT_BUILD_COST
+                                    )
+                                )
+                            }
+                            Row{
+                                Text(
+                                    stringResource(
+                                        R.string.districtToBuildDescription,
+                                        stringResource(empireUiState.districtToBuild.nameIdNominative)
+                                    )
+                                )
+                            }
+                        }
                         else -> println("Do nothing")
                     }
                     if(district !is District.Capitol && district !is District.Empty){
@@ -309,13 +344,13 @@ private fun ProductionSetRow(
     actionFunction: () -> Unit,
     value: String,
     onValueChange: (String) -> Unit,
-    icon: Int,
-    resourceName: Int,
+    producedResource: Resource,
+    empireModel: EmpireViewModel,
     maxValue: Int
 ) {
     Log.d("ProductionSetRow", "Recomposed with value: $value")
     Row(
-        modifier = modifier,
+        modifier = modifier.wrapContentWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -326,16 +361,21 @@ private fun ProductionSetRow(
             }
         ) { Text(stringResource(R.string.setProduction)) }
 
+        Spacer(modifier = Modifier.width(8.dp))
+
         NumberInputField(
             value = value,
             onValueChange = onValueChange,
             label = {
                 ProductionLabelRow(
-                    icon = icon,
-                    resourceName = resourceName
+                    producedResource = producedResource,
+                    empireModel = empireModel,
+                    isForProspectors = false,
+                    modifier = Modifier.wrapContentWidth()
                 )
             },
-            maxValue = maxValue
+            maxValue = maxValue,
+            modifier = Modifier.wrapContentWidth()
         )
     }
 }
@@ -343,21 +383,61 @@ private fun ProductionSetRow(
 @Composable
 private fun ProductionLabelRow(
     modifier: Modifier = Modifier,
-    icon: Int,
-    resourceName: Int
+    producedResource: Resource,
+    isForProspectors: Boolean,
+    empireModel: EmpireViewModel
 ) {
+    val (consumedResource1Enum, consumedResource2Enum) = empireModel.getConsumedResource(producedResource, isForProspectors)
+    val (producedResourceValue, consumedResource1, consumedResource2) = empireModel.getResourceValue(producedResource, isForProspectors)
     Row(
-        modifier = modifier,
+        modifier = modifier.wrapContentWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(icon),
-            contentDescription = "Resource icon",
-            modifier = modifier.size(24.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(text = stringResource(resourceName))
+
+        consumedResource1Enum?.let{ resource ->
+            consumedResource1?.let{ value ->
+                DisplayResourceBox(resource = resource, value = value)
+            }
+        }
+        consumedResource2Enum?.let{ resource ->
+            consumedResource2?.let{ value ->
+                Text(" + ")
+                DisplayResourceBox(resource = resource, value = value)
+            }
+        }
+        if(consumedResource1Enum != null ){
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = "Arrow back",
+                tint = Color.Unspecified
+            )
+        }
+        producedResourceValue?.let{
+            DisplayResourceBox(resource = producedResource, value = it)
+        }
     }
+}
+
+@Composable
+private fun DisplayResourceBox(resource: Resource, value: Int){
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 8.dp)
+            .wrapContentWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Text(value.toString())
+            Spacer(modifier = Modifier.width(8.dp))
+            Image(
+                painter = painterResource(resource.icon),
+                contentDescription = "Resource icon",
+                modifier = Modifier.size(24.dp)
+            )
+        }
+    }
+
 }
 
 @Composable
@@ -379,6 +459,8 @@ private fun <T : Enum<T>> SpinnerProductionRow(
             onClick = { actionFunction() }
         ) { Text(textOnButton) }
 
+        Spacer(modifier = Modifier.width(8.dp))
+
         DropdownSelector(
             enumClass = enumClass,
             onItemSelected = onItemSelected,
@@ -390,9 +472,11 @@ private fun <T : Enum<T>> SpinnerProductionRow(
 
 @Composable
 private fun ModeSelector(
+    modifier: Modifier = Modifier,
     districtType: DistrictEnum,
     selectedMode: Enum<*>?,
-    onCheckedChange: (Enum<*>) -> Unit
+    onCheckedChange: (Enum<*>) -> Unit,
+    empireModel: EmpireViewModel
 ) {
     val modes = when (districtType) {
         DistrictEnum.PROSPECTORS -> listOf(
@@ -414,37 +498,54 @@ private fun ModeSelector(
         else -> return
     }
 
-    Column {
+    Column (
+        modifier = modifier
+            .wrapContentWidth()
+            .width(IntrinsicSize.Max)
+    ){
         modes.forEach { mode ->
-            val label = when (mode) {
-                ProspectorsMode.METAL, IndustrialMode.METAL -> stringResource(R.string.metal)
-                ProspectorsMode.ORGANIC_SEDIMENTS -> stringResource(R.string.organic_sediments)
-                IndustrialMode.INFRASTRUCTURE -> stringResource(R.string.infrastructure)
-                IndustrialMode.ROCKET_MATERIALS -> stringResource(R.string.rocket_materials)
-                UrbanCenterMode.INFLUENCE -> stringResource(R.string.influence)
-                UrbanCenterMode.RESEARCH -> stringResource(R.string.research)
+            val (label, resource) = when (mode) {
+                ProspectorsMode.METAL -> stringResource(R.string.metal) to Resource.METAL
+                IndustrialMode.METAL -> stringResource(R.string.metal) to Resource.METAL
+                ProspectorsMode.ORGANIC_SEDIMENTS -> stringResource(R.string.organic_sediments) to Resource.ORGANIC_SEDIMENTS
+                IndustrialMode.INFRASTRUCTURE -> stringResource(R.string.infrastructure) to Resource.INFRASTRUCTURE
+                IndustrialMode.ROCKET_MATERIALS -> stringResource(R.string.rocket_materials) to Resource.ROCKET_MATERIALS
+                UrbanCenterMode.INFLUENCE -> stringResource(R.string.influence) to Resource.INFLUENCE
+                UrbanCenterMode.RESEARCH -> stringResource(R.string.research) to Resource.RESEARCH
                 else -> return
             }
+            val isForProspectors = mode is ProspectorsMode
+            ProductionLabelRow(
+                modifier = Modifier.wrapContentWidth(),
+                producedResource = resource,
+                empireModel = empireModel,
+                isForProspectors = isForProspectors
+            )
 
             OptionRow(
+                modifier = Modifier.wrapContentWidth(),
                 text = label,
                 selected = selectedMode == mode,
                 onClick = { onCheckedChange(mode) }
             )
+            HorizontalDivider(modifier = modifier.wrapContentWidth())
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
 private fun OptionRow(
+    modifier: Modifier = Modifier,
     text: String,
     selected: Boolean,
     onClick: () -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
+        modifier = modifier
             .clickable { onClick() }
+            .wrapContentWidth()
     ) {
         RadioButton(
             selected = selected,
@@ -487,8 +588,16 @@ fun <T : Enum<T>> DropdownSelector(
             onDismissRequest = { expanded = false }
         ) {
             items?.forEach { item ->
+                val itemName = stringResource(
+                    when(item) {
+                        is DistrictEnum -> item.nameIdNominative
+                        is InfrastructureSetting -> item.nameId
+                        is RocketMaterialsSetting -> item.nameId
+                        else -> R.string.unknown
+                    }
+                )
                 DropdownMenuItem(
-                    text = { Text(item.name) },
+                    text = { Text(itemName) },
                     onClick = {
                         onItemSelected(item)
                         expanded = false
