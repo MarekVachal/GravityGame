@@ -8,5 +8,6 @@ sealed class BuildDistrictResult {
         object DistrictNotFound : Error()
         object CapitolNotAllowed : Error()
         object ExpeditionPlatformExists : Error()
+        object UnnocupatedNotAllowed : Error()
     }
 }

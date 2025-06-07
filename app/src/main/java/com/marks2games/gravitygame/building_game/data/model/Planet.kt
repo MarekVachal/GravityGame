@@ -1,5 +1,7 @@
 package com.marks2games.gravitygame.building_game.data.model
 
+import com.marks2games.gravitygame.core.data.model.enum_class.ShipType
+import com.marks2games.gravitygame.core.data.model.enum_class.toShipType
 import com.marks2games.gravitygame.core.domain.error.NewTurnError
 
 data class PlanetType(
@@ -8,12 +10,8 @@ data class PlanetType(
     val biomassCapacityBonus: Float,
     val maxLevel: Int,
     val capacityPlanetOS: Int,
-    val districts: List<District> = listOf(
-        District.Capitol(),
-        District.Empty(districtId = 1),
-        District.Empty(districtId = 2),
-        District.Empty(districtId = 3)
-    )
+    val planetMapConfig: List<DistrictConfig>,
+    val districts: List<District>
 )
 
 val SmallPlanet = PlanetType(
@@ -21,7 +19,18 @@ val SmallPlanet = PlanetType(
     planetMetal = 3000,
     biomassCapacityBonus = 1.5f,
     maxLevel = 8,
-    capacityPlanetOS = 1000
+    capacityPlanetOS = 1000,
+    planetMapConfig = smallPlanetDistrictNodes,
+    districts = listOf(
+        District.Capitol(),
+        District.Empty(districtId = 1),
+        District.Empty(districtId = 2),
+        District.Empty(districtId = 3),
+        District.Unnocupated(districtId = 4),
+        District.Unnocupated(districtId = 5),
+        District.Unnocupated(districtId = 6),
+        District.Unnocupated(districtId = 7)
+    )
 )
 val MediumPlanetIds = getUniqueRandomNumbers()
 val MediumPlanet = PlanetType(
@@ -30,12 +39,8 @@ val MediumPlanet = PlanetType(
     biomassCapacityBonus = 1f,
     maxLevel = 12,
     capacityPlanetOS = 1000,
-    districts = listOf(
-        District.Capitol(),
-        District.Empty(districtId = MediumPlanetIds[0]),
-        District.Empty(districtId = MediumPlanetIds[1]),
-        District.Empty(districtId = MediumPlanetIds[2])
-    )
+    planetMapConfig = emptyList(),
+    districts = emptyList()
 )
 
 private fun getUniqueRandomNumbers(): List<Int> {
@@ -46,13 +51,15 @@ val LargePlanet = PlanetType(
     planetMetal = 500,
     biomassCapacityBonus = 1f,
     maxLevel = 20,
-    capacityPlanetOS = 1000
+    capacityPlanetOS = 1000,
+    planetMapConfig = largePlanetDistrictNodes,
+    districts = emptyList()
 )
 
 data class Planet(
     val id: Int = 0,
     val name: String = "Planet 1",
-    val type: PlanetType,
+    val type: PlanetType = SmallPlanet,
     val typeName: String = type.name,
     val level: Int = 4,
     val maxLevel: Int = type.maxLevel,
@@ -78,10 +85,14 @@ data class Planet(
     val infrastructureSetting: InfrastructureSetting = InfrastructureSetting.MAXIMUM,
     val districts: List<District> = type.districts,
     val errors: List<NewTurnError> = emptyList(),
-    val planetResourcesPossibleIncome: PlanetResources = PlanetResources()
+    val planetResourcesPossibleIncome: PlanetResources = PlanetResources(),
+    val isInnerSpherePlanet: Boolean = false,
+    val buildingShip: ShipType? = null,
+    val dockingShip: ShipType? = null,
+    val planetMapConfig: List<DistrictConfig> = type.planetMapConfig
 ) {
 
-    fun toMap(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any?> = mapOf(
         "id" to id,
         "name" to name,
         "level" to level,
@@ -104,7 +115,10 @@ data class Planet(
         "armyConstructionSetting" to armyConstructionSetting,
         "rocketMaterialsSetting" to rocketMaterialsSetting.name,
         "infrastructureSetting" to infrastructureSetting.name,
-        "districts" to districts.map { it.toMap() }
+        "districts" to districts.map { it.toMap() },
+        "isInnerSpherePlanet" to isInnerSpherePlanet,
+        "buildingShip" to buildingShip?.name,
+        "dockingShip" to dockingShip?.name
     )
 
     companion object {
@@ -147,7 +161,10 @@ data class Planet(
                     ?.toRocketMaterialsSettingEnum() ?: RocketMaterialsSetting.USAGE,
                 infrastructureSetting = (map["infrastructureSetting"] as? String)
                     ?.toInfrastructureSettingEnum() ?: InfrastructureSetting.USAGE,
-                districts = districts
+                districts = districts,
+                isInnerSpherePlanet = map["isInnerSpherePlanet"] as? Boolean == true,
+                buildingShip = (map["buildingShip"] as? String)?.toShipType(),
+                dockingShip = (map["dockingShip"] as? String)?.toShipType()
             )
         }
     }

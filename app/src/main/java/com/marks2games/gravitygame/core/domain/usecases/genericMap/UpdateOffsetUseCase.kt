@@ -1,4 +1,4 @@
-package com.marks2games.gravitygame.core.domain.usecases
+package com.marks2games.gravitygame.core.domain.usecases.genericMap
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -11,15 +11,23 @@ class UpdateOffsetUseCase @Inject constructor() {
         newOffset: Offset,
         scale: Float,
         mapSize: Size,
-        nodeSize: Float
+        nodeSize: Float,
+        isToroidal: Boolean
     ): Offset {
+        /*
+        if (isToroidal) {
+            // For toroidal maps, don't limit the offset
+            return newOffset
+        }
+        */
+
         val totalMapWidth = mapSize.width * scale + nodeSize * 3f
         val totalMapHeight = mapSize.height * scale + nodeSize * 3f
 
         val minXOffset =
             if (totalMapWidth <= screenSize.width) 0f else screenSize.width - totalMapWidth
         val minYOffset =
-            if (totalMapHeight * scale <= screenSize.height) 0f else screenSize.height - totalMapHeight
+            if (totalMapHeight <= screenSize.height) 0f else screenSize.height - totalMapHeight
 
 
         return Offset(

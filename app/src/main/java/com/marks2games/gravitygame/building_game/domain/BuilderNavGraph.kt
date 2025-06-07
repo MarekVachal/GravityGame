@@ -8,6 +8,7 @@ import com.marks2games.gravitygame.building_game.ui.screen.EmpireOverview
 import com.marks2games.gravitygame.building_game.ui.screen.ResearchScreen
 import com.marks2games.gravitygame.building_game.ui.screen.TradeScreen
 import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
+import com.marks2games.gravitygame.building_game.ui.viewmodel.PlanetViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.ResearchViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TradeViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TransportViewModel
@@ -19,7 +20,8 @@ fun NavGraphBuilder.builderNavGraph(
     empireViewModel: EmpireViewModel,
     transportModel: TransportViewModel,
     tradeModel: TradeViewModel,
-    researchModel: ResearchViewModel
+    researchModel: ResearchViewModel,
+    planetModel: PlanetViewModel
 ){
 
     navigation(startDestination = NavRoute.EmpireOverview.route, route = "BuilderGame"){
@@ -27,6 +29,7 @@ fun NavGraphBuilder.builderNavGraph(
             EmpireOverview(
                 empireModel = empireViewModel,
                 transportModel = transportModel,
+                planetModel = planetModel,
                 onBackButtonClicked = { navController.navigate(Destinations.MAINMENU.name) },
                 toResearchScreen = { navController.navigate(NavRoute.ResearchScreen.route) }
             )

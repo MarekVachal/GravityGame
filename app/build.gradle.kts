@@ -99,13 +99,13 @@ sentry {
 
 dependencies {
 
-    val composeBomVersion = "2025.04.01"
+    val composeBomVersion = "2025.05.01"
     val roomVersion = "2.7.1"
     val credentialVersion = "1.5.0"
     val hiltVersion = "2.55"
     val ktorVersion = "3.0.3"
     val coroutineVersion = "1.10.1"
-    val sentryVersion = "8.11.1"
+    val sentryVersion = "8.13.0"
 
     //Ktor
     implementation ("io.ktor:ktor-client-core:$ktorVersion")
@@ -116,7 +116,7 @@ dependencies {
     //Hilt
     implementation ("com.google.dagger:hilt-android:$hiltVersion")
     ksp ("com.google.dagger:hilt-compiler:$hiltVersion")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7") //Not sure I need it
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0") //Not sure I need it
 
     //Coin. For getting image from URL
     implementation("io.coil-kt:coil-compose:2.7.0")
@@ -139,7 +139,7 @@ dependencies {
     //implementation ("com.google.android.gms:play-services-tasks:18.2.0")
 
     //Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.14.0"))
     implementation("com.google.firebase:firebase-common")
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
@@ -153,14 +153,14 @@ dependencies {
     implementation("io.grpc:grpc-okhttp:1.70.0")
 
     //Compose navigation
-    implementation("androidx.navigation:navigation-compose:2.8.9")
+    implementation("androidx.navigation:navigation-compose:2.9.0")
 
     //Coroutines
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$coroutineVersion")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.0")
 
     //Core
     implementation("androidx.core:core-ktx:1.16.0")
@@ -184,6 +184,9 @@ dependencies {
 
     //Testing
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.mockito:mockito-core:5.7.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
+    testImplementation("io.mockk:mockk:1.13.10")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:$composeBomVersion"))

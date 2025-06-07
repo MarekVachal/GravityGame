@@ -14,6 +14,7 @@ sealed class District{
     abstract fun copyWithUpdatedWorking(isWorking: Boolean): District
     abstract fun generateResources(): ResourceChange
     abstract fun getCapacities(): DistrictCapacities
+    abstract fun getModes(): List<Enum<*>>
 
     data class Capitol(
         override val nameId: Int = R.string.capitolDistrictName,
@@ -24,6 +25,8 @@ sealed class District{
         override fun toMap() = mapOf(
             "type" to type.name
         )
+
+        override fun getModes(): List<Enum<*>> = emptyList()
         override fun copyWithUpdatedWorking(isWorking: Boolean) = copy(isWorking = isWorking)
         override fun generateResources(): ResourceChange {
             return ResourceChange(
@@ -61,6 +64,7 @@ sealed class District{
             "mode" to mode.name,
             "districtId" to districtId
         )
+        override fun getModes(): List<Enum<*>> = ProspectorsMode.entries
         override fun copyWithUpdatedWorking(isWorking: Boolean) = copy(isWorking = isWorking)
         override fun generateResources(): ResourceChange {
             if (!isWorking) return ResourceChange()
@@ -94,6 +98,7 @@ sealed class District{
             "type" to type.name,
             "districtId" to districtId
         )
+        override fun getModes(): List<Enum<*>> = emptyList()
         override fun copyWithUpdatedWorking(isWorking: Boolean) = copy(isWorking = isWorking)
         override fun generateResources(): ResourceChange {
             return ResourceChange(
@@ -123,7 +128,7 @@ sealed class District{
             "buildingDistrict" to buildingDistrict.name,
             "districtId" to districtId
         )
-
+        override fun getModes(): List<Enum<*>> = emptyList()
         override fun copyWithUpdatedWorking(isWorking: Boolean) = copy(isWorking = isWorking)
         override fun generateResources(): ResourceChange {
             return ResourceChange(
@@ -149,6 +154,7 @@ sealed class District{
             "mode" to mode.name,
             "districtId" to districtId
         )
+        override fun getModes(): List<Enum<*>> = IndustrialMode.entries
         override fun copyWithUpdatedWorking(isWorking: Boolean) = copy(isWorking = isWorking)
         override fun generateResources(): ResourceChange {
             if(!isWorking) return ResourceChange()
@@ -188,6 +194,7 @@ sealed class District{
         override fun toMap() = mapOf(
             "type" to type.name
         )
+        override fun getModes(): List<Enum<*>> = emptyList()
         override fun copyWithUpdatedWorking(isWorking: Boolean) = copy(isWorking = isWorking)
         override fun generateResources(): ResourceChange {
             if(!isWorking) return ResourceChange()
@@ -221,6 +228,7 @@ sealed class District{
             "mode" to mode.name,
             "districtId" to districtId,
         )
+        override fun getModes(): List<Enum<*>> = UrbanCenterMode.entries
         override fun copyWithUpdatedWorking(isWorking: Boolean) = copy(isWorking = isWorking)
         override fun generateResources(): ResourceChange {
             if (!isWorking) return ResourceChange()
@@ -242,12 +250,39 @@ sealed class District{
         }
     }
 
+    data class Unnocupated(
+        override val nameId: Int = R.string.unnocupatedNominative,
+        override val districtId: Int,
+        override val type: DistrictEnum = DistrictEnum.UNNOCUPATED,
+        override val isWorking: Boolean = false
+    ) : District() {
+        override fun toMap() = mapOf(
+            "type" to type.name,
+            "districtId" to districtId,
+        )
+        override fun getModes(): List<Enum<*>> = emptyList()
+        override fun copyWithUpdatedWorking(isWorking: Boolean) = copy(isWorking = isWorking)
+        override fun generateResources(): ResourceChange {
+            return ResourceChange(
+                produced = emptyMap()
+            )
+        }
+        override fun getCapacities(): DistrictCapacities {
+            return DistrictCapacities(
+                capacity = emptyMap()
+            )
+        }
+    }
+
     companion object {
         fun fromMap(map: Map<String, Any>): District {
             val type = (map["type"] as String).toDistrictEnum() ?:
                 throw IllegalArgumentException("Unknown district type: ${map["type"]}")
             val districtId = (map["districtId"] as? Number)?.toInt() ?: 0
             return when (type) {
+                DistrictEnum.UNNOCUPATED -> Unnocupated(
+                    districtId = districtId
+                )
                 DistrictEnum.CAPITOL -> Capitol()
                 DistrictEnum.PROSPECTORS -> Prospectors(
                     mode = (map["mode"] as? String)?.toEnumOrNull<ProspectorsMode>()
@@ -290,7 +325,8 @@ enum class DistrictEnum (
     INDUSTRIAL(R.string.industrialDistrictName, R.string.industrialDistrictGenitive, R.string.industrialDistrictInstrumental),
     EXPEDITION_PLATFORM(R.string.expeditionPlatformDistrictName, R.string.expeditionPlatformDistrictGenitive, R.string.expeditionPlatformDistrictInstrumental),
     URBAN_CENTER(R.string.urbanCenterDistrictName, R.string.urbanCenterDistrictGenitive, R.string.urbanCenterDistrictInstrumental),
-    IN_CONSTRUCTION(R.string.inConstructionDistrictName, R.string.inConstructionDistrictGenitive, R.string.inConstructionDistrictInstrumental)
+    IN_CONSTRUCTION(R.string.inConstructionDistrictName, R.string.inConstructionDistrictGenitive, R.string.inConstructionDistrictInstrumental),
+    UNNOCUPATED(R.string.unnocupatedNominative, R.string.unnocupatedGenitive, R.string.unnocupatedInstrumental)
 }
 enum class RocketMaterialsSetting (@StringRes val nameId: Int)
 {NOTHING (R.string.nothing), MAXIMUM(R.string.maximum), USAGE(R.string.usage)}

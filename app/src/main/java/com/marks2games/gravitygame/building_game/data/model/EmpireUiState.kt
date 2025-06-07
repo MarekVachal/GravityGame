@@ -1,5 +1,6 @@
 package com.marks2games.gravitygame.building_game.data.model
 
+import com.marks2games.gravitygame.core.data.model.enum_class.ShipType
 import com.marks2games.gravitygame.core.domain.error.NewTurnError
 
 data class EmpireUiState(
@@ -16,9 +17,11 @@ data class EmpireUiState(
     val expeditionsProductionSet: String = "",
     val progressProductionSet: String = "",
     val researchProductionSet: String = "",
+    val buildingShip: ShipType? = null,
     val rocketMaterialsProductionSet: RocketMaterialsSetting = RocketMaterialsSetting.USAGE,
     val infrastructureProductionSet: InfrastructureSetting = InfrastructureSetting.USAGE,
     val districtToBuild: DistrictEnum = DistrictEnum.PROSPECTORS,
     val planetIdForDetails: Int = 0,
-    val isShownDistrictList: Boolean = false
+    val isShownDistrictList: Boolean = false,
+    val isPlanetListShown: Boolean = true
 )

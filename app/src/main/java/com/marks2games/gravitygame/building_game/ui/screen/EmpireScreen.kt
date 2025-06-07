@@ -30,25 +30,30 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.building_game.ui.utils.ActionList
-import com.marks2games.gravitygame.building_game.ui.utils.DistrictList
+import com.marks2games.gravitygame.building_game.ui.utils.DistrictNodeButton
 import com.marks2games.gravitygame.building_game.ui.utils.ErrorList
 import com.marks2games.gravitygame.building_game.ui.utils.PlanetList
 import com.marks2games.gravitygame.building_game.ui.utils.TopGameStatsRow
 import com.marks2games.gravitygame.building_game.ui.utils.TransportsList
 import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
+import com.marks2games.gravitygame.building_game.ui.viewmodel.PlanetViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TransportViewModel
+import com.marks2games.gravitygame.core.ui.utils.MapScreen
 
 @Composable
 fun EmpireOverview(
     modifier: Modifier = Modifier,
     empireModel: EmpireViewModel,
     transportModel: TransportViewModel,
+    planetModel: PlanetViewModel,
     onBackButtonClicked: () -> Unit,
     toResearchScreen: () -> Unit
 ) {
     val empire by empireModel.empire.collectAsState()
     val empireUiState by empireModel.empireUiState.collectAsState()
     val testEmpire by empireModel.testEmpire.collectAsState()
+    val mapState by planetModel.mapUiState.collectAsState()
+    val planetState by planetModel.planetUiState.collectAsState()
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val context = LocalContext.current
 
@@ -57,6 +62,10 @@ fun EmpireOverview(
             empireModel.launchEmpireScreen()
         }
         Log.d("EmpireOverview", "Technologies: ${empire.technologies}")
+    }
+
+    LaunchedEffect(testEmpire.planets.find { it.id == empireUiState.planetIdForDetails }?.districts){
+        planetModel.updateDistrictNodes(testEmpire.planets.find { it.id == empireUiState.planetIdForDetails })
     }
 
     empire.planets.firstOrNull{it.id == empireUiState.planetIdForDetails}?.let{
@@ -125,24 +134,60 @@ fun EmpireOverview(
                 .weight(1f)
                 .fillMaxWidth()
         ) {
-            Box(
-                modifier = modifier
-                    .align(Alignment.TopEnd)
-                    .width(screenWidth * 0.5f)
-                    .fillMaxWidth()
-            ) {
-                PlanetList(
-                    modifier = modifier.fillMaxWidth(),
-                    empire = empire,
-                    testEmpire = testEmpire,
-                    onPlanetClick = {
-                        empireModel.updateShowDistrictList(
-                            isShown = true,
-                            planet = it
+            empireUiState.districtForDialog?.let{ district ->
+                MapScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    mapModel = planetModel,
+                    nodeInfoContent = { DistrictNodeButton(node = district, mapUiState = mapState) },
+                    onNodeClicked = {
+                        empireModel.openDistrictDetails(
+                            planetId = empireUiState.planetIdForDetails,
+                            district = district
                         )
-                    }
+                    },
+                    onLongNodeClicked = {},
+                    backgroundImageId = R.drawable.battle_background
                 )
             }
+
+            if(empireUiState.isPlanetListShown){
+                Box(
+                    modifier = modifier
+                        .align(Alignment.TopCenter)
+                        .width(screenWidth * 0.9f)
+                        .fillMaxWidth()
+                ) {
+                    PlanetList(
+                        modifier = modifier.fillMaxWidth(),
+                        empire = empire,
+                        testEmpire = testEmpire,
+                        onPlanetClick = {
+                            empireModel.updateShowDistrictList(
+                                isShown = true,
+                                planet = it
+                            )
+                            empireModel.updateIsPlanetListShown()
+                            planetModel.updatePlanetUiState(it)
+                        }
+                    )
+                }
+            } else {
+                MapScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    mapModel = planetModel,
+                    nodeInfoContent = { DistrictNodeButton(node = it.district, mapUiState = mapState) },
+                    onNodeClicked = {
+                        empireModel.openDistrictDetails(
+                            planetId = empireUiState.planetIdForDetails,
+                            district = it.district
+                        )
+                    },
+                    onLongNodeClicked = {},
+                    backgroundImageId = R.drawable.battle_background
+                )
+            }
+
+            /*
             if (empireUiState.isShownDistrictList) {
                 Box(
                     modifier = modifier
@@ -159,6 +204,8 @@ fun EmpireOverview(
                     )
                 }
             }
+
+             */
             if (empireUiState.isErrorsShown) {
                 Box(
                     modifier = modifier

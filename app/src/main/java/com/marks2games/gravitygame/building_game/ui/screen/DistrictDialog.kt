@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -55,8 +56,10 @@ import com.marks2games.gravitygame.building_game.data.model.Planet
 import com.marks2games.gravitygame.building_game.data.model.ProspectorsMode
 import com.marks2games.gravitygame.building_game.data.model.Resource
 import com.marks2games.gravitygame.building_game.data.model.RocketMaterialsSetting
+import com.marks2games.gravitygame.building_game.data.model.TechnologyEnum
 import com.marks2games.gravitygame.building_game.data.model.UrbanCenterMode
 import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
+import com.marks2games.gravitygame.core.data.model.enum_class.ShipType
 import com.marks2games.gravitygame.core.ui.utils.NumberInputField
 import kotlin.reflect.KClass
 
@@ -120,7 +123,7 @@ fun DistrictDialog(
                             Spacer(modifier = Modifier.width(8.dp))
 
                             ModeSelector(
-                                districtType = district.type,
+                                district = district,
                                 selectedMode = empireUiState.modeIsChecked,
                                 onCheckedChange = { checked ->
                                     empireModel.updateModeIsChecked(checked)
@@ -191,25 +194,41 @@ fun DistrictDialog(
                         }
 
                         is ExpeditionPlatform -> {
-                            ProductionSetRow(
-                                modifier = Modifier.wrapContentWidth(),
-                                actionFunction = {
-                                    empireModel.addArmyProductionAction(
-                                        context = context,
-                                        planet.id, empireUiState.armyProductionSet.toInt()
-                                    )
-                                },
-                                value = empireUiState.armyProductionSet.toString(),
-                                onValueChange = { newValue ->
-                                    empireModel.updateIntProductionState(
-                                        Resource.ARMY,
-                                        newValue
-                                    )
-                                },
-                                producedResource = Resource.ARMY,
-                                empireModel = empireModel,
-                                maxValue = 10
-                            )
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                ProductionSetRow(
+                                    modifier = Modifier.wrapContentWidth(),
+                                    actionFunction = {
+                                        empireModel.addArmyProductionAction(
+                                            context = context,
+                                            planet.id, empireUiState.armyProductionSet.toInt()
+                                        )
+                                    },
+                                    value = empireUiState.armyProductionSet.toString(),
+                                    onValueChange = { newValue ->
+                                        empireModel.updateIntProductionState(
+                                            Resource.ARMY,
+                                            newValue
+                                        )
+                                    },
+                                    producedResource = Resource.ARMY,
+                                    empireModel = empireModel,
+                                    maxValue = 10
+                                )
+                                DropdownSelector(
+                                    modifier = modifier,
+                                    enumClass = ShipType::class,
+                                    onItemSelected = { selected ->
+                                        empireModel.updateBuildingShip(selected)
+                                        empireModel.addShipTypeBuildAction(context, planet.id, selected)
+                                    },
+                                    disabledItems = empireModel.getLockedShips(),
+                                    label = stringResource(empireUiState.buildingShip?.nameNominative
+                                        ?: R.string.noShip)
+                                )
+                            }
+
                             ProductionSetRow(
                                 modifier = Modifier.wrapContentWidth(),
                                 actionFunction = {
@@ -236,7 +255,8 @@ fun DistrictDialog(
                                             planet = planet
                                         )
                                     },
-                                    enabled = planets.size > 1
+                                    enabled = planets.size > 1 && empireModel.isTechnologyResearched(
+                                        TechnologyEnum.TRANSPORT_TECHNOLOGY)
                                 ) { Text(stringResource(R.string.transport)) }
                             }
                         }
@@ -266,6 +286,28 @@ fun DistrictDialog(
                         }
 
                         is District.Empty -> {
+                            val isExpeditionPlatformResearched = empireModel.isTechnologyResearched(TechnologyEnum.SPACE_TRAVELLING)
+
+                            val excludedItems = if (planet.districts.any { it is ExpeditionPlatform }) {
+                                setOf(
+                                    DistrictEnum.EMPTY,
+                                    DistrictEnum.CAPITOL,
+                                    DistrictEnum.EXPEDITION_PLATFORM,
+                                    DistrictEnum.IN_CONSTRUCTION
+                                )
+                            } else {
+                                setOf(
+                                    DistrictEnum.EMPTY,
+                                    DistrictEnum.CAPITOL,
+                                    DistrictEnum.IN_CONSTRUCTION
+                                )
+                            }
+
+                            val disabledItems = if (!isExpeditionPlatformResearched) {
+                                setOf(DistrictEnum.EXPEDITION_PLATFORM)
+                            } else {
+                                emptySet()
+                            }
                             SpinnerProductionRow(
                                 actionFunction = {
                                     empireModel.buildDistrictAction(
@@ -282,20 +324,8 @@ fun DistrictDialog(
                                         selected
                                     )
                                 },
-                                excludedItems = if(planet.districts.any{it is ExpeditionPlatform}){
-                                    setOf(
-                                        DistrictEnum.EMPTY,
-                                        DistrictEnum.CAPITOL,
-                                        DistrictEnum.EXPEDITION_PLATFORM,
-                                        DistrictEnum.IN_CONSTRUCTION
-                                    )
-                                } else {
-                                    setOf(
-                                        DistrictEnum.EMPTY,
-                                        DistrictEnum.CAPITOL,
-                                        DistrictEnum.IN_CONSTRUCTION
-                                    )
-                                },
+                                excludedItems = excludedItems,
+                                disabledItems = disabledItems,
                                 label = stringResource(empireUiState.districtToBuild.nameIdNominative)
                             )
                         }
@@ -321,7 +351,7 @@ fun DistrictDialog(
                         }
                         else -> println("Do nothing")
                     }
-                    if(district !is District.Capitol && district !is District.Empty){
+                    if(district !is District.Capitol && district !is District.Empty && district !is District.Unnocupated){
                         Button(
                             onClick = {
                                 empireModel.destroyDistrictAction(
@@ -448,6 +478,7 @@ private fun <T : Enum<T>> SpinnerProductionRow(
     enumClass: KClass<T>,
     onItemSelected: (T) -> Unit,
     excludedItems: Set<T> = emptySet(),
+    disabledItems: Set<T> = emptySet(),
     label: String = ""
 ) {
     Row(
@@ -465,6 +496,7 @@ private fun <T : Enum<T>> SpinnerProductionRow(
             enumClass = enumClass,
             onItemSelected = onItemSelected,
             excludedItems = excludedItems,
+            disabledItems = disabledItems,
             label = label
         )
     }
@@ -473,12 +505,13 @@ private fun <T : Enum<T>> SpinnerProductionRow(
 @Composable
 private fun ModeSelector(
     modifier: Modifier = Modifier,
-    districtType: DistrictEnum,
+    district: District,
     selectedMode: Enum<*>?,
     onCheckedChange: (Enum<*>) -> Unit,
     empireModel: EmpireViewModel
 ) {
-    val modes = when (districtType) {
+    val openModes = empireModel.getUnlockedProductionModes(district)
+    val modes = when (district.type) {
         DistrictEnum.PROSPECTORS -> listOf(
             ProspectorsMode.METAL,
             ProspectorsMode.ORGANIC_SEDIMENTS
@@ -515,6 +548,8 @@ private fun ModeSelector(
                 else -> return
             }
             val isForProspectors = mode is ProspectorsMode
+            val isEnabled = openModes.contains(mode)
+
             ProductionLabelRow(
                 modifier = Modifier.wrapContentWidth(),
                 producedResource = resource,
@@ -526,7 +561,8 @@ private fun ModeSelector(
                 modifier = Modifier.wrapContentWidth(),
                 text = label,
                 selected = selectedMode == mode,
-                onClick = { onCheckedChange(mode) }
+                onClick = { if (isEnabled) onCheckedChange(mode) },
+                enabled = isEnabled
             )
             HorizontalDivider(modifier = modifier.wrapContentWidth())
             Spacer(modifier = Modifier.height(8.dp))
@@ -539,17 +575,20 @@ private fun OptionRow(
     modifier: Modifier = Modifier,
     text: String,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    enabled: Boolean
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .clickable { onClick() }
             .wrapContentWidth()
+            .alpha(if (enabled) 1f else 0.5f)
     ) {
         RadioButton(
             selected = selected,
-            onClick = onClick
+            onClick = onClick,
+            enabled = enabled
 
         )
         Spacer(modifier = Modifier.width(8.dp))
@@ -564,6 +603,7 @@ fun <T : Enum<T>> DropdownSelector(
     enumClass: KClass<T>,
     onItemSelected: (T) -> Unit,
     excludedItems: Set<T> = emptySet(),
+    disabledItems: Set<T> = emptySet(),
     label: String = ""
 ) {
     val items = remember { enumClass.java.enumConstants?.filter { it !in excludedItems } }
@@ -593,15 +633,20 @@ fun <T : Enum<T>> DropdownSelector(
                         is DistrictEnum -> item.nameIdNominative
                         is InfrastructureSetting -> item.nameId
                         is RocketMaterialsSetting -> item.nameId
+                        is ShipType -> item.nameNominative
                         else -> R.string.unknown
                     }
                 )
+                val isDisabled = item in disabledItems
                 DropdownMenuItem(
-                    text = { Text(itemName) },
+                    text = { Text(itemName, color = if (isDisabled) Color.Gray else Color.Unspecified) },
                     onClick = {
-                        onItemSelected(item)
-                        expanded = false
-                    }
+                        if (!isDisabled) {
+                            onItemSelected(item)
+                            expanded = false
+                        }
+                    },
+                    enabled = !isDisabled
                 )
             }
         }

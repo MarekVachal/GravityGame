@@ -14,6 +14,7 @@ abstract class Ship(open val id: Int){
     abstract val hp: Int
     abstract val priority: Int
     abstract val descriptionId: Int
+    abstract val maintenanceCost: Int
     var currentPosition: Int? = null
     var startingPosition: Int? = null
     var hasMoved: Boolean by mutableStateOf(false)
@@ -29,6 +30,7 @@ data class Cruiser (override val id: Int) : Ship(id){
     override val firepower = 1
     override val hp = 10
     override val priority = 4
+    override val maintenanceCost: Int = 20
     override val descriptionId = R.string.cruiserInfo
     override fun deepCopy(): Cruiser {
         return Cruiser(id).apply {
@@ -47,6 +49,7 @@ data class Destroyer (override val id: Int) : Ship(id) {
     override val firepower = 2
     override val hp = 10
     override val priority = 3
+    override val maintenanceCost: Int = 20
     override val descriptionId = R.string.destroyerInfo
     override fun deepCopy(): Destroyer {
         return Destroyer(id).apply {
@@ -65,6 +68,7 @@ data class Ghost (override val id: Int) : Ship(id){
     override val firepower = 1
     override val hp = 5
     override val priority = 2
+    override val maintenanceCost: Int = 20
     override val descriptionId = R.string.ghostInfo
     override fun deepCopy(): Ghost {
         return Ghost(id).apply {
@@ -83,6 +87,7 @@ data class Warper (override val id: Int) : Ship(id){
     override val firepower = 2
     override val hp = 1
     override val priority = 1
+    override val maintenanceCost: Int = 40
     override val descriptionId = R.string.warperInfo
     override fun deepCopy(): Warper {
         return Warper(id).apply {

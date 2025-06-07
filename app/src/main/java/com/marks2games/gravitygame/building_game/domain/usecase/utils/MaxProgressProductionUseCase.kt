@@ -4,8 +4,9 @@ import android.util.Log
 import com.marks2games.gravitygame.building_game.data.model.Action
 import com.marks2games.gravitygame.building_game.data.model.InfrastructureSetting
 import com.marks2games.gravitygame.building_game.data.model.Planet
+import com.marks2games.gravitygame.building_game.data.model.Technology
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.GenerateBiomassUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.newturn.GenerateMetalUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.newturn.GenerateMetalByProspectorsUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.ProduceInfrastructureUseCase
 import com.marks2games.gravitygame.core.domain.error.ProduceInfraResult
 import javax.inject.Inject
@@ -15,19 +16,19 @@ import kotlin.math.min
 class MaxProgressProductionUseCase @Inject constructor(
     private val generateBiomass: GenerateBiomassUseCase,
     private val produceInfrastructure: ProduceInfrastructureUseCase,
-    private val generateMetal: GenerateMetalUseCase
+    private val generateMetal: GenerateMetalByProspectorsUseCase
 ) {
-    operator fun invoke(planet: Planet, actions: List<Action>):Int{
+    operator fun invoke(planet: Planet, actions: List<Action>, technologies: List<Technology>):Int{
         var updatedPlanet = planet
         updatedPlanet = updatedPlanet.copy(
-            biomass = updatedPlanet.biomass + generateBiomass.invoke(planet)
+            biomass = updatedPlanet.biomass + generateBiomass.invoke(planet, technologies)
         )
         updatedPlanet = updatedPlanet.copy(
-            metal = generateMetal.invoke(updatedPlanet).first,
+            metal = generateMetal.invoke(updatedPlanet, technologies).first,
             progressSetting = 0,
             infrastructureSetting = InfrastructureSetting.MAXIMUM
         )
-        val resultInfra = produceInfrastructure.invoke(updatedPlanet, actions, true)
+        val resultInfra = produceInfrastructure.invoke(updatedPlanet, actions, true, technologies)
         val newInfra = when (resultInfra) {
             is ProduceInfraResult.Success -> resultInfra.newInfra
             is ProduceInfraResult.FailureWihSuccess -> resultInfra.success.newInfra

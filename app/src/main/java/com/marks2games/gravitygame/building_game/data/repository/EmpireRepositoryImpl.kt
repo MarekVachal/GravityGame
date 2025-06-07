@@ -106,4 +106,44 @@ class EmpireRepositoryImpl @Inject constructor(
             .set(planet)
             .await()
     }
+
+    override suspend fun deleteEmpire() {
+        if (user == null) return
+        try {
+            val empireDoc = firestore
+                .collection("empires")
+                .document(user.uid)
+
+            val planetsCollection = empireDoc.collection("planets")
+            val planetDocs = planetsCollection.get().await()
+            coroutineScope {
+                planetDocs.map { doc ->
+                    async {
+                        planetsCollection.document(doc.id).delete().await()
+                    }
+                }.awaitAll()
+            }
+
+            empireDoc.delete().await()
+            Log.d("Firebase", "Empire and all its planets deleted successfully.")
+        } catch (e: Exception) {
+            Sentry.captureException(e)
+        }
+    }
+
+    override suspend fun deletePlanet(planetId: Int) {
+        if (user == null) return
+        try {
+            firestore
+                .collection("empires")
+                .document(user.uid)
+                .collection("planets")
+                .document(planetId.toString())
+                .delete()
+                .await()
+            Log.d("Firebase", "Planet $planetId deleted successfully.")
+        } catch (e: Exception) {
+            Sentry.captureException(e)
+        }
+    }
 }

@@ -7,6 +7,7 @@ data class MainMenuUiStates (
     val textToShow: Text = Text.ABOUT_GAME,
     val showTextDialog: Boolean = false,
     val showSignInDialog: Boolean = false,
+    val showDeleteEmpireDialog: Boolean = false,
     val alreadySignAsGuest: Boolean = false,
     val userImage: Uri? = null,
     val email: String = "",

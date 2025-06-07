@@ -9,7 +9,7 @@ class GetAllTransports @Inject constructor() {
     operator fun invoke(empire: Empire): List<Transport> {
         val plannedTransports = empire.actions
             .filterIsInstance<Action.TransportAction>()
-            .map { it.transport }
+            .map { it.setting }
         return plannedTransports + empire.transports
 
     }

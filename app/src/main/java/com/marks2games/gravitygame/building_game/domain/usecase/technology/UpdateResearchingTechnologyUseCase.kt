@@ -12,6 +12,8 @@ class UpdateResearchingTechnologyUseCase @Inject constructor() {
                 node.changeTechnologyState(TechnologyResearchState.SELECTED)
             } else if (node.type == setTechnology && node.state == TechnologyResearchState.SELECTED) {
                 node.changeTechnologyState(TechnologyResearchState.UNLOCKED)
+            } else if ( node.type != setTechnology && node.state == TechnologyResearchState.SELECTED) {
+                node.changeTechnologyState(TechnologyResearchState.UNLOCKED)
             } else {
                 node
             }

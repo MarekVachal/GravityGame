@@ -253,6 +253,8 @@
     <string name="transportName">transport</string>
     <string name="action_description_district">%1$s %2$s on planet %3$s</string>
     <string name="errorNotAllowedSecondDistrict">Cannot build second %1$s on planet %2$s</string>
+    <string name="unnocupatedNotAllowed">Cannot build %1$s district on planet %2$s</string>
+
     <string name="error_district_not_found">District where to build not found on planet %1$s</string>
 
     <string name="missing_resource">missing %1$d %2$s</string>
@@ -356,7 +358,7 @@
     <string name="gravityManipulationGenitive">gravity manipulation</string>
     <string name="rocketScienceDescription">Unlocks Prospectors Mode 2 (mining organic sediments).\n\nUnlocks Industrials Mode 2 (production of rocket materials).</string>
     <string name="syntheticMaterialsDescription">Unlocks Industrials Mode 3 (production of metals from organic sediments).</string>
-    <string name="spaceTravellingDescription">Unlocks construction of the Expedition Platform.\n\nExpeditions can be produced in the Expedition Platform.</string>
+    <string name="spaceTravellingDescription">Unlocks construction of the Expedition Platform.  Expeditions can be produced in the Expedition Platform.</string>
     <string name="transportTechnologyDescription">Unlocks the ability to establish Transports in the Expedition Platform.</string>
     <string name="influenceTechnologyDescription">Unlocks Urban Center Mode 2 (generation of Influence).</string>
     <string name="tradeTechnologyDescription">Grants access to the Trade Center. Trading is possible there.</string>
@@ -365,14 +367,25 @@
     <string name="ghostTechnologyDescription">Ghost military units can be built in the Expedition Platform instead of Expeditions.</string>
     <string name="warperTechnologyDescription">Warper military units can be built in the Expedition Platform instead of Expeditions.</string>
     <string name="prospectorSynergyDescription">Each Prospector mines +2 metals and +1 organic sediments in each mode for every adjacent Wilderness district.</string>
-    <string name="industrialSynergyDescription">Each Industrial produces +10 infrastructure, +2 rocket materials, and +2 metals in each mode for every adjacent Prospectors district.\nIncreased production does not increase material consumption.</string>
-    <string name="expeditionSynergyDescription">The Expedition Platform produces +2 Expeditions and +2 Army units for every adjacent Industrial district.\n\nIncreased production does not increase material consumption.</string>
-    <string name="urbanCenterSynergyDescription">The Urban Center produces +2 Research and +2 Influence in each mode for every adjacent Wilderness district.\n\nIncreased production does not increase material consumption.</string>
+    <string name="industrialSynergyDescription">Each Industrial produces +10 infrastructure, +2 rocket materials, and +2 metals in each mode for every adjacent Prospectors district. Increased production does not increase material consumption.</string>
+    <string name="expeditionSynergyDescription">The Expedition Platform produces +2 Expeditions and +2 Army units for every adjacent Industrial district.  Increased production does not increase material consumption.</string>
+    <string name="urbanCenterSynergyDescription">The Urban Center produces +2 Research and +2 Influence in each mode for every adjacent Wilderness district.  Increased production does not increase material consumption.</string>
     <string name="cyberneticsDescription">Reduces planet maintenance by 5 for each resource. Can be researched repeatedly.</string>
     <string name="terraformDescription">Multiplies the cost of discovering a new planet in Expedition Points by ×0.8. Can be researched repeatedly.</string>
-    <string name="diversityDescription">Each district multiplies its production by (1 + 0.01 × number of districts of a different type).\\n\nCan be researched repeatedly. Increased production does not raise resource consumption\n(but increased mining by Prospectors increases extracted resources from reserves).\\n\nCapitols do not benefit from this bonus in any way.</string>
-    <string name="gravityManipulationDescription">Increases the number of planets in the \"inner sphere\" by 1.\nA planet in the inner sphere cannot be lost in battle.</string>
+    <string name="diversityDescription">Each district multiplies its production by (1 + 0.01 × number of districts of a different type). Can be researched repeatedly. Increased production does not raise resource consumption (but increased mining by Prospectors increases extracted resources from reserves).  Capitol do not benefit from this bonus in any way.</string>
+    <string name="gravityManipulationDescription">Increases the number of planets in the \"inner sphere\" by 1. A planet in the inner sphere cannot be lost in battle.</string>
     <string name="unknownTechnology">Unknown technology</string>
     <string name="getTechnologyDescriptionError">Something went wrong way.</string>
+    <string name="deleteEmpireTitle">Delete empire</string>
+    <string name="deleteEmpireText">Do your really want to delete your empire? Whole progress will be lost.</string>
+    <string name="empireTitle">Empire</string>
+    <string name="successfulEmpireDelete">Your empire has been successfully deleted.</string>
+    <string name="errorEmpireDelete">Deleting the empire failed.</string>
+    <string name="noShip">No ship</string>
+    <string name="shipTypeBuild">ship type to build</string>
+    <string name="unnocupatedNominative">Unnocupated</string>
+    <string name="unnocupatedGenitive">unnocupated</string>
+    <string name="unnocupatedInstrumental">unnocupated</string>
+
 
 </resources>

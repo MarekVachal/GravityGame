@@ -310,6 +310,7 @@ sealed interface Technology{
             override val descriptionId: Int = R.string.terraformDescription,
             override val type: TechnologyEnum = TechnologyEnum.TERRAFORM,
             override val basicPrice: Int = 1000,
+            val coefficient: Float = 0.8f,
             override val dependencies: List<TechnologyEnum> = listOf(
                 TechnologyEnum.EXPEDITION_SYNERGY),
             override val posX: Float = 0.7f,

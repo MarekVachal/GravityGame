@@ -46,6 +46,9 @@ fun NewTurnError.displayError(empire: Empire): String {
 
                 is BuildDistrictResult.Error.DistrictNotFound ->
                     context.getString(R.string.error_district_not_found, planetName)
+
+                is BuildDistrictResult.Error.UnnocupatedNotAllowed ->
+                    context.getString(R.string.unnocupatedNotAllowed, context.getString(DistrictEnum.UNNOCUPATED.nameIdNominative), planetName)
             }
         }
 

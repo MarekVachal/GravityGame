@@ -35,7 +35,7 @@ class CheckForNewPlanetUseCase @Inject constructor(
      *  invoke(empire3) // false, cost is ~203
      */
     operator fun invoke(empire: Empire): Boolean {
-        val planetCost = calculatePlanetCost.invoke(empire.planetsCount)
+        val planetCost = calculatePlanetCost.invoke(empire.planetsCount, empire.technologies)
         return empire.expeditions >= planetCost
     }
 }

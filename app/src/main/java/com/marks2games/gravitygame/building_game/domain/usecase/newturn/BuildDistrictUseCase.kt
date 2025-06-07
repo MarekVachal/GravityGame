@@ -24,6 +24,10 @@ class BuildDistrictUseCase @Inject constructor() {
             return BuildDistrictResult.Error.ExpeditionPlatformExists
         }
 
+        if (districtToBuild == DistrictEnum.UNNOCUPATED) {
+            return BuildDistrictResult.Error.UnnocupatedNotAllowed
+        }
+
         val districtToChange = planet.districts.find { it.districtId == idOfNewDistrict }
         if (districtToChange == null) {
             return BuildDistrictResult.Error.DistrictNotFound

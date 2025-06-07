@@ -17,6 +17,7 @@ import com.marks2games.gravitygame.battle_game.ui.screens.selectArmyScreen.Selec
 import com.marks2games.gravitygame.battle_game.ui.screens.selectMapScreen.SelectMapScreen
 import com.marks2games.gravitygame.battle_game.ui.tutorial.TutorialViewModel
 import com.marks2games.gravitygame.battle_game.ui.utils.timer.TimerViewModel
+import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
 import com.marks2games.gravitygame.core.domain.navigation.Destinations
 import com.marks2games.gravitygame.core.domain.navigation.Matchmaking
 import com.marks2games.gravitygame.ui.screens.accountScreen.AccountScreen
@@ -42,6 +43,7 @@ fun NavGraphBuilder.battleNavGraph (
     statisticModel: StatisticViewModel,
     matchmakingModel: MatchmakingViewModel,
     accountModel: AccountViewModel,
+    empireModel: EmpireViewModel
 ){
 
     navigation(startDestination = Destinations.MAINMENU.name, route = "BattleGame") {
@@ -105,7 +107,8 @@ fun NavGraphBuilder.battleNavGraph (
                 onSettingClick = { navController.navigate(Destinations.SETTINGS.name) },
                 onAccountClick = { navController.navigate(Destinations.ACCOUNT.name) },
                 onEmpireButtonClick = { navController.navigate("BuilderGame") },
-                battleModel = battleModel
+                battleModel = battleModel,
+                onDeleteEmpireClick = empireModel::updateHasLaunchedEmpireScreen
             )
         }
 

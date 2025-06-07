@@ -10,16 +10,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.marks2games.gravitygame.R
+import com.marks2games.gravitygame.building_game.domain.usecase.utils.DeleteEmpireUseCase
 import com.marks2games.gravitygame.core.domain.usecases.authentication.AnonymousSignInUseCase
 import com.marks2games.gravitygame.core.domain.usecases.authentication.RegisterWithEmailUseCase
 import com.marks2games.gravitygame.core.domain.usecases.authentication.SignInWithEmailUseCase
 import com.marks2games.gravitygame.core.domain.usecases.authentication.SignInWithGoogleUseCase
 import com.marks2games.gravitygame.core.domain.usecases.sharedRepository.GetHasSignInUseCase
+import com.marks2games.gravitygame.core.ui.utils.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -34,11 +38,35 @@ class MainMenuViewModel @Inject constructor(
     private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
     private val signInWithEmailUseCase: SignInWithEmailUseCase,
     private val registerWithEmailUseCase: RegisterWithEmailUseCase,
-    private val getHasSignInUseCase: GetHasSignInUseCase
+    private val getHasSignInUseCase: GetHasSignInUseCase,
+    private val deleteEmpire: DeleteEmpireUseCase
 ): ViewModel() {
 
+    private val _uiEvent = MutableSharedFlow<UiEvent>()
+    val uiEvent = _uiEvent.asSharedFlow()
     private val _mainMenuUiState = MutableStateFlow(MainMenuUiStates())
     val mainMenuUiStates: StateFlow<MainMenuUiStates> = _mainMenuUiState.asStateFlow()
+
+    fun updateShowDeleteEmpireDialog(toShow: Boolean){
+        _mainMenuUiState.update { state ->
+            state.copy(
+                showDeleteEmpireDialog = toShow
+            )
+        }
+    }
+
+    fun deleteEmpire(updateHasLaunchedEmpireScreen: (Boolean) -> Unit){
+        viewModelScope.launch {
+            try {
+                deleteEmpire.invoke()
+                _uiEvent.emit(UiEvent.ShowSnackbar(R.string.successfulEmpireDelete))
+            } catch (e: Exception) {
+                _uiEvent.emit(UiEvent.ShowSnackbar(R.string.errorEmpireDelete))
+            }
+            updateHasLaunchedEmpireScreen(false)
+            updateShowDeleteEmpireDialog(false)
+        }
+    }
 
     fun updateErrorMessage(errorMessage: String?){
         _mainMenuUiState.update { state ->

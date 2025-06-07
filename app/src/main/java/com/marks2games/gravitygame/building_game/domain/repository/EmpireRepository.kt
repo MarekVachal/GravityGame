@@ -8,4 +8,6 @@ interface EmpireRepository {
     suspend fun updateEmpire(empire: Empire)
     suspend fun getPlanet(planetId: Int): Planet
     suspend fun updatePlanet(planet: Planet)
+    suspend fun deleteEmpire()
+    suspend fun deletePlanet(planetId: Int)
 }

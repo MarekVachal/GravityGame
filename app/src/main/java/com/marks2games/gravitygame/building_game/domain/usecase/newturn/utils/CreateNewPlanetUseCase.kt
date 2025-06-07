@@ -5,6 +5,7 @@ import com.marks2games.gravitygame.building_game.data.model.LargePlanet
 import com.marks2games.gravitygame.building_game.data.model.MediumPlanet
 import com.marks2games.gravitygame.building_game.data.model.Planet
 import com.marks2games.gravitygame.building_game.data.model.SmallPlanet
+import com.marks2games.gravitygame.building_game.domain.usecase.technology.CountPlanetsInInnerSphereUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.utils.GeneratePlanetIdUseCase
 import javax.inject.Inject
 
@@ -18,10 +19,11 @@ import javax.inject.Inject
  */
 class CreateNewPlanetUseCase @Inject constructor(
     private val calculatePlanetCost: CalculatePlanetCost,
-    private val generatePlanetIdUseCase: GeneratePlanetIdUseCase
+    private val generatePlanetIdUseCase: GeneratePlanetIdUseCase,
+    private val countPlanetsInInnerSphere: CountPlanetsInInnerSphereUseCase
 ) {
     operator fun invoke(empire: Empire): Empire {
-        val planetCost = calculatePlanetCost.invoke(empire.planetsCount)
+        val planetCost = calculatePlanetCost.invoke(empire.planetsCount, empire.technologies)
         val planetId = generatePlanetIdUseCase.invoke(empire.planets)
         val updatedExpeditions = empire.expeditions - planetCost
         val planetType = when (empire.lastGetPlanet) {
@@ -30,10 +32,14 @@ class CreateNewPlanetUseCase @Inject constructor(
             LargePlanet -> SmallPlanet
             else -> SmallPlanet
         }
+        val countsInnerPlanets = countPlanetsInInnerSphere.invoke(empire.technologies)
+        val isInInnerSphere = countsInnerPlanets > empire.planets.size
+
         val newPlanet = Planet(
             id = planetId,
             name = "Planet ${empire.planetsCount+1}",
-            type = planetType
+            type = planetType,
+            isInnerSpherePlanet = isInInnerSphere
         )
         val updatedPlanets = empire.planets.toMutableList().apply {
             add(newPlanet)
@@ -42,7 +48,7 @@ class CreateNewPlanetUseCase @Inject constructor(
         return empire.copy(
             expeditions = updatedExpeditions,
             planets = updatedPlanets,
-            borderForNewPlanet = calculatePlanetCost.invoke(empire.planetsCount + 1),
+            borderForNewPlanet = calculatePlanetCost.invoke(empire.planetsCount + 1, empire.technologies),
             lastGetPlanet = planetType,
             planetsCount = empire.planetsCount + 1
         )

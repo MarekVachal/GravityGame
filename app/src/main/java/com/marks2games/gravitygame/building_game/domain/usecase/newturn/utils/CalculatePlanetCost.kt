@@ -1,5 +1,7 @@
 package com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils
 
+import com.marks2games.gravitygame.building_game.data.model.Technology
+import com.marks2games.gravitygame.building_game.domain.usecase.technology.ApplyTerraformUseCase
 import javax.inject.Inject
 import kotlin.math.ceil
 import kotlin.math.pow
@@ -10,7 +12,9 @@ import kotlin.math.pow
  * The cost increases exponentially with the number of planets, following the formula:
  * cost = ceil(50 * 1.15^planetsCount)
  */
-class CalculatePlanetCost @Inject constructor() {
+class CalculatePlanetCost @Inject constructor(
+    private val applyTerraformUseCase: ApplyTerraformUseCase
+) {
     /**
      * Calculates the approximate resource requirement based on the number of planets.
      *
@@ -23,7 +27,9 @@ class CalculatePlanetCost @Inject constructor() {
      * @return The estimated resource requirement as an integer.
      * @throws IllegalArgumentException if planetsCount is negative.
      */
-    operator fun invoke(planetsCount: Int): Int {
-        return ceil(100 * 1.4.pow(planetsCount - 1)).toInt()
+    operator fun invoke(planetsCount: Int, technologies: List<Technology>): Int {
+        val basicPrice = ceil(100 * 1.4.pow(planetsCount - 1)).toInt()
+        val updatedPrice =
+        return applyTerraformUseCase.invoke(basicPrice, technologies)
     }
 }

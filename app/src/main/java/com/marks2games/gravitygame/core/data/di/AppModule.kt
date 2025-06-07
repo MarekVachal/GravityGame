@@ -16,14 +16,19 @@ import com.marks2games.gravitygame.core.domain.TimeProvider
 import com.marks2games.gravitygame.core.data.datasource.GoogleAuthHelper
 import com.marks2games.gravitygame.core.data.repository.AuthRepositoryImpl
 import com.marks2games.gravitygame.core.data.repository.SharedPreferencesRepositoryImpl
+import com.marks2games.gravitygame.core.domain.model.DistrictMapConfig
+import com.marks2games.gravitygame.core.domain.model.MapConfig
+import com.marks2games.gravitygame.core.domain.model.TechnologyMapConfig
 import com.marks2games.gravitygame.core.domain.repository.AuthRepository
 import com.marks2games.gravitygame.core.domain.repository.SharedPreferencesRepository
 import com.marks2games.gravitygame.core.domain.usecases.sharedRepository.SetHasSignInUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Qualifier
 import javax.inject.Singleton
 
 @Module
@@ -123,4 +128,30 @@ object AppModule {
     fun provideSharedPlayerDataRepository(): SharedPlayerDataRepository {
         return SharedPlayerDataRepository()
     }
+
+
 }
+
+@Module
+@InstallIn(ViewModelComponent::class)
+object TechnologyMapModule {
+    @Provides
+    @TechnologyMap
+    fun provideMapConfig(): MapConfig = TechnologyMapConfig
+}
+
+@Module
+@InstallIn(ViewModelComponent::class)
+object DistrictMapModule {
+    @Provides
+    @DistrictMap
+    fun provideMapConfig(): MapConfig = DistrictMapConfig
+}
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class TechnologyMap
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class DistrictMap

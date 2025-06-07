@@ -11,47 +11,23 @@ class CreateNewEmpireUseCase @Inject constructor(
     private val calculatePlanetCost: CalculatePlanetCost
 ) {
     operator fun invoke(): Empire {
+        val startingDistricts = SmallPlanet.districts.map {
+            if( it.districtId == 1){
+                District.Industrial(districtId = 1)
+            } else {
+                it
+            }
+        }
         val gamePlanet = Planet(
             id = 0,
             metal = 100,
-            districts = listOf(
-            District.Capitol(districtId = 0),
-            District.Empty(districtId = 1),
-            District.Empty(districtId = 2),
-            District.Industrial(districtId = 3)
-        ),
-            type = SmallPlanet
-        )
-        val testPlanet = Planet(
-            id = 0,
-            districts = listOf(
-                District.Capitol(districtId = 0),
-                District.Prospectors(districtId = 1),
-                District.Industrial(districtId = 2),
-                District.UrbanCenter(districtId = 3),
-                District.ExpeditionPlatform(districtId = 4),
-                District.Empty(districtId = 5),
-                District.Empty(districtId = 6),
-            ),
-            type = SmallPlanet
-        )
-        val testPlanet2 = Planet(
-            name = "Planet 1",
-            id = 1,
-            districts = listOf(
-                District.Capitol(districtId = 0),
-                District.Prospectors(districtId = 1),
-                District.Industrial(districtId = 2),
-                District.UrbanCenter(districtId = 3),
-                District.ExpeditionPlatform(districtId = 4),
-                District.Empty(districtId = 5),
-                District.Empty(districtId = 6),
-            ),
-            type = SmallPlanet
+            type = SmallPlanet,
+            isInnerSpherePlanet = true,
+            districts = startingDistricts
         )
         return Empire(
             planets = listOf(gamePlanet),
-            borderForNewPlanet = calculatePlanetCost.invoke(1),
+            borderForNewPlanet = calculatePlanetCost.invoke(1, emptyList()),
             lastGetPlanet = SmallPlanet
         )
     }
