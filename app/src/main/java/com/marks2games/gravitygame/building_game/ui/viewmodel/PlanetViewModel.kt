@@ -121,7 +121,6 @@ class PlanetViewModel @Inject constructor(
 
     private val _planetUiState = MutableStateFlow(PlanetUiState())
     val planetUiState = _planetUiState.asStateFlow()
-    private val nodesState = mapUiState.value.nodes
 
     fun launchPlanetScreen(planetId: Int?, empire: Empire, testEmpire: Empire){
         _planetUiState.update { state ->
@@ -167,7 +166,7 @@ class PlanetViewModel @Inject constructor(
         val updatedDistricts = mapUiState.value.nodes.map{ node ->
             node.copy(district = districts.first{ it.districtId == node.district.districtId })
         }
-        val updatedNodes = planet?.let{ planet ->
+        val updatedNodes = planet?.let{ _ ->
             updatedDistricts.map { node ->
                 val newColor = getDistrictBorder(node.district)
                 node.copy(buttonColor = newColor)

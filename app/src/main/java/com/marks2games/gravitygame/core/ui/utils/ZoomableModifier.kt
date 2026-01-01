@@ -3,7 +3,6 @@ package com.marks2games.gravitygame.core.ui.utils
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
 
 fun Modifier.zoomable(

@@ -4,8 +4,6 @@ import android.util.Log
 import androidx.compose.ui.graphics.Color
 import com.marks2games.gravitygame.building_game.data.model.District
 import com.marks2games.gravitygame.building_game.data.model.DistrictEnum
-import com.marks2games.gravitygame.building_game.data.model.Planet
-import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.UpdateDistrictsForSettleUseCase
 import javax.inject.Inject
 
 class GetDistrictBorderColorUseCase @Inject constructor() {

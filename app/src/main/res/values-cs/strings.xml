@@ -352,4 +352,11 @@
     <string name="empireTitle">Impérium</string>
     <string name="successfulEmpireDelete">Impérium bylo úspěšně smazáno.</string>
     <string name="errorEmpireDelete">Smazání empéria selhalo.</string>
+    <string name="noShip">Žádná loď</string>
+    <string name="shipTypeBuild">typ lodě ke stavbě</string>
+    <string name="unnocupatedNominative">Neobsazené</string>
+    <string name="unnocupatedGenitive">neobsazeného</string>
+    <string name="unnocupatedInstrumental">neosazeným</string>
+    <string name="settleNewDistrict">Osídlit</string>
+    <string name="settleDistrict">Postav distrikt</string>
 </resources>

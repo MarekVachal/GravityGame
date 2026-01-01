@@ -608,7 +608,7 @@ fun <T : Enum<T>> DropdownSelector(
 
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = { expanded = it }
+        onExpandedChange = { }
     ) {
         Text(
             text = label,
@@ -622,7 +622,7 @@ fun <T : Enum<T>> DropdownSelector(
             modifier = Modifier
                 .width(IntrinsicSize.Min),
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { }
         ) {
             items?.forEach { item ->
                 val itemName = stringResource(
@@ -640,7 +640,6 @@ fun <T : Enum<T>> DropdownSelector(
                     onClick = {
                         if (!isDisabled) {
                             onItemSelected(item)
-                            expanded = false
                         }
                     },
                     enabled = !isDisabled
