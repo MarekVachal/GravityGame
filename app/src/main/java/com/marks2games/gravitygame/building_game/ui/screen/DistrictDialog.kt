@@ -26,13 +26,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -603,17 +605,22 @@ fun <T : Enum<T>> DropdownSelector(
     disabledItems: Set<T> = emptySet(),
     label: String = ""
 ) {
-    val items = remember { enumClass.java.enumConstants?.filter { it !in excludedItems } }
+    val onItemSelectedState = rememberUpdatedState(onItemSelected)
+    val items = remember(enumClass, excludedItems) {
+        enumClass.java.enumConstants
+            ?.filter { it !in excludedItems }
+            .orEmpty()
+    }
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = { }
+        onExpandedChange = { expanded = !expanded }
     ) {
         Text(
             text = label,
             modifier = modifier
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable, expanded)
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, expanded)
                 .clickable { expanded = true }
                 .padding(16.dp)
         )
@@ -622,9 +629,9 @@ fun <T : Enum<T>> DropdownSelector(
             modifier = Modifier
                 .width(IntrinsicSize.Min),
             expanded = expanded,
-            onDismissRequest = { }
+            onDismissRequest = { expanded = false }
         ) {
-            items?.forEach { item ->
+            items.forEach { item ->
                 val itemName = stringResource(
                     when(item) {
                         is DistrictEnum -> item.nameIdNominative
@@ -639,10 +646,11 @@ fun <T : Enum<T>> DropdownSelector(
                     text = { Text(itemName, color = if (isDisabled) Color.Gray else Color.Unspecified) },
                     onClick = {
                         if (!isDisabled) {
-                            onItemSelected(item)
+                            onItemSelectedState.value(item)
                         }
                     },
-                    enabled = !isDisabled
+                    enabled = !isDisabled,
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                 )
             }
         }
