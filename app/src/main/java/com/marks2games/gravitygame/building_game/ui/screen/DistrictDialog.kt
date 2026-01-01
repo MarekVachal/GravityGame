@@ -1,7 +1,6 @@
 package com.marks2games.gravitygame.building_game.ui.screen
 
 import androidx.compose.ui.graphics.Color
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,16 +48,16 @@ import com.marks2games.gravitygame.building_game.data.BuilderGameConstants.DISTR
 import com.marks2games.gravitygame.building_game.data.model.District
 import com.marks2games.gravitygame.building_game.data.model.District.ExpeditionPlatform
 import com.marks2games.gravitygame.building_game.data.model.DistrictEnum
-import com.marks2games.gravitygame.building_game.data.model.EmpireUiState
 import com.marks2games.gravitygame.building_game.data.model.IndustrialMode
 import com.marks2games.gravitygame.building_game.data.model.InfrastructureSetting
 import com.marks2games.gravitygame.building_game.data.model.Planet
+import com.marks2games.gravitygame.building_game.data.model.PlanetUiState
 import com.marks2games.gravitygame.building_game.data.model.ProspectorsMode
 import com.marks2games.gravitygame.building_game.data.model.Resource
 import com.marks2games.gravitygame.building_game.data.model.RocketMaterialsSetting
 import com.marks2games.gravitygame.building_game.data.model.TechnologyEnum
 import com.marks2games.gravitygame.building_game.data.model.UrbanCenterMode
-import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
+import com.marks2games.gravitygame.building_game.ui.viewmodel.PlanetViewModel
 import com.marks2games.gravitygame.core.data.model.enum_class.ShipType
 import com.marks2games.gravitygame.core.ui.utils.NumberInputField
 import kotlin.reflect.KClass
@@ -67,16 +66,16 @@ import kotlin.reflect.KClass
 fun DistrictDialog(
     modifier: Modifier = Modifier,
     toShow: Boolean,
-    planet: Planet,
+    planet: Planet?,
     planets: List<Planet>,
     district: District?,
-    empireModel: EmpireViewModel,
-    empireUiState: EmpireUiState
+    planetModel: PlanetViewModel,
+    planetUiState: PlanetUiState
 ) {
     val context = LocalContext.current
-    if (toShow) {
+    if (toShow && planet != null) {
         Dialog(
-            onDismissRequest = { empireModel.updateDistrictDialogShown(false, null) },
+            onDismissRequest = { planetModel.updateDistrictDialogShown(false, null) },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             Card(
@@ -107,11 +106,10 @@ fun DistrictDialog(
                         ) {
                             Button(
                                 onClick = {
-                                    empireModel.changeDistrictModeAction(
+                                    planetModel.changeDistrictModeAction(
                                         district = district.type,
                                         districtId = district.districtId,
-                                        mode = empireUiState.modeIsChecked,
-                                        planetId = planet.id,
+                                        mode = planetUiState.modeIsChecked,
                                         context = context
                                     )
 
@@ -124,11 +122,11 @@ fun DistrictDialog(
 
                             ModeSelector(
                                 district = district,
-                                selectedMode = empireUiState.modeIsChecked,
+                                selectedMode = planetUiState.modeIsChecked,
                                 onCheckedChange = { checked ->
-                                    empireModel.updateModeIsChecked(checked)
+                                    planetModel.updateModeIsChecked(checked)
                                 },
-                                empireModel = empireModel,
+                                planetModel = planetModel,
                                 modifier = Modifier.wrapContentWidth()
                             )
                         }
@@ -138,35 +136,34 @@ fun DistrictDialog(
                             if (district.mode == IndustrialMode.INFRASTRUCTURE) {
                                 SpinnerProductionRow(
                                     actionFunction = {
-                                        empireModel.addInfrastructureProductionAction(
+                                        planetModel.addInfrastructureProductionAction(
                                             context = context,
-                                            planet.id,
-                                            empireUiState.infrastructureProductionSet
+                                            planetUiState.infrastructureProductionSet
                                         )
                                     },
                                     enumClass = InfrastructureSetting::class,
                                     onItemSelected = { selected ->
-                                        empireModel.updateInfrastructureSetting(
+                                        planetModel.updateInfrastructureSetting(
                                             selected
                                         )
                                     },
-                                    label = stringResource(empireUiState.infrastructureProductionSet.nameId)
+                                    label = stringResource(planetUiState.infrastructureProductionSet.nameId)
                                 )
                             } else {
                                 SpinnerProductionRow(
                                     actionFunction = {
-                                        empireModel.addRocketMaterialsProductionAction(
+                                        planetModel.addRocketMaterialsProductionAction(
                                             context = context,
-                                            planet.id, empireUiState.rocketMaterialsProductionSet
+                                            planetUiState.rocketMaterialsProductionSet
                                         )
                                     },
                                     enumClass = RocketMaterialsSetting::class,
                                     onItemSelected = { selected ->
-                                        empireModel.updateRocketMaterialsSetting(
+                                        planetModel.updateRocketMaterialsSetting(
                                             selected
                                         )
                                     },
-                                    label = stringResource(empireUiState.rocketMaterialsProductionSet.nameId)
+                                    label = stringResource(planetUiState.rocketMaterialsProductionSet.nameId)
                                 )
                             }
                         }
@@ -175,21 +172,21 @@ fun DistrictDialog(
                             ProductionSetRow(
                                 modifier = Modifier.wrapContentWidth(),
                                 actionFunction = {
-                                    empireModel.addProgressProductionAction(
+                                    planetModel.addProgressProductionAction(
                                         context = context,
-                                        planet.id, empireUiState.progressProductionSet.toInt()
+                                        planetUiState.progressProductionSet.toInt()
                                     )
                                 },
-                                value = empireUiState.progressProductionSet,
+                                value = planetUiState.progressProductionSet,
                                 onValueChange = { newValue ->
-                                    empireModel.updateIntProductionState(
+                                    planetModel.updateIntProductionState(
                                         Resource.PROGRESS,
                                         newValue
                                     )
                                 },
                                 producedResource = Resource.PROGRESS,
-                                empireModel = empireModel,
-                                maxValue = empireModel.calculateMaxProgressProduction(planet = planet)
+                                planetModel = planetModel,
+                                maxValue = planetModel.calculateMaxProgressProduction(planet = planet)
                             )
                         }
 
@@ -200,31 +197,31 @@ fun DistrictDialog(
                                 ProductionSetRow(
                                     modifier = Modifier.wrapContentWidth(),
                                     actionFunction = {
-                                        empireModel.addArmyProductionAction(
+                                        planetModel.addArmyProductionAction(
                                             context = context,
-                                            planet.id, empireUiState.armyProductionSet.toInt()
+                                            planetUiState.armyProductionSet.toInt()
                                         )
                                     },
-                                    value = empireUiState.armyProductionSet.toString(),
+                                    value = planetUiState.armyProductionSet,
                                     onValueChange = { newValue ->
-                                        empireModel.updateIntProductionState(
+                                        planetModel.updateIntProductionState(
                                             Resource.ARMY,
                                             newValue
                                         )
                                     },
                                     producedResource = Resource.ARMY,
-                                    empireModel = empireModel,
+                                    planetModel = planetModel,
                                     maxValue = 10
                                 )
                                 DropdownSelector(
                                     modifier = modifier,
                                     enumClass = ShipType::class,
                                     onItemSelected = { selected ->
-                                        empireModel.updateBuildingShip(selected)
-                                        empireModel.addShipTypeBuildAction(context, planet.id, selected)
+                                        planetModel.updateBuildingShip(selected)
+                                        planetModel.addShipTypeBuildAction(context, selected)
                                     },
-                                    disabledItems = empireModel.getLockedShips(),
-                                    label = stringResource(empireUiState.buildingShip?.nameNominative
+                                    disabledItems = planetModel.getLockedShips(),
+                                    label = stringResource(planetUiState.buildingShip?.nameNominative
                                         ?: R.string.noShip)
                                 )
                             }
@@ -232,30 +229,26 @@ fun DistrictDialog(
                             ProductionSetRow(
                                 modifier = Modifier.wrapContentWidth(),
                                 actionFunction = {
-                                    empireModel.addExpeditionProductionAction(
+                                    planetModel.addExpeditionProductionAction(
                                         context = context,
-                                        planet.id, empireUiState.expeditionsProductionSet.toInt()
+                                        planetUiState.expeditionsProductionSet.toInt()
                                     )
                                 },
-                                value = empireUiState.expeditionsProductionSet.toString(),
+                                value = planetUiState.expeditionsProductionSet,
                                 onValueChange = { newValue ->
-                                    empireModel.updateIntProductionState(
+                                    planetModel.updateIntProductionState(
                                         Resource.EXPEDITIONS,
                                         newValue
                                     )
                                 },
                                 producedResource = Resource.EXPEDITIONS,
-                                empireModel = empireModel,
+                                planetModel = planetModel,
                                 maxValue = 10
                             )
                             Row {
                                 Button(
-                                    onClick = {
-                                        empireModel.openTransportDialog(
-                                            planet = planet
-                                        )
-                                    },
-                                    enabled = planets.size > 1 && empireModel.isTechnologyResearched(
+                                    onClick = { planetModel.updateTransportDialogShown(true) },
+                                    enabled = planets.size > 1 && planetModel.isTechnologyResearched(
                                         TechnologyEnum.TRANSPORT_TECHNOLOGY)
                                 ) { Text(stringResource(R.string.transport)) }
                             }
@@ -266,27 +259,27 @@ fun DistrictDialog(
                                 ProductionSetRow(
                                     modifier = Modifier.wrapContentWidth(),
                                     actionFunction = {
-                                        empireModel.addResearchProductionAction(
+                                        planetModel.addResearchProductionAction(
                                             context = context,
-                                            planet.id, empireUiState.researchProductionSet.toInt()
+                                            planetUiState.researchProductionSet.toInt()
                                         )
                                     },
-                                    value = empireUiState.researchProductionSet.toString(),
+                                    value = planetUiState.researchProductionSet,
                                     onValueChange = { newValue ->
-                                        empireModel.updateIntProductionState(
+                                        planetModel.updateIntProductionState(
                                             Resource.RESEARCH,
                                             newValue
                                         )
                                     },
                                     producedResource = Resource.RESEARCH,
-                                    empireModel = empireModel,
-                                    maxValue = empireModel.calculateMaxResearchProduction(planet)
+                                    planetModel = planetModel,
+                                    maxValue = planetModel.calculateMaxResearchProduction(planet)
                                 )
                             }
                         }
 
                         is District.Empty -> {
-                            val isExpeditionPlatformResearched = empireModel.isTechnologyResearched(TechnologyEnum.SPACE_TRAVELLING)
+                            val isExpeditionPlatformResearched = planetModel.isTechnologyResearched(TechnologyEnum.SPACE_TRAVELLING)
 
                             val excludedItems = if (planet.districts.any { it is ExpeditionPlatform }) {
                                 setOf(
@@ -310,23 +303,22 @@ fun DistrictDialog(
                             }
                             SpinnerProductionRow(
                                 actionFunction = {
-                                    empireModel.buildDistrictAction(
+                                    planetModel.buildDistrictAction(
                                         context = context,
-                                        planet.id,
-                                        empireUiState.districtToBuild,
+                                        planetUiState.districtToBuild,
                                         district.districtId
                                     )
                                 },
                                 textOnButton = stringResource(R.string.buildDistrict),
                                 enumClass = DistrictEnum::class,
                                 onItemSelected = { selected ->
-                                    empireModel.updateDistrictToBuild(
+                                    planetModel.updateDistrictToBuild(
                                         selected
                                     )
                                 },
                                 excludedItems = excludedItems,
                                 disabledItems = disabledItems,
-                                label = stringResource(empireUiState.districtToBuild.nameIdNominative)
+                                label = stringResource(planetUiState.districtToBuild.nameIdNominative)
                             )
                         }
                         is District.InConstruction -> {
@@ -344,7 +336,7 @@ fun DistrictDialog(
                                 Text(
                                     stringResource(
                                         R.string.districtToBuildDescription,
-                                        stringResource(empireUiState.districtToBuild.nameIdNominative)
+                                        stringResource(planetUiState.districtToBuild.nameIdNominative)
                                     )
                                 )
                             }
@@ -354,13 +346,20 @@ fun DistrictDialog(
                     if(district !is District.Capitol && district !is District.Empty && district !is District.Unnocupated){
                         Button(
                             onClick = {
-                                empireModel.destroyDistrictAction(
+                                planetModel.destroyDistrictAction(
                                     context = context,
-                                    planetId = planet.id,
                                     districtId = district?.districtId ?: 0
                                 )
                             }
                         ) { Text(stringResource(R.string.destroyDistrict)) }
+                    }
+                    if(planetModel.canSettleDistrict(district)){
+                        Button(
+                            onClick = {
+                                planetModel.settleDistrictAction(context, district?.districtId)
+                                planetModel.updateDistrictDialogShown(false, null)
+                            }
+                        ) { Text(stringResource(R.string.settleNewDistrict))}
                     }
                 }
             }
@@ -375,10 +374,9 @@ private fun ProductionSetRow(
     value: String,
     onValueChange: (String) -> Unit,
     producedResource: Resource,
-    empireModel: EmpireViewModel,
+    planetModel: PlanetViewModel,
     maxValue: Int
 ) {
-    Log.d("ProductionSetRow", "Recomposed with value: $value")
     Row(
         modifier = modifier.wrapContentWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -386,7 +384,6 @@ private fun ProductionSetRow(
     ) {
         Button(
             onClick = {
-                Log.d("ProductionSetRow", "Button clicked")
                 actionFunction()
             }
         ) { Text(stringResource(R.string.setProduction)) }
@@ -399,7 +396,7 @@ private fun ProductionSetRow(
             label = {
                 ProductionLabelRow(
                     producedResource = producedResource,
-                    empireModel = empireModel,
+                    planetModel = planetModel,
                     isForProspectors = false,
                     modifier = Modifier.wrapContentWidth()
                 )
@@ -415,10 +412,10 @@ private fun ProductionLabelRow(
     modifier: Modifier = Modifier,
     producedResource: Resource,
     isForProspectors: Boolean,
-    empireModel: EmpireViewModel
+    planetModel: PlanetViewModel
 ) {
-    val (consumedResource1Enum, consumedResource2Enum) = empireModel.getConsumedResource(producedResource, isForProspectors)
-    val (producedResourceValue, consumedResource1, consumedResource2) = empireModel.getResourceValue(producedResource, isForProspectors)
+    val (consumedResource1Enum, consumedResource2Enum) = planetModel.getConsumedResource(producedResource, isForProspectors)
+    val (producedResourceValue, consumedResource1, consumedResource2) = planetModel.getResourceValue(producedResource, isForProspectors)
     Row(
         modifier = modifier.wrapContentWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -508,9 +505,9 @@ private fun ModeSelector(
     district: District,
     selectedMode: Enum<*>?,
     onCheckedChange: (Enum<*>) -> Unit,
-    empireModel: EmpireViewModel
+    planetModel: PlanetViewModel
 ) {
-    val openModes = empireModel.getUnlockedProductionModes(district)
+    val openModes = planetModel.getUnlockedProductionModes(district)
     val modes = when (district.type) {
         DistrictEnum.PROSPECTORS -> listOf(
             ProspectorsMode.METAL,
@@ -553,7 +550,7 @@ private fun ModeSelector(
             ProductionLabelRow(
                 modifier = Modifier.wrapContentWidth(),
                 producedResource = resource,
-                empireModel = empireModel,
+                planetModel = planetModel,
                 isForProspectors = isForProspectors
             )
 

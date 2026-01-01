@@ -6,16 +6,20 @@ import com.marks2games.gravitygame.building_game.data.model.InfrastructureSettin
 import javax.inject.Inject
 
 class AddInfrastructureProductionActionUseCase @Inject constructor() {
-    operator fun invoke(actions: List<Action>, planetId: Int, value: InfrastructureSetting): List<Action> {
-        val action = Action.SetProduction.InfrastructureProduction(value, planetId)
-        val newActions = actions.toMutableList()
-        val isActionSet = actions.find {it.type == ActionEnum.ARMY_ACTION && it.setting == value }
-        if(isActionSet == null){
-            newActions.add(action)
-        } else {
-            newActions.add(action)
-            newActions.remove(isActionSet)
+    operator fun invoke(actions: List<Action>, planetId: Int?, value: InfrastructureSetting): List<Action> {
+        val action = planetId?.let {
+            Action.SetProduction.InfrastructureProduction(value, it)
         }
-        return newActions.toList()
+        val newActions = actions.toMutableList()
+        val isActionSet = actions.find {it.type == ActionEnum.INFRA_ACTION && it.planetId == planetId }
+        action?.let{
+            if(isActionSet == null){
+                newActions.add(it)
+            } else {
+                newActions.add(it)
+                newActions.remove(isActionSet)
+            }
+        }
+        return newActions
     }
 }

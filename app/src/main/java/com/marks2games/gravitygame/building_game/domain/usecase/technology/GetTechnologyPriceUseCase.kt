@@ -5,7 +5,7 @@ import com.marks2games.gravitygame.building_game.data.model.TechnologyResearchSt
 import javax.inject.Inject
 
 class GetTechnologyPriceUseCase @Inject constructor() {
-    operator fun invoke(technologies: List<Technology>): Int {
-        return technologies.find { it.state == TechnologyResearchState.SELECTED }?.cost ?: 0
+    operator fun invoke(technologies: List<Technology>?): Int {
+        return technologies?.find { it.state == TechnologyResearchState.SELECTED }?.cost ?: 0
     }
 }

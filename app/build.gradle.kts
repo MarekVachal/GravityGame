@@ -1,11 +1,11 @@
-plugins {
+    plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
-    id("org.jetbrains.kotlin.plugin.compose") version "2.1.0"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.0"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.3.0"
     id("com.google.devtools.ksp")
     id("com.google.gms.google-services")
-    id("io.sentry.android.gradle") version "4.14.1"
+    id("io.sentry.android.gradle") version "5.12.2"
     id("com.google.dagger.hilt.android")
 }
 
@@ -64,16 +64,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-        freeCompilerArgs += "-Xjvm-default=all"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            freeCompilerArgs.add("-Xjvm-default=all")
+        }
     }
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
+
     packaging {
         resources {
             excludes += "/META-INF/*"
@@ -99,13 +99,13 @@ sentry {
 
 dependencies {
 
-    val composeBomVersion = "2025.05.01"
-    val roomVersion = "2.7.1"
+    val composeBomVersion = "2025.12.01"
+    val roomVersion = "2.8.4"
     val credentialVersion = "1.5.0"
-    val hiltVersion = "2.55"
-    val ktorVersion = "3.0.3"
-    val coroutineVersion = "1.10.1"
-    val sentryVersion = "8.13.0"
+    val hiltVersion = "2.57.2"
+    val ktorVersion = "3.3.3"
+    val coroutineVersion = "1.10.2"
+    val sentryVersion = "8.29.0"
 
     //Ktor
     implementation ("io.ktor:ktor-client-core:$ktorVersion")
@@ -116,7 +116,7 @@ dependencies {
     //Hilt
     implementation ("com.google.dagger:hilt-android:$hiltVersion")
     ksp ("com.google.dagger:hilt-compiler:$hiltVersion")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0") //Not sure I need it
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0") //Not sure I need it
 
     //Coin. For getting image from URL
     implementation("io.coil-kt:coil-compose:2.7.0")
@@ -134,12 +134,12 @@ dependencies {
 
     //Play Games Services
     //implementation ("com.google.android.gms:play-services-games-v2:20.1.2")
-    implementation("com.google.android.gms:play-services-auth:21.3.0")
+    implementation("com.google.android.gms:play-services-auth:21.4.0")
     //implementation ("com.google.android.gms:play-services-base:18.5.0")
     //implementation ("com.google.android.gms:play-services-tasks:18.2.0")
 
     //Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.14.0"))
+    implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
     implementation("com.google.firebase:firebase-common")
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
@@ -147,31 +147,31 @@ dependencies {
     implementation ("com.google.firebase:firebase-firestore")
     implementation ("com.google.firebase:firebase-messaging")
     implementation("com.google.firebase:firebase-inappmessaging")
-    implementation("com.google.auth:google-auth-library-oauth2-http:1.31.0")
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.41.0")
 
     //gRPC (firestore used it for network operation
-    implementation("io.grpc:grpc-okhttp:1.70.0")
+    implementation("io.grpc:grpc-okhttp:1.78.0")
 
     //Compose navigation
-    implementation("androidx.navigation:navigation-compose:2.9.0")
+    implementation("androidx.navigation:navigation-compose:2.9.6")
 
     //Coroutines
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$coroutineVersion")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0")
 
     //Core
-    implementation("androidx.core:core-ktx:1.16.0")
-    implementation("androidx.activity:activity-compose:1.10.1")
+    implementation("androidx.core:core-ktx:1.17.0")
+    implementation("androidx.activity:activity-compose:1.12.2")
     implementation(platform("androidx.compose:compose-bom:$composeBomVersion"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("com.google.android.material:material:1.12.0")
+    implementation("androidx.appcompat:appcompat:1.7.1")
+    implementation("com.google.android.material:material:1.13.0")
 
     //Constraint layout
     implementation("androidx.constraintlayout:constraintlayout:2.2.1")
@@ -184,11 +184,11 @@ dependencies {
 
     //Testing
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.mockito:mockito-core:5.7.0")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
-    testImplementation("io.mockk:mockk:1.13.10")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    testImplementation("org.mockito:mockito-core:5.21.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
+    testImplementation("io.mockk:mockk:1.14.7")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     androidTestImplementation(platform("androidx.compose:compose-bom:$composeBomVersion"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")

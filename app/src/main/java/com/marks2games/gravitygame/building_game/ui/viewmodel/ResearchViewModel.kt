@@ -10,6 +10,8 @@ import com.marks2games.gravitygame.core.data.di.TechnologyMap
 import com.marks2games.gravitygame.core.data.model.TechnologyNode
 import com.marks2games.gravitygame.core.domain.model.MapConfig
 import com.marks2games.gravitygame.core.domain.usecases.genericMap.CreateTechnologicalNodesUseCase
+import com.marks2games.gravitygame.core.domain.usecases.genericMap.GetNodePositionUseCase
+import com.marks2games.gravitygame.core.domain.usecases.genericMap.GetToroidalPositionsUseCase
 import com.marks2games.gravitygame.core.domain.usecases.genericMap.UpdateButtonSizeUseCase
 import com.marks2games.gravitygame.core.domain.usecases.genericMap.UpdateMapSizeUseCase
 import com.marks2games.gravitygame.core.domain.usecases.genericMap.UpdateMinScaleUseCase
@@ -29,13 +31,17 @@ class ResearchViewModel @Inject constructor(
     override val updateMapSize: UpdateMapSizeUseCase,
     private val updateResearchingTechnology: UpdateResearchingTechnologyUseCase,
     private val createTechnologicalNodes: CreateTechnologicalNodesUseCase,
-    @TechnologyMap override val mapConfig: MapConfig
+    @TechnologyMap override val mapConfig: MapConfig,
+    getToroidalPositions: GetToroidalPositionsUseCase<TechnologyNode>,
+    getNodePosition: GetNodePositionUseCase<TechnologyNode>
 ) : MapViewModel<TechnologyNode>(
     updateOffset = updateOffset,
     updateButtonSize = updateButtonSize,
     updateMinScale = updateMinScale,
     updateMapSize = updateMapSize,
-    mapConfig = mapConfig
+    mapConfig = mapConfig,
+    getToroidalPositions = getToroidalPositions,
+    getNodePosition = getNodePosition
 ) {
 
     private val _researchUiState = MutableStateFlow(ResearchUiState())

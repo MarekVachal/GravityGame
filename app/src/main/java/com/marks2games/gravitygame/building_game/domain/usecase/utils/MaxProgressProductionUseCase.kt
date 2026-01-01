@@ -18,7 +18,8 @@ class MaxProgressProductionUseCase @Inject constructor(
     private val produceInfrastructure: ProduceInfrastructureUseCase,
     private val generateMetal: GenerateMetalByProspectorsUseCase
 ) {
-    operator fun invoke(planet: Planet, actions: List<Action>, technologies: List<Technology>):Int{
+    operator fun invoke(planet: Planet, actions: List<Action>, technologies: List<Technology>?):Int{
+        if(technologies == null) return 0
         var updatedPlanet = planet
         updatedPlanet = updatedPlanet.copy(
             biomass = updatedPlanet.biomass + generateBiomass.invoke(planet, technologies)

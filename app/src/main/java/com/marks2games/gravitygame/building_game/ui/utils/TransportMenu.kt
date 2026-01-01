@@ -23,28 +23,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.building_game.data.model.Empire
-import com.marks2games.gravitygame.building_game.data.model.EmpireUiState
 import com.marks2games.gravitygame.building_game.data.model.Transport
-import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
 import com.marks2games.gravitygame.core.ui.utils.SwipeUtil
 
 @Composable
 fun TransportMenu(
     modifier: Modifier = Modifier,
-    empire: Empire,
-    empireModel: EmpireViewModel,
-    empireUiState: EmpireUiState
+    transportCount: Int,
+    onTransportMenuClick: () -> Unit,
 ){
     Box(
-        modifier = modifier.clickable{
-            if(empireUiState.isTransportMenuShown){
-                empireModel.updateTransportMenuShown(false)
-            } else {
-                empireModel.updateTransportMenuShown(true)
-                empireModel.updateErrorsShown(false)
-                empireModel.updateActionsShown(false)
-            }
-        }
+        modifier = modifier.clickable{ onTransportMenuClick() }
     ) {
         Icon(
             imageVector = Icons.Default.Share,
@@ -60,7 +49,7 @@ fun TransportMenu(
         ) {
             Text(
                 modifier = modifier.padding(4.dp),
-                text = "${empire.transports.size}"
+                text = "$transportCount"
             )
         }
     }
@@ -71,8 +60,9 @@ fun TransportsList(
     modifier: Modifier = Modifier,
     transports: List<Transport>,
     empire: Empire,
-    empireModel: EmpireViewModel,
-    onTransportClick: (Transport) -> Unit
+    onTransportClick: (Transport) -> Unit,
+    deleteAllTransports: () -> Unit,
+    deleteTransport: (Transport) -> Unit
 ){
     Card(
         modifier = modifier
@@ -91,7 +81,7 @@ fun TransportsList(
             ){
                 Text(
                     text = stringResource(R.string.deleteAllTransports),
-                    modifier = modifier.clickable {empireModel.deleteAllTransports()}
+                    modifier = modifier.clickable { deleteAllTransports() }
                 )
             }
             HorizontalDivider(
@@ -106,8 +96,8 @@ fun TransportsList(
                         modifier = modifier,
                         transport = transports[it],
                         empire = empire,
-                        empireModel = empireModel,
-                        onTransportClick = onTransportClick
+                        onTransportClick = onTransportClick,
+                        deleteTransport = deleteTransport
                     )
                 }
             }
@@ -120,11 +110,11 @@ private fun TransportRow(
     modifier: Modifier = Modifier,
     transport: Transport,
     empire: Empire,
-    empireModel: EmpireViewModel,
-    onTransportClick: (Transport) -> Unit
+    onTransportClick: (Transport) -> Unit,
+    deleteTransport: (Transport) -> Unit
 ){
     SwipeUtil(
-        delete = { empireModel.deleteTransport(transport)},
+        delete = { deleteTransport(transport) },
         edit = {},
         enableEdit = false
     ) {

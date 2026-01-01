@@ -254,7 +254,7 @@
     <string name="action_description_district">%1$s %2$s on planet %3$s</string>
     <string name="errorNotAllowedSecondDistrict">Cannot build second %1$s on planet %2$s</string>
     <string name="unnocupatedNotAllowed">Cannot build %1$s district on planet %2$s</string>
-
+    <string name="districtForBuildingIsUnnocupated">Cannot build on unsettled district on planet %1$s</string>
     <string name="error_district_not_found">District where to build not found on planet %1$s</string>
 
     <string name="missing_resource">missing %1$d %2$s</string>
@@ -386,6 +386,8 @@
     <string name="unnocupatedNominative">Unnocupated</string>
     <string name="unnocupatedGenitive">unnocupated</string>
     <string name="unnocupatedInstrumental">unnocupated</string>
+    <string name="settleNewDistrict">Settle</string>
+    <string name="settleDistrict">Settle district</string>
 
 
 </resources>

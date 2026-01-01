@@ -9,7 +9,7 @@ import javax.inject.Inject
 class GetLockedShipsToBuildUseCase @Inject constructor(
     private val isTechnologyResearched: IsTechnologyResearchedUseCase
 ) {
-    operator fun invoke(technologies: List<Technology>): Set<ShipType>{
+    operator fun invoke(technologies: List<Technology>?): Set<ShipType>{
         val isCruiserResearched = isTechnologyResearched.invoke(TechnologyEnum.CRUISER_TECHNOLOGY, technologies)
         val isDestroyerResearched = isTechnologyResearched.invoke(TechnologyEnum.DESTROYER_TECHNOLOGY, technologies)
         val isGhostResearched = isTechnologyResearched.invoke(TechnologyEnum.GHOST_TECHNOLOGY, technologies)

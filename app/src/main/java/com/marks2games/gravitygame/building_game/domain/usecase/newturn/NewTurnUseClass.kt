@@ -10,7 +10,6 @@ import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.Ca
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CalculateRocketMaterialCapacityUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CheckForNewPlanetUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CheckForResearchFinishUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.PlanetGrowthUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CloseDistrictIsWorkingUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.CreateNewPlanetUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.utils.DegradePlanetUseCase
@@ -30,7 +29,7 @@ import javax.inject.Inject
 import kotlin.math.min
 
 class NewTurnUseClass @Inject constructor(
-    private val planetGrowthUseCase: PlanetGrowthUseCase,
+    private val settleDistrictUseCase: SettleDistrictUseCase,
     private val generateBiomassUseCase: GenerateBiomassUseCase,
     private val generateInfluenceUseCase: GenerateInfluenceUseCase,
     private val generateDevelopmentUsaCase: GenerateDevelopmentUseCase,
@@ -39,6 +38,7 @@ class NewTurnUseClass @Inject constructor(
     private val generateTradepowerUseCase: GenerateTradepowerUseCase,
     private val calculateMetalCapacityUseCase: CalculateMetalCapacityUseCase,
     private val generateMetalByProspectorsUseCase: GenerateMetalByProspectorsUseCase,
+    private val generateMetalByIndustrialsUseCase: GenerateMetalByIndustrialsUseCase,
     private val calculateOrganicSedimentsCapacityUseCase: CalculateOrganicSedimentsCapacityUseCase,
     private val generatePlanetOrganicSedimentsUseCase: GeneratePlanetOrganicSedimentsUseCase,
     private val produceResearchUseCase: ProduceResearchUseCase,
@@ -67,14 +67,18 @@ class NewTurnUseClass @Inject constructor(
     private val checkForResearchFinish: CheckForResearchFinishUseCase,
     private val buildShip: BuildNewShipUseCase
 ) {
-    operator fun invoke(empire: Empire, isPlanning: Boolean): Pair<Empire, List<NewTurnError>> {
+    operator fun invoke(
+        empire: Empire,
+        isPlanning: Boolean,
+        planetIds: List<Int> = emptyList()
+    ): Pair<Empire, List<NewTurnError>> {
         Log.d("NewTurn", "Starting new turn for empire: $empire")
         val errors: MutableList<NewTurnError> = mutableListOf()
         var expeditions = empire.expeditions
         var tradepower = 0
         var research = empire.research
         var scheduledTransports = empire.transports.toMutableList()
-        var successfulTransports = mutableListOf<Transport>()
+        val successfulTransports = mutableListOf<Transport>()
         val updatedTransports = empire.transports.toMutableList()
         var updatedPlanets = empire.planets
 
@@ -91,7 +95,11 @@ class NewTurnUseClass @Inject constructor(
                 }
             }
         }
-        updatedPlanets.forEach { planet ->
+
+        if(planetIds.isNotEmpty()){
+            scheduledTransports = scheduledTransports.filter { it.planet1Id in planetIds || it.planet2Id in planetIds }.toMutableList()
+        }
+        empire.planets.forEach { planet ->
             val result = transportOutUseCase.invoke(scheduledTransports, planet, isPlanning)
             val transportResults = result.second
             Log.d("Transport", "Transport results: $transportResults")
@@ -105,6 +113,9 @@ class NewTurnUseClass @Inject constructor(
         Log.d("Transport", "Successful transports: $successfulTransports")
 
         updatedPlanets = updatedPlanets.map { planet ->
+            if (planetIds.isNotEmpty() && planet.id !in planetIds) {
+                return@map planet
+            }
             Log.d("NewTurn", "Processing planet: ${planet.id}")
             var updatedPlanet = planet
             Log.d("NewTurn", "Initial planet state: $updatedPlanet")
@@ -150,10 +161,16 @@ class NewTurnUseClass @Inject constructor(
             Log.d("NewTurn", "After biomass generation: $updatedPlanet")
 
             //6 Generate METALS
-            val metalProductionResult = generateMetalByProspectorsUseCase(updatedPlanet, empire.technologies)
+            val metalProspectorProductionResult = generateMetalByProspectorsUseCase(updatedPlanet, empire.technologies)
             updatedPlanet = updatedPlanet.copy(
-                metal = metalProductionResult.first,
-                planetMetal = metalProductionResult.second
+                metal = metalProspectorProductionResult.first,
+                planetMetal = metalProspectorProductionResult.second
+            )
+
+            val metalIndustrialProductionResult = generateMetalByIndustrialsUseCase.invoke(updatedPlanet, empire.technologies)
+            updatedPlanet = updatedPlanet.copy(
+                metal = metalIndustrialProductionResult.first,
+                organicSediment = metalIndustrialProductionResult.second
             )
             Log.d("NewTurn", "After metal generation: $updatedPlanet")
 
@@ -359,7 +376,7 @@ class NewTurnUseClass @Inject constructor(
                         )
                     )
                 }
-                ProduceProgressResult.Error.MaximumLvlOfPlanet -> {
+                is ProduceProgressResult.Error.MaximumLvlOfPlanet -> {
                     errors.add(
                         ProduceProgressError(
                             planetId = planet.id,
@@ -402,6 +419,12 @@ class NewTurnUseClass @Inject constructor(
             //18 Trade
 
             //19 Districts changes
+            planetActions
+                .filterIsInstance<Action.DistrictAction.SettleDistrict>()
+                .forEach {action ->
+                    updatedPlanet = settleDistrictUseCase.invoke(updatedPlanet, action.districtId)
+                }
+
             //19a Build new districts
             planetActions
                 .filterIsInstance<Action.DistrictAction.BuildDistrict>()
@@ -509,16 +532,6 @@ class NewTurnUseClass @Inject constructor(
 
             Log.d("NewTurn", "After transports in: $updatedPlanet")
 
-            //21 Planet growth
-            if(!isPlanning){
-                Log.d("Progress", "Planet progress: ${updatedPlanet.progress}")
-                Log.d("Progress", "Planet level: ${updatedPlanet.level}")
-                Log.d("Progress", "Planet growth border: ${updatedPlanet.planetGrowthBorder}")
-                if (updatedPlanet.progress >= updatedPlanet.planetGrowthBorder) {
-                    updatedPlanet = planetGrowthUseCase.invoke(updatedPlanet)
-                    Log.d("Progress", "After planet growth: $updatedPlanet")
-                }
-            }
 
             //22 Check for new planet expedition
             //viz down

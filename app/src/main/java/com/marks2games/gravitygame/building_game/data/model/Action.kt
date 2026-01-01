@@ -117,6 +117,14 @@ sealed class Action {
     }
     sealed class DistrictAction : Action() {
         abstract val districtId: Int
+        data class SettleDistrict(
+            override val planetId: Int,
+            override val id: String = UUID.randomUUID().toString(),
+            override val name: Int = R.string.settleDistrict,
+            override val districtId: Int,
+            override val setting: Int,
+            override val type: ActionEnum = ActionEnum.SETTLE_DISTRICT_ACTION
+        ): DistrictAction()
         data class BuildDistrict(
             override val planetId: Int,
             override val id: String = UUID.randomUUID().toString(),
@@ -151,6 +159,7 @@ sealed class Action {
             "districtId" to districtId,
             "setting" to setting,
             *when(this){
+                is SettleDistrict -> emptyArray()
                 is BuildDistrict -> arrayOf("district" to district.name)
                 is DestroyDistrict -> emptyArray()
                 is ChangeDistrictMode -> arrayOf(
@@ -231,13 +240,18 @@ sealed class Action {
                     planetId = planetId,
                     id = id
                 )
+                ActionEnum.SETTLE_DISTRICT_ACTION -> DistrictAction.SettleDistrict(
+                    planetId = planetId,
+                    districtId = (map["districtId"] as Long).toInt(),
+                    id = id,
+                    setting = (map["setting"] as Long).toInt()
+                )
                 ActionEnum.BUILD_DISTRICT_ACTION -> DistrictAction.BuildDistrict(
                     planetId = planetId,
                     districtId = (map["districtId"] as Long).toInt(),
                     district = (map["district"] as String).toDistrictEnum()?: throw IllegalArgumentException("Unknown district type."),
                     id = id,
                     setting = (map["setting"] as Long).toInt()
-
                 )
                 ActionEnum.DESTROY_DISTRICT_ACTION -> DistrictAction.DestroyDistrict(
                     planetId = planetId,
@@ -281,7 +295,8 @@ enum class ActionEnum {
     CHANGE_MODE_ACTION,
     TRANSPORT_ACTION,
     TRADE_ACTION,
-    SHIP_TYPE_ACTION
+    SHIP_TYPE_ACTION,
+    SETTLE_DISTRICT_ACTION
 }
 
 fun String.toActionEnum(): ActionEnum? {

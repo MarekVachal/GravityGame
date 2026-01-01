@@ -8,16 +8,16 @@ import javax.inject.Inject
 
 class CreateTechnologicalNodesUseCase @Inject constructor() {
     operator fun invoke(technologies: List<Technology>, setButtonColor:(TechnologyResearchState?) -> Color): List<TechnologyNode>{
-        return technologies.map{
-            val connections = it.dependencies.map{
+        return technologies.map{ technology ->
+            val connections = technology.dependencies.map{
                 it.name
             }
             TechnologyNode(
-                type = it.type,
-                posX = it.posX,
-                posY = it.posY,
+                type = technology.type,
+                posX = technology.posX,
+                posY = technology.posY,
                 connections = connections,
-                buttonColor = setButtonColor(it.state)
+                buttonColor = setButtonColor(technology.state)
             )
         }
     }

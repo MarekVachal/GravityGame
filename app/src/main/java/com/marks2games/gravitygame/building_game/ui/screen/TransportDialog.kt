@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -52,9 +54,9 @@ import com.marks2games.gravitygame.building_game.ui.viewmodel.TransportViewModel
 fun TransportDialog(
     modifier: Modifier,
     transportModel: TransportViewModel,
-    planet: Planet,
+    planet: Planet?,
     toShow: Boolean,
-    empire: Empire,
+    empire: Empire?,
     closeDialog: () -> Unit,
     addTransportAction: (Transport) -> Unit,
     onPlanetNotFound: () -> Unit
@@ -64,12 +66,14 @@ fun TransportDialog(
     val transportEmpire by transportModel.modifiedEmpire.collectAsState()
 
     LaunchedEffect(toShow) {
-        if (toShow) {
+        if(empire == null){
+            closeDialog()
+        } else if (toShow) {
             transportModel.launchTransportDialog(empire, planet)
         }
     }
 
-    if (toShow) {
+    if (toShow && planet != null) {
         Dialog(
             onDismissRequest = { },
             properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -77,6 +81,7 @@ fun TransportDialog(
             Card(
                 modifier = modifier
                     .wrapContentSize()
+                    .verticalScroll(rememberScrollState())
             ) {
                 Column(
                     modifier = modifier
@@ -156,20 +161,22 @@ fun TransportDialog(
                                         shape = RoundedCornerShape(4.dp)
                                     )
                             ) {
-                                transportEmpire?.let{
-                                    PlanetList(
-                                        modifier = modifier,
-                                        isForTransport = true,
-                                        empire = empire,
-                                        testEmpire = it,
-                                        excludedPlanet = planet,
-                                        onPlanetClick = {
-                                            transportModel.updateChosen2Planet(
-                                                planet = it,
-                                                onPlanetNotFound = { onPlanetNotFound() }
-                                            )
-                                        }
-                                    )
+                                transportEmpire?.let{ testEmpire ->
+                                    empire?.let{ empire ->
+                                        PlanetList(
+                                            modifier = modifier,
+                                            isForTransport = true,
+                                            empire = empire,
+                                            testEmpire = testEmpire,
+                                            excludedPlanet = planet,
+                                            onPlanetClick = {
+                                                transportModel.updateChosen2Planet(
+                                                    planet = it,
+                                                    onPlanetNotFound = { onPlanetNotFound() }
+                                                )
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         } else {
@@ -218,13 +225,15 @@ fun TransportDialog(
                                                 Resource.ORGANIC_SEDIMENTS,
                                                 Resource.METAL,
                                                 Resource.ROCKET_MATERIALS
-                                            ).forEach {
-                                                ResourceRowForPlanet2(
-                                                    transportUiState = transportUiState,
-                                                    resource = it,
-                                                    empire = empire,
-                                                    transportModel = transportModel
-                                                )
+                                            ).forEach { resource ->
+                                                empire?.let{ empire ->
+                                                    ResourceRowForPlanet2(
+                                                        transportUiState = transportUiState,
+                                                        resource = resource,
+                                                        empire = empire,
+                                                        transportModel = transportModel
+                                                    )
+                                                }
                                             }
                                         }
                                     }

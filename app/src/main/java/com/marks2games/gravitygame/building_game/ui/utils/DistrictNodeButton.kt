@@ -1,5 +1,6 @@
 package com.marks2games.gravitygame.building_game.ui.utils
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,7 +33,8 @@ fun DistrictNodeButton(
   )  {
       Column(
           modifier = Modifier.fillMaxWidth(),
-          horizontalAlignment = Alignment.CenterHorizontally
+          horizontalAlignment = Alignment.CenterHorizontally,
+          verticalArrangement = Arrangement.Center
       ){
           Text(
               text = stringResource(node?.type?.nameIdNominative?: R.string.unknown_district),

@@ -25,33 +25,24 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.building_game.data.model.Empire
-import com.marks2games.gravitygame.building_game.data.model.EmpireUiState
-import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
 import com.marks2games.gravitygame.core.domain.error.NewTurnError
 import com.marks2games.gravitygame.core.domain.error.displayError
 
 @Composable
 fun ErrorMenu(
     modifier: Modifier,
-    empireUiState: EmpireUiState,
-    empireModel: EmpireViewModel
+    isErrorsListEmpty: Boolean,
+    errorsSize: Int,
+    onErrorMenuClick: () -> Unit
 ) {
     Box(
-        modifier = modifier.clickable {
-            if (empireUiState.isErrorsShown) {
-                empireModel.updateErrorsShown(false)
-            } else {
-                empireModel.updateErrorsShown(true)
-                empireModel.updateActionsShown(false)
-                empireModel.updateTransportMenuShown(false)
-            }
-        }
+        modifier = modifier.clickable { onErrorMenuClick() }
     ) {
 
         Icon(
             imageVector = Icons.Default.Warning,
             contentDescription = "Menu icon",
-            tint = if(empireUiState.errors.isEmpty()) Color.White else Color.Red,
+            tint = if(isErrorsListEmpty) Color.White else Color.Red,
             modifier = modifier
                 .align(Alignment.Center)
                 .padding(16.dp)
@@ -65,7 +56,7 @@ fun ErrorMenu(
         ) {
             Text(
                 modifier = modifier.padding(4.dp),
-                text = "${empireUiState.errors.size}"
+                text = "$errorsSize"
             )
         }
     }
@@ -75,8 +66,8 @@ fun ErrorMenu(
 fun ErrorList(
     modifier: Modifier,
     errors: List<NewTurnError>,
-    empire: Empire,
-    empireModel: EmpireViewModel
+    empire: Empire?,
+    onCloseErrorMenuClick: () -> Unit
 ) {
     Card (
         modifier = modifier.padding(8.dp)
@@ -91,7 +82,9 @@ fun ErrorList(
                 horizontalArrangement = Arrangement.End
             ){
                 IconButton(
-                    onClick = { empireModel.updateErrorsShown(false) }
+                    onClick = { onCloseErrorMenuClick() }
+                //empireModel.updateErrorsShown(false)
+
                 ){
                     Icon(
                         painter = painterResource(R.drawable.close),
@@ -110,7 +103,7 @@ fun ErrorList(
 }
 
 @Composable
-private fun ErrorRow(modifier: Modifier = Modifier, error: NewTurnError, empire: Empire) {
+private fun ErrorRow(modifier: Modifier = Modifier, error: NewTurnError, empire: Empire?) {
     Column {
         Text(
             text = error.displayError(empire),

@@ -15,7 +15,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -23,63 +22,63 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.building_game.data.model.Empire
+import com.marks2games.gravitygame.building_game.data.model.Action
 import com.marks2games.gravitygame.building_game.ui.utils.ActionList
+import com.marks2games.gravitygame.building_game.ui.utils.DistrictNodeButton
 import com.marks2games.gravitygame.building_game.ui.utils.ErrorList
-import com.marks2games.gravitygame.building_game.ui.utils.PlanetList
+import com.marks2games.gravitygame.building_game.ui.utils.ResourceList
 import com.marks2games.gravitygame.building_game.ui.utils.TopGameStatsRow
 import com.marks2games.gravitygame.building_game.ui.utils.TransportsList
-import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
+import com.marks2games.gravitygame.building_game.ui.viewmodel.PlanetViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TransportViewModel
+import com.marks2games.gravitygame.core.ui.utils.MapScreen
 
 @Composable
-fun EmpireOverview(
+fun PlanetScreen(
     modifier: Modifier = Modifier,
-    empireModel: EmpireViewModel,
+    planetModel: PlanetViewModel,
     transportModel: TransportViewModel,
-    onBackButtonClicked: () -> Unit,
+    onBackButtonClicked: (Int?, List<Action>) -> Unit,
     toResearchScreen: () -> Unit,
-    toPlanetScreen: (Int?, Empire, Empire) -> Unit
+    toEmpireScreen: (Int?, List<Action>) -> Unit
 ) {
-    val empire by empireModel.empire.collectAsState()
-    val empireUiState by empireModel.empireUiState.collectAsState()
-    val testEmpire by empireModel.testEmpire.collectAsState()
+    val uiState by planetModel.planetUiState.collectAsState()
+    val mapState by planetModel.mapUiState.collectAsState()
+    val context = LocalContext.current
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 
-    LaunchedEffect(Unit) {
-        if(!empire.hasLaunched){
-            empireModel.launchEmpireScreen()
-        }
-    }
+    uiState.planetId?.let{ id ->
+        val planet = uiState.empire?.planets?.find { it.id ==  id}
+        DistrictDialog(
+            planet = planet,
+            district = uiState.districtForDialog,
+            planetModel = planetModel,
+            planetUiState = uiState,
+            toShow = uiState.isDistrictDialogShown,
+            planets = uiState.empire?.planets ?: emptyList()
+        )
 
-/*
-
-To use it for click on item on transportMenu
-    empireUiState.planetForTransport?.let {
-        val planet = it
         TransportDialog(
             modifier = modifier,
             transportModel = transportModel,
             planet = planet,
-            toShow = empireUiState.isTransportDialogShown,
-            empire = empire,
-            closeDialog = { empireModel.closeTransportDialog() },
+            toShow = uiState.isTransportDialogShown,
+            empire = uiState.empire,
+            closeDialog = { planetModel.closeTransportDialog() },
             addTransportAction = {
-                empireModel.addTransportAction(
+                planetModel.addTransportAction(
                     context = context,
-                    planetId = planet.id,
                     transport = it
                 )
             },
-            onPlanetNotFound = { empireModel.closeTransportDialog() }
+            onPlanetNotFound = { planetModel.closeTransportDialog() }
         )
     }
-
- */
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -101,19 +100,19 @@ To use it for click on item on transportMenu
                 .padding(horizontal = 8.dp),
         ) {
             TopGameStatsRow(
-                empire = empire,
-                testEmpire = testEmpire,
+                empire = uiState.empire,
+                testEmpire = uiState.testEmpire,
                 toResearchScreen = { toResearchScreen() },
-                actionsCount = empire.actions.size,
-                transportsCount = empire.transports.size,
-                isErrorsListEmpty = empireModel.isErrorListEmpty(),
-                errorsSize = empireUiState.errors.size,
-                onErrorMenuClick = { empireModel.onErrorMenuClick() },
-                onActionMenuClick = { empireModel.onActionMenuClick() },
-                onTransportMenuClick = { empireModel.onTransportMenuClick() },
-                onPlanetMenuClick = { },
-                getTechnologyPrice = { empireModel.getTechnologyPrice() },
-                isPlanetMenuPresent = false
+                actionsCount = uiState.actions.size,
+                transportsCount = uiState.transports.size,
+                isErrorsListEmpty = planetModel.isErrorListEmpty(),
+                errorsSize = uiState.errors.size,
+                onErrorMenuClick = { planetModel.onErrorMenuClick() },
+                onActionMenuClick = { planetModel.onActionMenuClick() },
+                onTransportMenuClick = { planetModel.onTransportMenuClick() },
+                onPlanetMenuClick = { toEmpireScreen(uiState.planetId, uiState.actions) },
+                getTechnologyPrice = { planetModel.getTechnologyPrice() },
+                isPlanetMenuPresent = true
             )
         }
 
@@ -122,23 +121,33 @@ To use it for click on item on transportMenu
                 .weight(1f)
                 .fillMaxSize()
         ) {
+
             Box(
                 modifier = modifier
-                    .align(Alignment.TopCenter)
+                    .align(Alignment.CenterEnd)
                     .width(screenWidth * 0.9f)
                     .fillMaxWidth()
             ) {
-                PlanetList(
-                    modifier = modifier.fillMaxWidth(),
-                    empire = empire,
-                    testEmpire = testEmpire,
-                    onPlanetClick = {
-                        toPlanetScreen(it?.id, empire, testEmpire)
-                    }
+
+                MapScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    mapModel = planetModel,
+                    nodeInfoContent = { DistrictNodeButton(node = it.district, mapUiState = mapState) },
+                    onNodeClicked = { planetModel.openDistrictDetails(it.district) },
+                    onLongNodeClicked = {},
+                    backgroundImageId = null,
+                    isMapRotating = true,
+                    isBackgroundRotating = false
                 )
             }
 
-            if (empireUiState.isErrorsShown) {
+            ResourceList(
+                modifier = Modifier.align(Alignment.CenterStart),
+                planet = uiState.empire?.planets?.first { it.id == uiState.planetId },
+                testPlanet = uiState.testEmpire?.planets?.first { it.id == uiState.planetId }
+            )
+
+            if (uiState.isErrorsShown) {
                 Box(
                     modifier = modifier
                         .fillMaxHeight()
@@ -147,13 +156,13 @@ To use it for click on item on transportMenu
                 ) {
                     ErrorList(
                         modifier = modifier,
-                        errors = empireUiState.errors,
-                        empire = empire,
-                        onCloseErrorMenuClick = { empireModel.onErrorMenuClick() }
+                        errors = uiState.errors,
+                        empire = uiState.empire,
+                        onCloseErrorMenuClick = { planetModel.onErrorMenuClick() },
                     )
                 }
             }
-            if (empireUiState.isActionsShown) {
+            if (uiState.isActionsShown) {
                 Box(
                     modifier = modifier
                         .fillMaxHeight()
@@ -162,31 +171,33 @@ To use it for click on item on transportMenu
                 ) {
                     ActionList(
                         modifier = modifier,
-                        actions = empire.actions,
-                        deleteAllActions = { empireModel.deleteAllActions() },
-                        getActionDescription = { empireModel.getActionDescription(it) },
-                        deleteAction = { empireModel.deleteAction(it) },
+                        actions = uiState.actions,
+                        deleteAllActions = { planetModel.deleteAllActions() },
+                        getActionDescription = { planetModel.getActionDescription(it) },
+                        deleteAction = { planetModel.deleteAction(it) },
                     )
                 }
             }
-            if (empireUiState.isTransportMenuShown) {
+            if (uiState.isTransportMenuShown) {
                 Box(
                     modifier = modifier
                         .fillMaxHeight()
                         .width(screenWidth * 0.5f)
                         .align(Alignment.TopStart)
                 ) {
-                    TransportsList(
-                        modifier = modifier,
-                        empire = empire,
-                        transports = empireModel.getAllTransports(),
-                        onTransportClick = {
-                            empireModel.onTransportMenuClick()
-                            transportModel.updateTransportDialogOnTransportClick(it)
-                        },
-                        deleteAllTransports = { empireModel.deleteAllTransports() },
-                        deleteTransport = { empireModel.deleteTransport(it) }
-                    )
+                    uiState.empire?.let{ empire ->
+                        TransportsList(
+                            modifier = modifier,
+                            empire = empire,
+                            transports = planetModel.getAllTransports(),
+                            onTransportClick = {
+                                planetModel.onTransportMenuClick()
+                                transportModel.updateTransportDialogOnTransportClick(it)
+                            },
+                            deleteAllTransports = { planetModel.deleteAllTransports() },
+                            deleteTransport = { planetModel.deleteTransport(it) }
+                        )
+                    }
                 }
             }
         }
@@ -199,7 +210,7 @@ To use it for click on item on transportMenu
         ) {
             IconButton(
                 modifier = modifier,
-                onClick = { onBackButtonClicked() }
+                onClick = { onBackButtonClicked(uiState.planetId, uiState.actions) }
             ) {
                 Icon(
                     painter = painterResource(R.drawable.undo),
@@ -209,13 +220,10 @@ To use it for click on item on transportMenu
             }
             ExtendedFloatingActionButton(
                 modifier = modifier,
-                onClick = { empireModel.newTurn() }
+                onClick = { planetModel.testTurn(uiState.empire) }
             ) {
                 Text(text = stringResource(R.string.newTurn))
             }
         }
-
     }
 }
-
-

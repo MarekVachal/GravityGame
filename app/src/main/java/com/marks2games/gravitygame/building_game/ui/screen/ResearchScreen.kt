@@ -65,7 +65,9 @@ fun ResearchScreen(
             },
             onNodeClicked = { researchModel.setResearchingTechnology(it.type, empireModel) },
             onLongNodeClicked = { researchModel.updateIsTechnologyInfoDialogShown(it.type, true) },
-            backgroundImageId = R.drawable.battle_background
+            backgroundImageId = R.drawable.battle_background,
+            isMapRotating = false,
+            isBackgroundRotating = false
         )
 
         Button(

@@ -4,4 +4,5 @@ sealed class NavRoute (val route: String){
     data object EmpireOverview : NavRoute("EmpireOverview")
     data object TradeScreen: NavRoute("TradeScreen")
     data object ResearchScreen: NavRoute("ResearchScreen")
+    data object PlanetScreen: NavRoute("PlanetScreen")
 }

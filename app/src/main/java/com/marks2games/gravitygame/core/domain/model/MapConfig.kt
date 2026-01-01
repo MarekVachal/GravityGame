@@ -7,7 +7,7 @@ sealed interface MapConfig {
     val nodeCenterXCorrection: Float
     val nodeCenterYCorrection: Float
     val buttonShapeCoefficientY: Float
-    val isToroidal: Boolean
+    val isMapRotating: Boolean
     val isBackgroundRotating: Boolean
 }
 
@@ -18,7 +18,7 @@ object TechnologyMapConfig : MapConfig {
     override val nodeCenterXCorrection: Float = 1.5f
     override val nodeCenterYCorrection: Float = 1f
     override val buttonShapeCoefficientY: Float = 0.75f
-    override val isToroidal: Boolean = false
+    override val isMapRotating: Boolean = false
     override val isBackgroundRotating: Boolean = false
 
 }
@@ -26,10 +26,10 @@ object TechnologyMapConfig : MapConfig {
 object DistrictMapConfig : MapConfig {
     override val spaceBetweenNodes: Float = 1f
     override val nodesPadding: Float = 5f
-    override val defaultButtonSize: Float = 100f
+    override val defaultButtonSize: Float = 75f
     override val nodeCenterXCorrection: Float = 1.5f
     override val nodeCenterYCorrection: Float = 1f
     override val buttonShapeCoefficientY: Float = 1f
-    override val isToroidal: Boolean = true
+    override val isMapRotating: Boolean = true
     override val isBackgroundRotating: Boolean = true
 }

@@ -26,9 +26,9 @@ val SmallPlanet = PlanetType(
         District.Empty(districtId = 1),
         District.Empty(districtId = 2),
         District.Empty(districtId = 3),
-        District.Unnocupated(districtId = 4),
-        District.Unnocupated(districtId = 5),
-        District.Unnocupated(districtId = 6),
+        District.Unnocupated(districtId = 4, isWorking = true),
+        District.Unnocupated(districtId = 5, isWorking = true),
+        District.Unnocupated(districtId = 6, isWorking = true),
         District.Unnocupated(districtId = 7)
     )
 )
@@ -39,12 +39,25 @@ val MediumPlanet = PlanetType(
     biomassCapacityBonus = 1f,
     maxLevel = 12,
     capacityPlanetOS = 1000,
-    planetMapConfig = emptyList(),
-    districts = emptyList()
+    planetMapConfig = mediumPlanetDistrictNodes,
+    districts = listOf(
+        District.Capitol(),
+        District.Empty(districtId = MediumPlanetIds[0]),
+        District.Empty(districtId = MediumPlanetIds[1]),
+        District.Empty(districtId = MediumPlanetIds[2]),
+        District.Unnocupated(districtId = MediumPlanetIds[3]),
+        District.Unnocupated(districtId = MediumPlanetIds[4]),
+        District.Unnocupated(districtId = 6),
+        District.Unnocupated(districtId = 7),
+        District.Unnocupated(districtId = 8),
+        District.Unnocupated(districtId = 9),
+        District.Unnocupated(districtId = 10),
+        District.Unnocupated(districtId = 11)
+    )
 )
 
 private fun getUniqueRandomNumbers(): List<Int> {
-    return (1..5).shuffled().take(3)
+    return (1..5).shuffled()
 }
 val LargePlanet = PlanetType(
     name = "Large",
@@ -53,7 +66,28 @@ val LargePlanet = PlanetType(
     maxLevel = 20,
     capacityPlanetOS = 1000,
     planetMapConfig = largePlanetDistrictNodes,
-    districts = emptyList()
+    districts = listOf(
+        District.Capitol(),
+        District.Empty(districtId = 1),
+        District.Empty(districtId = 2),
+        District.Empty(districtId = 3),
+        District.Unnocupated(districtId = 4, isWorking = true),
+        District.Unnocupated(districtId = 5, isWorking = true),
+        District.Unnocupated(districtId = 6, isWorking = true),
+        District.Unnocupated(districtId = 7, isWorking = true),
+        District.Unnocupated(districtId = 8, isWorking = true),
+        District.Unnocupated(districtId = 9, isWorking = true),
+        District.Unnocupated(districtId = 10),
+        District.Unnocupated(districtId = 11),
+        District.Unnocupated(districtId = 12),
+        District.Unnocupated(districtId = 13),
+        District.Unnocupated(districtId = 14),
+        District.Unnocupated(districtId = 15),
+        District.Unnocupated(districtId = 16),
+        District.Unnocupated(districtId = 17),
+        District.Unnocupated(districtId = 18),
+        District.Unnocupated(districtId = 19)
+    )
 )
 
 data class Planet(

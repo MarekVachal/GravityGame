@@ -26,13 +26,16 @@ import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.building_game.data.model.District
 import com.marks2games.gravitygame.building_game.data.model.Empire
 import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
+import com.marks2games.gravitygame.building_game.ui.viewmodel.PlanetViewModel
 
+/*
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DistrictList(
     modifier: Modifier,
     planetId: Int,
     empire: Empire,
+    planetModel: PlanetViewModel,
     empireModel: EmpireViewModel,
     screenWidth: Dp
 ) {
@@ -62,7 +65,7 @@ fun DistrictList(
                             Icons.Default.Close,
                             contentDescription = "Close image",
                             modifier = modifier
-                                .clickable { empireModel.updateShowDistrictList(false, planet) },
+                                .clickable { planetModel.updateShowDistrictList(false, planet) },
                             colorFilter = ColorFilter.tint(Color.Black)
                         )
                     }
@@ -113,3 +116,5 @@ private fun DistrictCard(
         }
     }
 }
+
+ */

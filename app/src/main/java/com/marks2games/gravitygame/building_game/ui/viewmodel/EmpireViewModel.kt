@@ -6,51 +6,25 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.building_game.data.model.Action
-import com.marks2games.gravitygame.building_game.data.model.District
-import com.marks2games.gravitygame.building_game.data.model.DistrictEnum
 import com.marks2games.gravitygame.building_game.data.model.Empire
 import com.marks2games.gravitygame.building_game.data.model.EmpireUiState
-import com.marks2games.gravitygame.building_game.data.model.IndustrialMode
-import com.marks2games.gravitygame.building_game.data.model.InfrastructureSetting
 import com.marks2games.gravitygame.building_game.data.model.Planet
-import com.marks2games.gravitygame.building_game.data.model.ProspectorsMode
-import com.marks2games.gravitygame.building_game.data.model.Resource
-import com.marks2games.gravitygame.building_game.data.model.RocketMaterialsSetting
 import com.marks2games.gravitygame.building_game.data.model.Technology
-import com.marks2games.gravitygame.building_game.data.model.TechnologyEnum
 import com.marks2games.gravitygame.building_game.data.model.Trade
 import com.marks2games.gravitygame.building_game.data.model.Transport
-import com.marks2games.gravitygame.building_game.data.model.UrbanCenterMode
 import com.marks2games.gravitygame.building_game.data.util.ActionDescriptionData
 import com.marks2games.gravitygame.building_game.domain.usecase.GetEmpireUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.newturn.NewTurnUseClass
 import com.marks2games.gravitygame.building_game.domain.usecase.technology.GetTechnologyPriceUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.technology.GetUnlockedProductionModesUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.technology.IsTechnologyResearchedUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.transport.GetAllTransports
-import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddArmyProductionActionUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddBuildingShipTypeActionUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddExpeditionProductionActionUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddInfrastructureProductionActionUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddProgressProductionActionUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddResearchProductionActionUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddRocketMaterialsProductionActionUseCase
+import com.marks2games.gravitygame.building_game.domain.usecase.transport.CreateTransportListUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddTradeActionUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.useractions.AddTransportActionUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.useractions.BuildDistrictActionUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.useractions.ChangeDistrictModeActionUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.useractions.DestroyDistrictActionUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.useractions.SaveEmpireUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.utils.CreateNewEmpireUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.utils.DeleteActionUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.utils.DeleteTransportUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.utils.GetActionDescriptionUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.utils.GetConsumedResourceUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.utils.GetResourceValueUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.utils.GetLockedShipsToBuildUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.utils.MaxProgressProductionUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.utils.MaxResearchProductionUseCase
-import com.marks2games.gravitygame.core.data.model.enum_class.ShipType
+import com.marks2games.gravitygame.building_game.domain.usecase.utils.UpdateActionsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -64,30 +38,14 @@ class EmpireViewModel @Inject constructor(
     private val getEmpireUseCase: GetEmpireUseCase,
     private val newTurnUseCase: NewTurnUseClass,
     private val saveEmpireUseCase: SaveEmpireUseCase,
-    private val addArmyProductionActionUseCase: AddArmyProductionActionUseCase,
-    private val addExpeditionProductionActionUseCase: AddExpeditionProductionActionUseCase,
-    private val addInfrastructureProductionActionUseCase: AddInfrastructureProductionActionUseCase,
-    private val addProgressProductionActionUseCase: AddProgressProductionActionUseCase,
-    private val addResearchProductionActionUseCase: AddResearchProductionActionUseCase,
-    private val addRocketMaterialsProductionActionUseCase: AddRocketMaterialsProductionActionUseCase,
     private val addTradeActionUseCase: AddTradeActionUseCase,
     private val addTransportActionUseCase: AddTransportActionUseCase,
-    private val buildDistrictActionUseCase: BuildDistrictActionUseCase,
-    private val changeDistrictModeActionUseCase: ChangeDistrictModeActionUseCase,
-    private val destroyDistrictActionUseCase: DestroyDistrictActionUseCase,
     private val deleteActionUseCase: DeleteActionUseCase,
     private val deleteTransportUseCase: DeleteTransportUseCase,
-    private val getAllTransports: GetAllTransports,
-    private val maxProgressProduction: MaxProgressProductionUseCase,
+    private val getAllTransports: CreateTransportListUseCase,
     private val getActionDescription: GetActionDescriptionUseCase,
-    private val getResourceValue: GetResourceValueUseCase,
-    private val getConsumedResource: GetConsumedResourceUseCase,
-    private val maxResearchProduction: MaxResearchProductionUseCase,
     private val getTechnologyPrice: GetTechnologyPriceUseCase,
-    private val getUnlockedProductionModes: GetUnlockedProductionModesUseCase,
-    private val isTechnologyResearched: IsTechnologyResearchedUseCase,
-    private val getLockedShipsUseCase: GetLockedShipsToBuildUseCase,
-    private val addShipTypeBuildAction: AddBuildingShipTypeActionUseCase,
+    private val updateEmpireList: UpdateActionsUseCase,
     createNewEmpireUseCase: CreateNewEmpireUseCase
 ) : ViewModel() {
 
@@ -98,20 +56,57 @@ class EmpireViewModel @Inject constructor(
     private val _empireUiState = MutableStateFlow(EmpireUiState())
     val empireUiState: StateFlow<EmpireUiState> = _empireUiState.asStateFlow()
 
-    fun updateIsPlanetListShown(){
+    fun updateActionsAfterBackToEmpireScreen(planetId: Int?, actions: List<Action>){
+        _empire.update { state ->
+            state.copy(
+                actions = updateEmpireList.invoke(
+                    actions,
+                    empire.value.actions,
+                    planetId
+                )
+            )
+        }
+        val result = newTurnUseCase.invoke(empire.value, true)
+        _testEmpire.update { result.first }
         _empireUiState.update { state ->
             state.copy(
-                isPlanetListShown = !empireUiState.value.isPlanetListShown
+                errors = result.second
             )
         }
     }
 
-    fun getLockedShips(): Set<ShipType> {
-        return getLockedShipsUseCase.invoke(empire.value.technologies)
+    fun isErrorListEmpty(): Boolean {
+        return empireUiState.value.errors.isEmpty()
     }
 
-    fun updateBuildingShip(selectedShip: ShipType){
-        _empireUiState.update { it.copy(buildingShip = selectedShip) }
+    fun onErrorMenuClick(){
+        if(empireUiState.value.isErrorsShown){
+            updateErrorsShown(false)
+        } else {
+            updateErrorsShown(true)
+            updateActionsShown(false)
+            updateTransportMenuShown(false)
+        }
+    }
+
+    fun onActionMenuClick(){
+        if(empireUiState.value.isActionsShown){
+            updateActionsShown(false)
+        } else {
+            updateActionsShown(true)
+            updateErrorsShown(false)
+            updateTransportMenuShown(false)
+        }
+    }
+
+    fun onTransportMenuClick(){
+        if(empireUiState.value.isTransportMenuShown){
+            updateTransportMenuShown(false)
+        } else {
+            updateTransportMenuShown(true)
+            updateErrorsShown(false)
+            updateActionsShown(false)
+        }
     }
 
     fun getTechnologyPrice(): Int{
@@ -120,20 +115,8 @@ class EmpireViewModel @Inject constructor(
         )
     }
 
-    fun isTechnologyResearched(technologyEnum: TechnologyEnum): Boolean {
-        return isTechnologyResearched.invoke(technologyEnum, empire.value.technologies)
-    }
-
     fun setResearchingTechnology(newTechnologies: List<Technology>){
         _empire.update { it.copy(technologies = newTechnologies) }
-    }
-
-    fun getConsumedResource(resource: Resource, isForProspectors: Boolean): Pair<Resource?, Resource?>{
-        return getConsumedResource.invoke(resource, isForProspectors)
-    }
-
-    fun getResourceValue(resource: Resource, isForProspectors: Boolean): Triple<Int?, Int?, Int?>{
-        return getResourceValue.invoke(resource, isForProspectors)
     }
 
     fun getActionDescription(action: Action): ActionDescriptionData {
@@ -185,40 +168,11 @@ class EmpireViewModel @Inject constructor(
         }
     }
 
-    fun calculateMaxProgressProduction(planet: Planet): Int{
-        return maxProgressProduction(planet, empire.value.actions, empire.value.technologies)
-    }
-
-    fun calculateMaxResearchProduction(planet: Planet): Int{
-        return maxResearchProduction.invoke(planet)
-    }
-
     fun openTransportDialog(planet: Planet){
         _empireUiState.update { state ->
             state.copy(
                 isTransportDialogShown = true,
-                isDistrictDialogShown = false,
                 planetForTransport = planet
-            )
-        }
-    }
-
-    fun updateDistrictDialogShown(isShown: Boolean, district: District?) {
-        _empireUiState.update { state ->
-            state.copy(
-                isDistrictDialogShown = isShown,
-                districtForDialog = district
-
-            )
-        }
-    }
-
-    fun updateShowDistrictList(isShown: Boolean, planet: Planet?) {
-        val planetId = planet?.id ?: return
-        _empireUiState.update { state ->
-            state.copy(
-                isShownDistrictList = isShown,
-                planetIdForDetails = planetId
             )
         }
     }
@@ -241,9 +195,6 @@ class EmpireViewModel @Inject constructor(
         }
     }
 
-    fun getUnlockedProductionModes(district: District): List<Enum<*>>{
-        return getUnlockedProductionModes.invoke(empire.value.technologies, district)
-    }
 
     private fun testNewTurn(empire: Empire) {
         val newTurnTestResult = newTurnUseCase.invoke(empire, true)
@@ -270,7 +221,7 @@ class EmpireViewModel @Inject constructor(
         }
     }
 
-    fun updateErrorsShown(isShown: Boolean) {
+    private fun updateErrorsShown(isShown: Boolean) {
         _empireUiState.update { state ->
             state.copy(
                 isErrorsShown = isShown
@@ -278,7 +229,7 @@ class EmpireViewModel @Inject constructor(
         }
     }
 
-    fun updateActionsShown(isShown: Boolean) {
+    private fun updateActionsShown(isShown: Boolean) {
         _empireUiState.update { state ->
             state.copy(
                 isActionsShown = isShown
@@ -286,7 +237,7 @@ class EmpireViewModel @Inject constructor(
         }
     }
 
-    fun updateTransportMenuShown(isShown: Boolean){
+    private fun updateTransportMenuShown(isShown: Boolean){
         _empireUiState.update{ state ->
             state.copy(
                 isTransportMenuShown = isShown
@@ -304,82 +255,6 @@ class EmpireViewModel @Inject constructor(
         testEmpireAfterActionChange(updatedEmpire)
     }
 
-    fun updateRocketMaterialsSetting(setting: RocketMaterialsSetting) {
-        _empireUiState.update { state ->
-            state.copy(
-                rocketMaterialsProductionSet = setting
-            )
-        }
-    }
-
-    fun updateDistrictToBuild(district: DistrictEnum) {
-        _empireUiState.update { state ->
-            state.copy(
-                districtToBuild = district
-            )
-        }
-    }
-
-    fun openDistrictDetails(planetId: Int, district: District) {
-        val planet = testEmpire.value.planets.find { it.id == planetId }
-        if (planet == null) {
-            return
-        }
-        val modeIsSelected = if(district is District.Industrial){
-             when(district.mode){
-                 IndustrialMode.ROCKET_MATERIALS -> IndustrialMode.ROCKET_MATERIALS
-                 IndustrialMode.INFRASTRUCTURE -> IndustrialMode.INFRASTRUCTURE
-                 IndustrialMode.METAL -> IndustrialMode.METAL
-             }
-        } else if (district is District.Prospectors) {
-            when(district.mode){
-                ProspectorsMode.METAL -> ProspectorsMode.METAL
-                ProspectorsMode.ORGANIC_SEDIMENTS -> ProspectorsMode.ORGANIC_SEDIMENTS
-            }
-        } else if(district is District.UrbanCenter){
-            when(district.mode){
-                UrbanCenterMode.INFLUENCE -> UrbanCenterMode.INFLUENCE
-                UrbanCenterMode.RESEARCH -> UrbanCenterMode.RESEARCH
-            }
-        } else null
-
-        _empireUiState.update { state ->
-            state.copy(
-                isDistrictDialogShown = true,
-                planetIdForDetails = planetId,
-                districtForDialog = district,
-                modeIsChecked = modeIsSelected,
-                armyProductionSet = planet.armyConstructionSetting.toString(),
-                expeditionsProductionSet = planet.expeditionsSetting.toString(),
-                progressProductionSet = planet.progressSetting.toString(),
-                researchProductionSet = planet.researchSetting.toString(),
-                infrastructureProductionSet = planet.infrastructureSetting,
-                rocketMaterialsProductionSet = planet.rocketMaterialsSetting,
-                buildingShip = planet.buildingShip
-            )
-        }
-    }
-
-    fun updateInfrastructureSetting(setting: InfrastructureSetting) {
-        _empireUiState.update { state ->
-            state.copy(
-                infrastructureProductionSet = setting
-            )
-        }
-    }
-
-    fun updateIntProductionState(resource: Resource, value: String) {
-        _empireUiState.update { state ->
-            when (resource) {
-                Resource.ARMY -> state.copy(armyProductionSet = value)
-                Resource.EXPEDITIONS -> state.copy(expeditionsProductionSet = value)
-                Resource.RESEARCH -> state.copy(researchProductionSet = value)
-                Resource.PROGRESS -> state.copy(progressProductionSet = value)
-                else -> state
-            }
-        }
-    }
-
     fun getAllTransports(): List<Transport> {
         return getAllTransports.invoke(empire.value)
     }
@@ -393,140 +268,6 @@ class EmpireViewModel @Inject constructor(
             )
         }
         _testEmpire.update { result.first }
-    }
-
-    fun addShipTypeBuildAction(context: Context, planetId: Int, value: ShipType) {
-        _empire.update { state ->
-            state.copy(
-                actions = addShipTypeBuildAction.invoke(
-                    testEmpire.value.actions,
-                    planetId,
-                    value
-                )
-            )
-        }
-        val updatedEmpire = _empire.value
-        Toast.makeText(
-            context,
-            context.getString(R.string.actionAdded),
-            Toast.LENGTH_SHORT
-        ).show()
-        testEmpireAfterActionChange(updatedEmpire)
-    }
-
-    fun addArmyProductionAction(context: Context, planetId: Int, value: Int) {
-        _empire.update { state ->
-            state.copy(
-                actions = addArmyProductionActionUseCase.invoke(
-                    testEmpire.value.actions,
-                    planetId,
-                    value
-                )
-            )
-        }
-        val updatedEmpire = _empire.value
-        Toast.makeText(
-            context,
-            context.getString(R.string.actionAdded),
-            Toast.LENGTH_SHORT
-        ).show()
-        testEmpireAfterActionChange(updatedEmpire)
-    }
-
-    fun addExpeditionProductionAction(context: Context, planetId: Int, value: Int) {
-        _empire.update { state ->
-            state.copy(
-                actions = addExpeditionProductionActionUseCase.invoke(
-                    testEmpire.value.actions,
-                    planetId,
-                    value
-                )
-            )
-        }
-        val updatedEmpire = _empire.value
-        Toast.makeText(
-            context,
-            context.getString(R.string.actionAdded),
-            Toast.LENGTH_SHORT
-        ).show()
-        testEmpireAfterActionChange(updatedEmpire)
-    }
-
-    fun addInfrastructureProductionAction(context: Context, planetId: Int, value: InfrastructureSetting) {
-        _empire.update { state ->
-            state.copy(
-                actions = addInfrastructureProductionActionUseCase.invoke(
-                    testEmpire.value.actions,
-                    planetId,
-                    value
-                )
-            )
-        }
-        val updatedEmpire = _empire.value
-        Toast.makeText(
-            context,
-            context.getString(R.string.actionAdded),
-            Toast.LENGTH_SHORT
-        ).show()
-        testEmpireAfterActionChange(updatedEmpire)
-    }
-
-    fun addProgressProductionAction(context: Context, planetId: Int, value: Int) {
-        _empire.update { state ->
-            state.copy(
-                actions = addProgressProductionActionUseCase.invoke(
-                    empire.value.actions,
-                    planetId,
-                    value
-                )
-            )
-        }
-        val updatedEmpire = _empire.value
-        Toast.makeText(
-            context,
-            context.getString(R.string.actionAdded),
-            Toast.LENGTH_SHORT
-        ).show()
-        testEmpireAfterActionChange(updatedEmpire)
-    }
-
-    fun addResearchProductionAction(context: Context, planetId: Int, value: Int) {
-        _empire.update { state ->
-            state.copy(
-                actions = addResearchProductionActionUseCase.invoke(
-                    testEmpire.value.actions,
-                    planetId,
-                    value
-                )
-
-            )
-        }
-        val updatedEmpire = _empire.value
-        Toast.makeText(
-            context,
-            context.getString(R.string.actionAdded),
-            Toast.LENGTH_SHORT
-        ).show()
-        testEmpireAfterActionChange(updatedEmpire)
-    }
-
-    fun addRocketMaterialsProductionAction(context: Context, planetId: Int, value: RocketMaterialsSetting) {
-        _empire.update { state ->
-            state.copy(
-                actions = addRocketMaterialsProductionActionUseCase.invoke(
-                    testEmpire.value.actions,
-                    planetId,
-                    value
-                )
-            )
-        }
-        val updatedEmpire = _empire.value
-        Toast.makeText(
-            context,
-            context.getString(R.string.actionAdded),
-            Toast.LENGTH_SHORT
-        ).show()
-        testEmpireAfterActionChange(updatedEmpire)
     }
 
     fun addTradeAction(context: Context, planetId: Int, trade: Trade) {
@@ -567,79 +308,4 @@ class EmpireViewModel @Inject constructor(
         ).show()
         testEmpireAfterActionChange(updatedEmpire)
     }
-
-    fun buildDistrictAction(context: Context, planetId: Int, district: DistrictEnum, districtId: Int) {
-        _empire.update { state ->
-            state.copy(
-                actions = buildDistrictActionUseCase.invoke(
-                    actions = empire.value.actions,
-                    planetId = planetId,
-                    districtId = districtId,
-                    district = district
-                )
-            )
-        }
-        val updatedEmpire = _empire.value
-        Toast.makeText(
-            context,
-            context.getString(R.string.actionAdded),
-            Toast.LENGTH_SHORT
-        ).show()
-        testEmpireAfterActionChange(updatedEmpire)
-    }
-
-    fun updateModeIsChecked(mode: Enum<*>) {
-        _empireUiState.update { state ->
-            state.copy(
-                modeIsChecked = mode
-            )
-        }
-    }
-
-    fun changeDistrictModeAction(
-        district: DistrictEnum,
-        districtId: Int,
-        mode: Enum<*>?,
-        planetId: Int,
-        context: Context
-    ) {
-        _empire.update { state ->
-            state.copy(
-                actions = changeDistrictModeActionUseCase.invoke(
-                    testEmpire.value.actions,
-                    planetId,
-                    districtId,
-                    district,
-                    mode
-                )
-            )
-        }
-        val updatedEmpire = _empire.value
-        Toast.makeText(
-            context,
-            context.getString(R.string.actionAdded),
-            Toast.LENGTH_SHORT
-        ).show()
-        testEmpireAfterActionChange(updatedEmpire)
-    }
-
-    fun destroyDistrictAction(context: Context, planetId: Int, districtId: Int) {
-        _empire.update { state ->
-            state.copy(
-                actions = destroyDistrictActionUseCase.invoke(
-                    testEmpire.value.actions,
-                    planetId,
-                    districtId
-                )
-            )
-        }
-        val updatedEmpire = _empire.value
-        Toast.makeText(
-            context,
-            context.getString(R.string.actionAdded),
-            Toast.LENGTH_SHORT
-        ).show()
-        testEmpireAfterActionChange(updatedEmpire)
-    }
-
 }

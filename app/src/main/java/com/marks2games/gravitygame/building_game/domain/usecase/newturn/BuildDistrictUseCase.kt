@@ -31,7 +31,9 @@ class BuildDistrictUseCase @Inject constructor() {
         val districtToChange = planet.districts.find { it.districtId == idOfNewDistrict }
         if (districtToChange == null) {
             return BuildDistrictResult.Error.DistrictNotFound
-        } else {
+        } else if (districtToChange.type == DistrictEnum.UNNOCUPATED){
+            return BuildDistrictResult.Error.DistrictIsUnnocupated
+        }else {
             updatedDistricts = updatedDistricts.map {
                 if (it.districtId == idOfNewDistrict) {
                     District.InConstruction(

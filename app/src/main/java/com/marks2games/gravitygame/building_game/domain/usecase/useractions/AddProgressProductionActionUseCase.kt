@@ -4,17 +4,20 @@ import com.marks2games.gravitygame.building_game.data.model.Action
 import com.marks2games.gravitygame.building_game.data.model.ActionEnum
 import javax.inject.Inject
 
-class AddProgressProductionActionUseCase @Inject constructor()  {
-    operator fun invoke(actions: List<Action>, planetId: Int, value: Int): List<Action> {
-        val action = Action.SetProduction.ProgressProduction(value, planetId)
+class AddProgressProductionActionUseCase @Inject constructor() {
+    operator fun invoke(actions: List<Action>, planetId: Int?, value: Int): List<Action> {
+        val action = planetId?.let { Action.SetProduction.ProgressProduction(value, it) }
         val newActions = actions.toMutableList()
-        val isActionSet = actions.find {it.type == ActionEnum.ARMY_ACTION && it.setting == value }
-        if(isActionSet == null){
-            newActions.add(action)
-        } else {
-            newActions.add(action)
-            newActions.remove(isActionSet)
+        val isActionSet =
+            actions.find { it.type == ActionEnum.PROGRESS_ACTION && it.planetId == planetId }
+        action?.let {
+            if (isActionSet == null) {
+                newActions.add(it)
+            } else {
+                newActions.add(it)
+                newActions.remove(isActionSet)
+            }
         }
-        return newActions.toList()
+        return newActions
     }
 }

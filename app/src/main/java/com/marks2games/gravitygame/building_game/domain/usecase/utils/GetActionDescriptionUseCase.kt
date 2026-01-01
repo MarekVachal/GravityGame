@@ -10,8 +10,8 @@ import com.marks2games.gravitygame.building_game.data.util.ActionDescriptionData
 import javax.inject.Inject
 
 class GetActionDescriptionUseCase @Inject constructor() {
-    operator fun invoke(action: Action, empire: Empire): ActionDescriptionData {
-        val planet = empire.planets.find { it.id == action.planetId }
+    operator fun invoke(action: Action, empire: Empire?): ActionDescriptionData {
+        val planet = empire?.planets?.find { it.id == action.planetId }
         val planetName = planet?.name.orEmpty()
         var districtName = when(action){
             is BuildDistrict -> action.district.nameIdNominative

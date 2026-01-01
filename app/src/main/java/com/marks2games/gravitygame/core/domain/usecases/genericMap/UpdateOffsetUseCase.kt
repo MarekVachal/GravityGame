@@ -12,27 +12,18 @@ class UpdateOffsetUseCase @Inject constructor() {
         scale: Float,
         mapSize: Size,
         nodeSize: Float,
-        isToroidal: Boolean
+        isMapRotating: Boolean
     ): Offset {
-        /*
-        if (isToroidal) {
-            // For toroidal maps, don't limit the offset
-            return newOffset
-        }
-        */
+        if (isMapRotating) return newOffset
+        val scaledMapWidth = mapSize.width * scale + nodeSize
+        val scaledMapHeight = mapSize.height * scale + nodeSize
 
-        val totalMapWidth = mapSize.width * scale + nodeSize * 3f
-        val totalMapHeight = mapSize.height * scale + nodeSize * 3f
-
-        val minXOffset =
-            if (totalMapWidth <= screenSize.width) 0f else screenSize.width - totalMapWidth
-        val minYOffset =
-            if (totalMapHeight <= screenSize.height) 0f else screenSize.height - totalMapHeight
-
+        val maxX = minOf(0f, screenSize.width - scaledMapWidth)
+        val maxY = minOf(0f, screenSize.height - scaledMapHeight)
 
         return Offset(
-            x = newOffset.x.coerceIn(minXOffset, 0f),
-            y = newOffset.y.coerceIn(minYOffset, 0f)
+            x = newOffset.x.coerceIn(maxX, 0f),
+            y = newOffset.y.coerceIn(maxY, 0f)
         )
     }
 }

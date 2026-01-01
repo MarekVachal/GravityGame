@@ -1,6 +1,5 @@
 package com.marks2games.gravitygame.building_game.ui.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.marks2games.gravitygame.building_game.data.model.Empire
 import com.marks2games.gravitygame.building_game.data.model.Planet
@@ -16,7 +15,6 @@ import com.marks2games.gravitygame.building_game.domain.usecase.transport.IsRemo
 import com.marks2games.gravitygame.building_game.domain.usecase.transport.UpdateModifiedEmpireUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.transport.UpdateResourceInTransportUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.transport.UpdateTransportUiUseCase
-import com.marks2games.gravitygame.building_game.domain.usecase.utils.CreateNewEmpireUseCase
 import com.marks2games.gravitygame.building_game.domain.usecase.utils.GetResourceIconUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -92,26 +90,26 @@ class TransportViewModel @Inject constructor(
         return getPlanet.invoke(planetId, empire)
     }
 
-    fun launchTransportDialog(empire: Empire, planet: Planet) {
-        val testEmpire = testNewTurnUseClass.invoke(empire, true).first
-        Log.d("TransportModel", "launchTransportDialog: ${testEmpire.planets.size}")
-        val modifiedEmpire = updateModifiedEmpire.invoke(testEmpire, planet.id, null)
-        Log.d("TransportModel", "launchTransportDialog: ${modifiedEmpire?.planets?.size}")
+    fun launchTransportDialog(empire: Empire, planet: Planet?) {
+        planet?.let{ planet ->
+            val testEmpire = testNewTurnUseClass.invoke(empire, true).first
+            val modifiedEmpire = updateModifiedEmpire.invoke(testEmpire, planet.id, null)
 
-        _modifiedEmpire.update { modifiedEmpire }
-        val newTransport = Transport(
-            planet1Id = planet.id,
-            transportId = generateTransportId.invoke(empire)
-        )
-
-        _transportUiState.update { state ->
-            state.copy(
-                isTransportReady = false,
-                transport = newTransport
+            _modifiedEmpire.update { modifiedEmpire }
+            val newTransport = Transport(
+                planet1Id = planet.id,
+                transportId = generateTransportId.invoke(empire)
             )
-        }
 
-        realEmpire = empire
+            _transportUiState.update { state ->
+                state.copy(
+                    isTransportReady = false,
+                    transport = newTransport
+                )
+            }
+
+            realEmpire = empire
+        }
     }
 
     fun getResourceIcon(resource: Resource): Int {

@@ -12,7 +12,6 @@ class UpdatePossiblePlanetResourcesIncomeUseCase @Inject constructor() {
         updatedPlanet: Planet,
         initialPlanet: Planet
     ): PlanetResources{
-        val progress = if(updatedPlanet.progress - initialPlanet.progress > 0) updatedPlanet.progress - initialPlanet.progress else 0
 
         Log.d("PlanIncome", "Updated planet: $updatedPlanet")
         Log.d("PlanIncome", "Initial planet: $initialPlanet")
@@ -25,7 +24,7 @@ class UpdatePossiblePlanetResourcesIncomeUseCase @Inject constructor() {
                 Resource.INFRASTRUCTURE to updatedPlanet.infrastructure,
                 Resource.ROCKET_MATERIALS to updatedPlanet.rocketMaterials - initialPlanet.rocketMaterials,
                 Resource.INFLUENCE to 0,
-                Resource.PROGRESS to progress,
+                Resource.PROGRESS to updatedPlanet.progress - initialPlanet.progress,
                 Resource.DEVELOPMENT to updatedPlanet.development,
                 Resource.ARMY to updatedPlanet.army - initialPlanet.army
             )

@@ -11,7 +11,7 @@ import javax.inject.Inject
 class GetUnlockedProductionModesUseCase @Inject constructor(
     private val isTechnologyResearched: IsTechnologyResearchedUseCase
 ) {
-    operator fun invoke(technologies: List<Technology>, district: District?): List<Enum<*>>{
+    operator fun invoke(technologies: List<Technology>?, district: District?): List<Enum<*>>{
         var modes = (district?.getModes() ?: emptyList()).toMutableList()
         when(district){
             is District.Industrial -> {

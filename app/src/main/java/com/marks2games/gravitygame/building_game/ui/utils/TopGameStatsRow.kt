@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -23,18 +21,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.building_game.data.model.Empire
-import com.marks2games.gravitygame.building_game.data.model.EmpireUiState
 import com.marks2games.gravitygame.building_game.data.model.Resource
-import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
 
 @Composable
 fun TopGameStatsRow(
     modifier: Modifier = Modifier,
-    empire: Empire,
-    testEmpire: Empire,
-    empireModel: EmpireViewModel,
-    empireUiState: EmpireUiState,
-    toResearchScreen: () -> Unit
+    actionsCount: Int,
+    transportsCount: Int,
+    empire: Empire?,
+    testEmpire: Empire?,
+    toResearchScreen: () -> Unit,
+    isErrorsListEmpty: Boolean,
+    errorsSize: Int,
+    onErrorMenuClick: () -> Unit,
+    onActionMenuClick: () -> Unit,
+    onTransportMenuClick: () -> Unit,
+    onPlanetMenuClick: () -> Unit,
+    getTechnologyPrice: () -> Int,
+    isPlanetMenuPresent: Boolean
 ) {
     Row(
         modifier = modifier
@@ -47,22 +51,21 @@ fun TopGameStatsRow(
             Row {
                 ErrorMenu(
                     modifier = modifier,
-                    empireUiState = empireUiState,
-                    empireModel = empireModel
+                    isErrorsListEmpty = isErrorsListEmpty,
+                    errorsSize = errorsSize,
+                    onErrorMenuClick = onErrorMenuClick
                 )
                 Spacer(modifier = modifier.width(8.dp))
                 ActionMenu(
                     modifier = modifier,
-                    empireUiState = empireUiState,
-                    empireModel = empireModel,
-                    empire = empire,
+                    actionsCount = actionsCount,
+                    onActionMenuClick = onActionMenuClick,
                 )
                 Spacer(modifier = modifier.width(8.dp))
                 TransportMenu(
                     modifier = modifier,
-                    empireUiState = empireUiState,
-                    empire = empire,
-                    empireModel = empireModel
+                    transportCount = transportsCount,
+                    onTransportMenuClick = onTransportMenuClick,
                 )
             }
         }
@@ -71,10 +74,10 @@ fun TopGameStatsRow(
         ) {
             StatText(
                 label = stringResource(R.string.research),
-                value = empire.research.toString(),
-                income = testEmpire.empireResourcesPossibleIncome.resources[Resource.RESEARCH] ?: 0,
+                value = empire?.research.toString(),
+                income = testEmpire?.empireResourcesPossibleIncome?.resources[Resource.RESEARCH] ?: 0,
                 isBordered = true,
-                border = empireModel.getTechnologyPrice()
+                border = getTechnologyPrice()
             )
         }
         Button(
@@ -82,31 +85,33 @@ fun TopGameStatsRow(
         ) {
             StatText(
                 label = stringResource(R.string.credits),
-                value = empire.credits.toString(),
-                income = testEmpire.empireResourcesPossibleIncome.resources[Resource.CREDITS] ?: 0,
+                value = empire?.credits.toString(),
+                income = testEmpire?.empireResourcesPossibleIncome?.resources[Resource.CREDITS] ?: 0,
                 isBordered = false
             )
         }
         Card{
             ResourceCard(
                 modifier = modifier.padding(8.dp),
-                resourceCount = empire.expeditions,
+                resourceCount = empire?.expeditions ?: 0,
                 icon = R.drawable.cruiser,
                 isStoredResource = true,
-                possibleIncome = testEmpire.empireResourcesPossibleIncome.resources[Resource.EXPEDITIONS] ?: 0,
+                possibleIncome = testEmpire?.empireResourcesPossibleIncome?.resources[Resource.EXPEDITIONS] ?: 0,
                 isBordered = true,
-                border = empire.borderForNewPlanet
+                border = empire?.borderForNewPlanet ?: 0
             )
         }
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.List,
-            contentDescription = null,
-            tint = Color.White,
-            modifier = modifier
-                .padding(16.dp)
-                .clickable(
-                    onClick = { empireModel.updateIsPlanetListShown() }
-                )
-        )
+        if(isPlanetMenuPresent){
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.List,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = modifier
+                    .padding(16.dp)
+                    .clickable(
+                        onClick = { onPlanetMenuClick() }
+                    )
+            )
+        }
     }
 }

@@ -21,9 +21,9 @@ sealed class NewTurnError(
 }
 
 @Composable
-fun NewTurnError.displayError(empire: Empire): String {
+fun NewTurnError.displayError(empire: Empire?): String {
     val context = LocalContext.current
-    val planet = empire.planets.find { it.id == planetId } ?: return context.getString(R.string.unknown_planet)
+    val planet = empire?.planets?.find { it.id == planetId } ?: return context.getString(R.string.unknown_planet)
     val planetName = planet.name
 
     fun missingResourcesString(missing: Map<Resource, Int>): String {
@@ -49,6 +49,9 @@ fun NewTurnError.displayError(empire: Empire): String {
 
                 is BuildDistrictResult.Error.UnnocupatedNotAllowed ->
                     context.getString(R.string.unnocupatedNotAllowed, context.getString(DistrictEnum.UNNOCUPATED.nameIdNominative), planetName)
+
+                is BuildDistrictResult.Error.DistrictIsUnnocupated ->
+                    context.getString(R.string.districtForBuildingIsUnnocupated, planetName)
             }
         }
 

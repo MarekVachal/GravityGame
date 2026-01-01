@@ -25,29 +25,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.building_game.data.model.Action
-import com.marks2games.gravitygame.building_game.data.model.Empire
-import com.marks2games.gravitygame.building_game.data.model.EmpireUiState
 import com.marks2games.gravitygame.building_game.data.util.ActionDescriptionData
-import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
 import com.marks2games.gravitygame.core.ui.utils.SwipeUtil
 
 @Composable
 fun ActionMenu(
     modifier: Modifier,
-    empire: Empire,
-    empireUiState: EmpireUiState,
-    empireModel: EmpireViewModel
+    actionsCount: Int,
+    onActionMenuClick: () -> Unit
 ) {
     Box(
-        modifier = modifier.clickable {
-            if(empireUiState.isActionsShown){
-                empireModel.updateActionsShown(false)
-            } else {
-                empireModel.updateActionsShown(true)
-                empireModel.updateErrorsShown(false)
-                empireModel.updateTransportMenuShown(false)
-            }
-        }
+        modifier = modifier.clickable { onActionMenuClick() }
     ) {
             Icon(
                 imageVector = Icons.Default.Menu,
@@ -65,7 +53,7 @@ fun ActionMenu(
         ) {
             Text(
                 modifier = modifier.padding(4.dp),
-                text = "${empire.actions.size}"
+                text = "$actionsCount"
             )
         }
     }
@@ -75,7 +63,9 @@ fun ActionMenu(
 fun ActionList(
     modifier: Modifier,
     actions: List<Action>,
-    empireModel: EmpireViewModel
+    deleteAllActions: () -> Unit,
+    getActionDescription: (Action) -> ActionDescriptionData,
+    deleteAction: (Action) -> Unit
 ){
     Card(
         modifier = modifier
@@ -94,7 +84,7 @@ fun ActionList(
             ){
                 Text(
                     text = stringResource(R.string.deleteAllActions),
-                    modifier = modifier.clickable { empireModel.deleteAllActions() }
+                    modifier = modifier.clickable { deleteAllActions() }
                 )
             }
             HorizontalDivider(
@@ -104,10 +94,12 @@ fun ActionList(
                 items (
                     count = actions.size,
                     key = {actions[it].id})
-                { ActionRow(
+                {
+                    ActionRow(
                         modifier = modifier,
                         action = actions[it],
-                        empireModel = empireModel
+                        getActionDescription = getActionDescription,
+                        deleteAction = deleteAction
                     )
                 }
             }
@@ -119,9 +111,10 @@ fun ActionList(
 private fun ActionRow(
     modifier: Modifier,
     action: Action,
-    empireModel: EmpireViewModel
+    getActionDescription: (Action) -> ActionDescriptionData,
+    deleteAction: (Action) -> Unit
 ){
-    val descriptionData = remember { empireModel.getActionDescription(action) }
+    val descriptionData = remember { getActionDescription(action) }
 
     val description = when (descriptionData) {
         is ActionDescriptionData.GenericDescription -> {
@@ -137,7 +130,7 @@ private fun ActionRow(
     }
 
     SwipeUtil(
-        delete = {empireModel.deleteAction(action)},
+        delete = { deleteAction(action) },
         edit = { },
         enableEdit = false
     ) {
