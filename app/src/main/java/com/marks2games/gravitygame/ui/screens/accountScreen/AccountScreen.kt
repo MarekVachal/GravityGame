@@ -28,8 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.signIn.GoogleSign
-import com.marks2games.gravitygame.ui.screens.infoDialogsScreens.DeleteAccountDialog
+import com.marks2games.gravitygame.core.ui.utils.DeleteAccountDialog
 
 @Composable
 fun AccountScreen (
@@ -38,8 +37,7 @@ fun AccountScreen (
     //onAchievementsButtonClick: () -> Unit,
     onBackButtonClick: () -> Unit,
     accountModel: AccountViewModel,
-    context: Context,
-    googleSign: GoogleSign
+    context: Context
 ){
     val accountUiState by accountModel.accountUiState.collectAsState()
 
@@ -59,7 +57,6 @@ fun AccountScreen (
         modifier = modifier,
         accountModel = accountModel,
         toShow = accountUiState.showDeleteAccountDialog,
-        googleSign = googleSign,
         context = context
     )
 
@@ -85,7 +82,7 @@ fun AccountScreen (
                 Spacer(modifier.size(4.dp))
                 Button(
                     onClick = {
-                        accountModel.setClickOnButton(context = context, googleSign = googleSign)
+                        accountModel.setClickOnButton(context = context)
                     }
                 ) {
                     Text(

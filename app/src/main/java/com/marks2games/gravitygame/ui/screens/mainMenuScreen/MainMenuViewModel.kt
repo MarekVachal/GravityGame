@@ -5,81 +5,193 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.models.SharedPreferencesRepository
-import com.marks2games.gravitygame.signIn.AnonymousSign
-import com.marks2games.gravitygame.signIn.GoogleSign
+import com.marks2games.gravitygame.building_game.domain.usecase.utils.DeleteEmpireUseCase
+import com.marks2games.gravitygame.core.domain.usecases.authentication.AnonymousSignInUseCase
+import com.marks2games.gravitygame.core.domain.usecases.authentication.RegisterWithEmailUseCase
+import com.marks2games.gravitygame.core.domain.usecases.authentication.SignInWithEmailUseCase
+import com.marks2games.gravitygame.core.domain.usecases.authentication.SignInWithGoogleUseCase
+import com.marks2games.gravitygame.core.domain.usecases.sharedRepository.GetHasSignInUseCase
+import com.marks2games.gravitygame.core.ui.utils.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
 @HiltViewModel
 class MainMenuViewModel @Inject constructor(
     private val auth: FirebaseAuth,
-    private val sharedPreferences: SharedPreferencesRepository
+    private val anonymousSignInUseCase: AnonymousSignInUseCase,
+    private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
+    private val signInWithEmailUseCase: SignInWithEmailUseCase,
+    private val registerWithEmailUseCase: RegisterWithEmailUseCase,
+    private val getHasSignInUseCase: GetHasSignInUseCase,
+    private val deleteEmpire: DeleteEmpireUseCase
 ): ViewModel() {
 
-    private val _mainmenuUiState = MutableStateFlow(MainMenuUiStates())
-    val mainMenuUiStates: StateFlow<MainMenuUiStates> = _mainmenuUiState.asStateFlow()
-    private val anonymousSign = AnonymousSign(auth)
+    private val _uiEvent = MutableSharedFlow<UiEvent>()
+    val uiEvent = _uiEvent.asSharedFlow()
+    private val _mainMenuUiState = MutableStateFlow(MainMenuUiStates())
+    val mainMenuUiStates: StateFlow<MainMenuUiStates> = _mainMenuUiState.asStateFlow()
+
+    fun updateShowDeleteEmpireDialog(toShow: Boolean){
+        _mainMenuUiState.update { state ->
+            state.copy(
+                showDeleteEmpireDialog = toShow
+            )
+        }
+    }
+
+    fun deleteEmpire(updateHasLaunchedEmpireScreen: (Boolean) -> Unit){
+        viewModelScope.launch {
+            try {
+                deleteEmpire.invoke()
+                _uiEvent.emit(UiEvent.ShowSnackbar(R.string.successfulEmpireDelete))
+            } catch (e: Exception) {
+                _uiEvent.emit(UiEvent.ShowSnackbar(R.string.errorEmpireDelete))
+            }
+            updateHasLaunchedEmpireScreen(false)
+            updateShowDeleteEmpireDialog(false)
+        }
+    }
+
+    fun updateErrorMessage(errorMessage: String?){
+        _mainMenuUiState.update { state ->
+            state.copy(
+                errorMessage = errorMessage
+            )
+        }
+    }
+
+    fun signInWithEmail() {
+        updateIsLoadingState(true)
+        viewModelScope.launch {
+            try {
+                signInWithEmailUseCase.invoke(
+                    mainMenuUiStates.value.email,
+                    mainMenuUiStates.value.password
+                )
+                showSignInDialog(false)
+            } catch (e: Exception) {
+                updateErrorMessage(e.localizedMessage)
+            } finally {
+                updateIsLoadingState(false)
+            }
+        }
+    }
+
+    fun registerWithEmail(){
+        updateIsLoadingState(true)
+        try{
+            viewModelScope.launch {
+                registerWithEmailUseCase.invoke(
+                    mainMenuUiStates.value.email,
+                    mainMenuUiStates.value.password
+                )
+            }
+            showSignInDialog(false)
+        } catch (e: Exception){
+            updateErrorMessage(e.localizedMessage)
+        } finally {
+            updateIsLoadingState(false)
+        }
+    }
+
+    fun updateEmailState(email: String){
+        _mainMenuUiState.update { state ->
+            state.copy(
+                email = email
+            )
+        }
+    }
+
+    fun updatePasswordState(password: String){
+        _mainMenuUiState.update { state ->
+            state.copy(
+                password = password
+            )
+        }
+    }
+
+    fun updateIsLoadingState(isLoading: Boolean){
+        _mainMenuUiState.update { state ->
+            state.copy(
+                isLoading = isLoading
+            )
+        }
+    }
 
     fun showSignInDialog(toShow: Boolean){
-        _mainmenuUiState.update { state ->
+        _mainMenuUiState.update { state ->
             state.copy(
                 showSignInDialog = toShow
             )
         }
     }
 
+    fun isSignIn(): Boolean{
+        return auth.currentUser != null
+    }
 
     fun shouldSignIn(){
-        val hasSignIn = sharedPreferences.getHasSignIn()
-        if (!hasSignIn) {
-            val user = auth.currentUser
-            if (user == null) {
-                showSignInDialog(true)
+        viewModelScope.launch {
+            val hasSignIn = getHasSignInUseCase.invoke()
+            if (!hasSignIn) {
+                val user = auth.currentUser
+                if (user == null) {
+                    showSignInDialog(true)
+                } else if(user.isAnonymous && !mainMenuUiStates.value.alreadySignAsGuest){
+                    showSignInDialog(true)
+                }
+            } else {
+                getUserImage()
             }
-        } else {
-            getUserImage()
         }
+
+
     }
 
     fun anonymousSignIn(){
         viewModelScope.launch {
-            anonymousSign.signInAnonymously()
+            anonymousSignInUseCase.invoke()
         }
         showSignInDialog(false)
-        _mainmenuUiState.update { state ->
+        _mainMenuUiState.update { state ->
             state.copy(
                 alreadySignAsGuest = true
             )
         }
     }
 
-    fun signInWithGoogle(googleSign: GoogleSign){
+    fun signInWithGoogle(){
         viewModelScope.launch {
-            googleSign.signInWithCredentialManager()
+            signInWithGoogleUseCase.invoke()
             getUserImage()
         }
         showSignInDialog(false)
-        sharedPreferences.setHasSignIn(true)
     }
 
-    private fun getUserImage(){
-        val userImage = auth.currentUser?.photoUrl
-        _mainmenuUiState.update { state ->
-            state.copy(
-                userImage = userImage
-            )
+    private suspend fun getUserImage(){
+        withContext(Dispatchers.Main){
+            val userImage = auth.currentUser?.photoUrl
+            _mainMenuUiState.update { state ->
+                state.copy(
+                    userImage = userImage
+                )
+            }
         }
     }
 
@@ -102,79 +214,39 @@ class MainMenuViewModel @Inject constructor(
     }
 
     fun showMenuList(toShow: Boolean){
-        _mainmenuUiState.update { state ->
+        _mainMenuUiState.update { state ->
             state.copy(showMenuList = toShow)
         }
     }
 
     fun openFacebook(context: Context){
         val fbUrl = context.getString(R.string.facebookLink)
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(fbUrl))
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-        try {
-            intent.setPackage("com.facebook.katana")
-            context.startActivity(intent)
-        } catch (e: ActivityNotFoundException){
-            try {
-                intent.setPackage("com.facebook.lite")
-                context.startActivity(intent)
-            } catch (e: ActivityNotFoundException){
-                try {
-                    intent.setPackage(null)
-                    context.startActivity(intent)
-                } catch (e: Exception){
-                    Toast.makeText(context, context.getString(R.string.errorToOpenLink), Toast.LENGTH_LONG).show()
-                    Sentry.captureException(e)
-                }
-            }
+        if (openApp(context, "com.facebook.katana", fbUrl.toUri())) {
+            return
         }
+        if (openApp(context, "com.facebook.lite", fbUrl.toUri())) {
+            return
+        }
+        openInBrowser(context, fbUrl.toUri(), R.string.errorToOpenLink)
     }
 
     fun openDiscord(context: Context){
         val discordUrl = context.getString(R.string.discordInviteLink)
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(discordUrl))
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-        try {
-            intent.setPackage("com.discord")
-            context.startActivity(intent)
-        } catch (e: ActivityNotFoundException) {
-            try {
-                intent.setPackage(null)
-                context.startActivity(intent)
-            } catch (e: Exception) {
-                Toast.makeText(context, context.getString(R.string.errorToOpenLink), Toast.LENGTH_LONG).show()
-                Sentry.captureException(e)
-            }
-        }
+        openLink(context, "com.discord", discordUrl, R.string.errorToOpenLink)
     }
 
     fun openBuyMeACoffeeLink(context: Context){
         val buyMeACoffeeUrl = context.getString(R.string.buyMeACoffeeLink)
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(buyMeACoffeeUrl))
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-        try {
-            intent.setPackage("app.buymeacoffee")
-            context.startActivity(intent)
-        } catch (e: ActivityNotFoundException) {
-            try{
-                intent.setPackage(null)
-                context.startActivity(intent)
-            } catch (e: Exception){
-                Toast.makeText(context, context.getString(R.string.errorToOpenLink), Toast.LENGTH_LONG).show()
-                Sentry.captureException(e)
-            }
-        }
+        openLink(context, "app.buymeacoffee", buyMeACoffeeUrl, R.string.errorToOpenLink)
     }
 
     fun openEmail(context: Context){
-        val emailAddress = context.getString(R.string.email)
+        val emailAddress = context.getString(R.string.gravityGameEmail)
         val intent = Intent(Intent.ACTION_SENDTO).apply {
-            data = Uri.parse("mailto:$emailAddress")
+            data = "mailto:$emailAddress".toUri()
             //putExtra(Intent.EXTRA_SUBJECT, "Subject of mail") // I can define a subject of the mail
             //putExtra(Intent.EXTRA_TEXT, "Body of email") // I can define even a text of the mail
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         try {
             context.startActivity(intent)
@@ -184,8 +256,43 @@ class MainMenuViewModel @Inject constructor(
         }
     }
 
+    private fun openLink(context: Context, appPackage: String?, url: String, errorMessageId: Int) {
+        val uri = url.toUri()
+        if (appPackage != null && openApp(context, appPackage, uri)) {
+            return
+        }
+        openInBrowser(context, uri, errorMessageId)
+    }
+
+    private fun openApp(context: Context, packageName: String, uri: Uri): Boolean {
+        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            setPackage(packageName)
+        }
+        return try {
+            context.startActivity(intent)
+            true
+        } catch (e: ActivityNotFoundException) {
+            Sentry.captureException(e)
+            false
+        }
+    }
+
+    private fun openInBrowser(context: Context, uri: Uri, errorMessageId: Int) {
+        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        try {
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, context.getString(errorMessageId), Toast.LENGTH_LONG).show()
+            Sentry.captureException(e)
+        }
+    }
+
+
     fun openTextDialog(text: Text = Text.ABOUT_GAME, toShow: Boolean){
-        _mainmenuUiState.update { state ->
+        _mainMenuUiState.update { state ->
             state.copy(
                 showTextDialog = toShow,
                 textToShow = text

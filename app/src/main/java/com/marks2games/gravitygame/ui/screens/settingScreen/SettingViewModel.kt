@@ -2,18 +2,27 @@ package com.marks2games.gravitygame.ui.screens.settingScreen
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import com.marks2games.gravitygame.models.SharedPreferencesRepository
+import androidx.lifecycle.viewModelScope
+import com.marks2games.gravitygame.core.domain.repository.SharedPreferencesRepository
+import com.marks2games.gravitygame.core.domain.usecases.sharedRepository.SetKeepScreenOnUseCase
+import com.marks2games.gravitygame.core.domain.usecases.sharedRepository.SetLanguageUseCase
+import com.marks2games.gravitygame.core.domain.usecases.sharedRepository.SetShowTutorialUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
-    private val sharedPreferences: SharedPreferencesRepository
+    private val sharedPreferences: SharedPreferencesRepository,
+    private val setLanguageUseCase: SetLanguageUseCase,
+    private val setShowTutorialUseCase: SetShowTutorialUseCase,
+    private val setKeepScreenOnUseCase: SetKeepScreenOnUseCase
 ): ViewModel() {
 
     private val _settingUiState = MutableStateFlow(SettingUiState())
@@ -62,8 +71,10 @@ class SettingViewModel @Inject constructor(
     }
 
     fun saveTutorialSettings(){
-        sharedPreferences.setShowTutorial(settingUiState.value.showTutorial)
-        sharedPreferences.setKeepScreenOn(settingUiState.value.keepScreenOn)
+        viewModelScope.launch (Dispatchers.IO){
+            setShowTutorialUseCase.invoke(settingUiState.value.showTutorial)
+            setKeepScreenOnUseCase.invoke(settingUiState.value.keepScreenOn)
+        }
     }
 
     @Suppress("DEPRECATION")
@@ -74,7 +85,9 @@ class SettingViewModel @Inject constructor(
         config.setLocale(locale)
         val resources = context.resources
         resources.updateConfiguration(config, resources.displayMetrics)
-        sharedPreferences.setLanguage(language)
+        viewModelScope.launch(Dispatchers.IO) {
+            setLanguageUseCase.invoke(language)
+        }
     }
 
     fun setChosenLanguage(language: String){

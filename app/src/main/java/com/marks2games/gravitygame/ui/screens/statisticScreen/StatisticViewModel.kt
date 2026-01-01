@@ -3,7 +3,7 @@ package com.marks2games.gravitygame.ui.screens.statisticScreen
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.models.BattleResultEnum
+import com.marks2games.gravitygame.battle_game.data.model.enum_class.BattleResultEnum
 
 class StatisticViewModel: ViewModel() {
 

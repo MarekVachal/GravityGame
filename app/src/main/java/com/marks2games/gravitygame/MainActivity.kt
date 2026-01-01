@@ -1,6 +1,5 @@
 package com.marks2games.gravitygame
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -17,53 +16,29 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import androidx.room.Room
-import com.marks2games.gravitygame.database.AppDatabase
-import com.marks2games.gravitygame.database.BattleRepository
-import com.marks2games.gravitygame.database.DatabaseViewModel
-import com.marks2games.gravitygame.database.ViewModelFactory
-import com.marks2games.gravitygame.navigation.Destinations
-import com.marks2games.gravitygame.timer.TimerViewModel
-import com.marks2games.gravitygame.tutorial.TutorialViewModel
-import com.marks2games.gravitygame.ui.screens.accountScreen.AccountScreen
-import com.marks2games.gravitygame.ui.screens.battleMapScreen.BattleMapScreen
-import com.marks2games.gravitygame.ui.screens.battleMapScreen.BattleViewModel
-import com.marks2games.gravitygame.ui.screens.mainMenuScreen.MainMenuScreen
-import com.marks2games.gravitygame.ui.screens.mainMenuScreen.MainMenuViewModel
-import com.marks2games.gravitygame.ui.screens.selectArmyScreen.SelectArmyScreen
-import com.marks2games.gravitygame.ui.screens.selectArmyScreen.SelectArmyViewModel
-import com.marks2games.gravitygame.ui.screens.selectMapScreen.SelectMapScreen
-import com.marks2games.gravitygame.ui.screens.settingScreen.SettingScreen
+import com.marks2games.gravitygame.battle_game.data.room_database.AppDatabase
 import com.marks2games.gravitygame.ui.screens.settingScreen.SettingViewModel
-import com.marks2games.gravitygame.ui.screens.statisticScreen.StatisticScreen
-import com.marks2games.gravitygame.ui.screens.statisticScreen.StatisticViewModel
 import com.marks2games.gravitygame.ui.theme.GravityGameTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
-import com.marks2games.gravitygame.firebase.FcmToken
-import com.marks2games.gravitygame.firebase.Notification
-import com.marks2games.gravitygame.models.SharedPreferencesRepository
-import com.marks2games.gravitygame.navigation.Matchmaking
-import com.marks2games.gravitygame.signIn.GoogleSign
-import com.marks2games.gravitygame.ui.screens.accountScreen.AccountViewModel
-import com.marks2games.gravitygame.ui.screens.matchmakingScreen.MatchmakingScreen
-import com.marks2games.gravitygame.ui.screens.matchmakingScreen.MatchmakingViewModel
+import com.marks2games.gravitygame.core.data.datasource.GoogleAuthHelper
+import com.marks2games.gravitygame.core.domain.FcmToken
+import com.marks2games.gravitygame.core.domain.Notification
+import com.marks2games.gravitygame.core.domain.repository.SharedPreferencesRepository
+import com.marks2games.gravitygame.core.domain.navigation.Matchmaking
+import com.marks2games.gravitygame.core.data.navigation.Routes
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -81,8 +56,9 @@ class MainActivity : ComponentActivity() {
     lateinit var notification: Notification
     @Inject
     lateinit var sharedPreferences: SharedPreferencesRepository
+    @Inject
+    lateinit var googleAuthHelper: GoogleAuthHelper
     private lateinit var navController: NavHostController
-    private lateinit var googleSign: GoogleSign
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,13 +70,8 @@ class MainActivity : ComponentActivity() {
             AppDatabase::class.java, "battle_results.db"
         ).build()
         notification.createNotificationChannel(this)
-        googleSign = GoogleSign(
-            context = this,
-            auth = auth,
-            sharedPreferences = sharedPreferences
-        )
         fcmToken.retrieveAndSaveFcmToken()
-
+        googleAuthHelper.setActivity(this)
 
         setContent {
             GravityGameTheme {
@@ -109,16 +80,15 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-
                     navController = rememberNavController()
-                    ScreenSetup(
+                    Routes(
                         activity = this,
                         database = roomDatabase,
                         owner = this,
                         window = window,
                         navController = navController,
-                        googleSign = googleSign,
-                        sharedPreferences = sharedPreferences
+                        sharedPreferences = sharedPreferences,
+                        context = this
                     )
                     handleIntent(intent)
                 }
@@ -155,142 +125,10 @@ class MainActivity : ComponentActivity() {
             val route = if (!roomId.isNullOrEmpty()) {
                 "${Matchmaking.route}?roomId=$roomId"
             } else {
-                Destinations.MAINMENU.name
+                "BattleGame"
             }
         Log.d("FCM", "Route: $route")
         navController.navigate(route)
-    }
-}
-
-
-
-@Composable
-fun ScreenSetup(
-    activity: Activity,
-    database: AppDatabase,
-    owner: ViewModelStoreOwner,
-    window: Window,
-    navController: NavHostController,
-    googleSign: GoogleSign,
-    sharedPreferences: SharedPreferencesRepository
-) {
-    val context = LocalContext.current
-    val repository = BattleRepository(database.battleResultDao())
-    val databaseModel: DatabaseViewModel = ViewModelProvider(
-        owner, ViewModelFactory(repository)
-    )[DatabaseViewModel::class.java]
-    val battleModel: BattleViewModel = viewModel()
-    val selectArmyModel: SelectArmyViewModel = viewModel()
-    val timerModel: TimerViewModel = viewModel()
-    val tutorialModel: TutorialViewModel = viewModel()
-    val settingModel: SettingViewModel = viewModel()
-    val mainMenuModel: MainMenuViewModel = viewModel()
-    val statisticModel: StatisticViewModel = viewModel()
-    val matchmakingModel: MatchmakingViewModel = viewModel()
-    val accountModel: AccountViewModel = viewModel()
-
-    LaunchedEffect(Unit) {
-        loadSettings(
-            context = context,
-            settingsModel = settingModel,
-            window = window,
-            sharedPreferences = sharedPreferences
-        )
-    }
-
-    NavHost(navController = navController, startDestination = Destinations.MAINMENU.name) {
-        composable(route = "${Destinations.MATCHMAKING.name}?roomId={roomId}",
-            arguments = listOf(navArgument(Matchmaking.ROOM_ID_ARG) { nullable = true })
-        ) { backStackEntry ->
-            MatchmakingScreen(
-                matchmakingModel = matchmakingModel,
-                onMatchConfirmed = {
-                    navController.navigate(Destinations.BATTLEMAP.name)
-                    Log.d("Player", "Player: ${battleModel.playerData.value.player}")
-                },
-                timerModel = timerModel,
-                onBackMainMenuScreen = {
-                    navController.navigate(Destinations.MAINMENU.name)
-                    matchmakingModel.showSignInDialog(false)
-                },
-                context = context,
-                googleSign = googleSign,
-                roomId = backStackEntry.arguments?.getString(Matchmaking.ROOM_ID_ARG)
-            )
-        }
-        composable(route = Destinations.SELECTARMY.name) {
-            SelectArmyScreen(
-                onOfflineButtonClicked = { navController.navigate(Destinations.BATTLEMAP.name) },
-                onOnlineButtonClicked = { navController.navigate(Destinations.MATCHMAKING.name) },
-                battleModel = battleModel,
-                selectArmyModel = selectArmyModel,
-                tutorialModel = tutorialModel,
-                context = context,
-                settingsModel = settingModel,
-                onBackButtonClick = { navController.navigate(Destinations.MAINMENU.name) },
-            )
-        }
-
-        composable(route = Destinations.BATTLEMAP.name) {
-            BattleMapScreen(
-                battleModel = battleModel,
-                timerModel = timerModel,
-                tutorialModel = tutorialModel,
-                endOfGame = { navController.navigate(Destinations.MAINMENU.name) },
-                settingsModel = settingModel,
-                context = context,
-                databaseModel = databaseModel,
-                selectArmyModel = selectArmyModel
-            )
-        }
-
-        composable(route = Destinations.SELECTMAP.name) {
-            SelectMapScreen(
-                battleModel = battleModel,
-                onNextButtonClicked = { navController.navigate(Destinations.SELECTARMY.name) }
-            )
-        }
-
-        composable(route = Destinations.MAINMENU.name){
-            MainMenuScreen(
-                onBattleButtonClick = {navController.navigate(Destinations.SELECTMAP.name)},
-                mainMenuModel = mainMenuModel,
-                activity = activity,
-                context = context,
-                onSettingClick = { navController.navigate(Destinations.SETTINGS.name) },
-                onAccountClick = { navController.navigate(Destinations.ACCOUNT.name) },
-                battleModel = battleModel,
-                googleSign = googleSign
-            )
-        }
-
-        composable(route = Destinations.SETTINGS.name){
-            SettingScreen(
-                context = context,
-                onBackButtonClick = { navController.navigate(Destinations.MAINMENU.name) },
-                settingModel = settingModel
-            )
-        }
-
-        composable(route = Destinations.ACCOUNT.name){
-            AccountScreen(
-                onStatisticButtonClick = { navController.navigate(Destinations.STATISTICS.name) },
-                //onAchievementsButtonClick = { navController.navigate(Destinations.ACHIEVEMENTS.name) },
-                onBackButtonClick = { navController.navigate(Destinations.MAINMENU.name) },
-                accountModel = accountModel,
-                context = context,
-                googleSign = googleSign
-            )
-        }
-
-        composable(route = Destinations.STATISTICS.name){
-            StatisticScreen(
-                databaseModel = databaseModel,
-                onBackButtonClick = { navController.navigate(Destinations.MAINMENU.name) },
-                statisticModel = statisticModel,
-                context = context
-            )
-        }
     }
 }
 
@@ -322,20 +160,29 @@ private fun closeAndroidBars(window: Window){
     }
 }
 
-private fun loadSettings(
+fun loadSettings(
     context: Context,
     settingsModel: SettingViewModel,
     window: Window,
     sharedPreferences: SharedPreferencesRepository
 ) {
-    val showTutorial = sharedPreferences.getShowTutorial()
-    val language = sharedPreferences.getLanguage()
-    val keepScreenOn = sharedPreferences.getKeepScreenOn()
-    settingsModel.changeShowTutorial(toShow = showTutorial)
-    settingsModel.setLanguage(context = context, language = language)
-    settingsModel.setChosenLanguage(language = language)
-    settingsModel.changeKeepScreenOn(enabled = keepScreenOn)
-    setScreenOn(enabled = keepScreenOn, window = window)
+    //You have to refactor this to use UseCase
+    Log.d("Settings", "loadSettings")
+    CoroutineScope(Dispatchers.IO).launch {
+        val showTutorial = sharedPreferences.getShowTutorial()
+        val language = sharedPreferences.getLanguage()
+        val keepScreenOn = sharedPreferences.getKeepScreenOn()
+
+        withContext(Dispatchers.Main){
+            settingsModel.changeShowTutorial(toShow = showTutorial)
+            settingsModel.setLanguage(context = context, language = language)
+            settingsModel.setChosenLanguage(language = language)
+            settingsModel.changeKeepScreenOn(enabled = keepScreenOn)
+            setScreenOn(enabled = keepScreenOn, window = window)
+        }
+    }
+    Log.d("Settings", "loadSettings end")
+
 
 }
 

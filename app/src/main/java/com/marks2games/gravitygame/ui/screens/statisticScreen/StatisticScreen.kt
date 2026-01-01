@@ -34,9 +34,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.database.BattleResult
-import com.marks2games.gravitygame.database.DatabaseViewModel
-import com.marks2games.gravitygame.ui.utils.formatDate
+import com.marks2games.gravitygame.battle_game.data.room_database.BattleResult
+import com.marks2games.gravitygame.battle_game.data.room_database.DatabaseViewModel
+import com.marks2games.gravitygame.battle_game.domain.formatDate
 
 @Composable
 fun StatisticScreen(
