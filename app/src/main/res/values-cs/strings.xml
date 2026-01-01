@@ -237,6 +237,7 @@
     <string name="action_description_generic">Nastavena %1$s na planetě %2$s</string>
     <string name="action_description_district">%1$s %2$s na planetě %3$s</string>
     <string name="errorNotAllowedSecondDistrict">Nelze stavět podruhé %1$s na planetě %2$s</string>
+    <string name="districtForBuildingIsUnnocupated">Nelze stavět na nesídleném disktriktu na planetě %1$s</string>
     <string name="error_district_not_found">District pro stavbu nenalezen na planetě %1$s</string>
     <string name="error_not_enough_resources_maintenance">Nedostate surovin pro údržbu planety %1$s: %2$s.</string>
     <string name="missing_resource">chybí %1$d %2$s</string>
@@ -359,4 +360,5 @@
     <string name="unnocupatedInstrumental">neosazeným</string>
     <string name="settleNewDistrict">Osídlit</string>
     <string name="settleDistrict">Postav distrikt</string>
+    <string name="unnocupatedNotAllowed">Nelze postavit %1$s distrikt na planetě %2$s</string>
 </resources>
