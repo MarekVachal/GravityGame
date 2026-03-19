@@ -1,18 +1,22 @@
-    plugins {
+plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.0"
-    id("org.jetbrains.kotlin.plugin.compose") version "2.3.0"
+    //id("org.jetbrains.kotlin.android") version "2.3.10"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.20"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.3.20"
     id("com.google.devtools.ksp")
     id("com.google.gms.google-services")
-    id("io.sentry.android.gradle") version "5.12.2"
+    id("io.sentry.android.gradle") version "6.1.0"
     id("com.google.dagger.hilt.android")
 }
 
 android {
     namespace = "com.marks2games.gravitygame"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = "28.0.13004108"
+
+    lint {
+        checkReleaseBuilds = false
+    }
 
     signingConfigs {
         create("release") {
@@ -28,8 +32,8 @@ android {
         applicationId = "com.marks2games.gravitygame"
         minSdk = 26
         targetSdk = 35
-        versionCode = 11
-        versionName = "1.2.8"
+        versionCode = 12
+        versionName = "1.2.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -64,12 +68,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    /*
     kotlin {
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-            freeCompilerArgs.add("-Xjvm-default=all")
+            freeCompilerArgs.add("-jvm-default=enable")
         }
     }
+    */
+
     buildFeatures {
         compose = true
     }
@@ -78,18 +86,26 @@ android {
         resources {
             excludes += "/META-INF/*"
         }
+        jniLibs {
+            keepDebugSymbols += setOf(
+                "**/libandroidx.graphics.path.so",
+                "**/libdatastore_shared_counter.so",
+                "**/libsentry-android.so",
+                "**/libsentry.so",
+            )
+        }
     }
     bundle {
         language{
             enableSplit = false
         }
     }
-    tasks {
-        withType<JavaCompile> {
-            options.compilerArgs.add("-Xlint:deprecation")
-        }
-    }
 }
+
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-Xlint:deprecation")
+}
+
 
 sentry {
     includeProguardMapping = true
@@ -99,13 +115,14 @@ sentry {
 
 dependencies {
 
-    val composeBomVersion = "2025.12.01"
+    implementation("androidx.compose.foundation:foundation:1.10.5")
+    val composeBomVersion = "2026.03.00"
     val roomVersion = "2.8.4"
     val credentialVersion = "1.5.0"
-    val hiltVersion = "2.57.2"
-    val ktorVersion = "3.3.3"
+    val hiltVersion = "2.59.2"
+    val ktorVersion = "3.4.1"
     val coroutineVersion = "1.10.2"
-    val sentryVersion = "8.29.0"
+    val sentryVersion = "8.36.0"
 
     //Ktor
     implementation ("io.ktor:ktor-client-core:$ktorVersion")
@@ -116,7 +133,7 @@ dependencies {
     //Hilt
     implementation ("com.google.dagger:hilt-android:$hiltVersion")
     ksp ("com.google.dagger:hilt-compiler:$hiltVersion")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0") //Not sure I need it
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0") //Not sure if I need it
 
     //Coin. For getting image from URL
     implementation("io.coil-kt:coil-compose:2.7.0")
@@ -124,7 +141,7 @@ dependencies {
     //Credential manager
     implementation ("androidx.credentials:credentials:$credentialVersion")
     implementation ("androidx.credentials:credentials-play-services-auth:$credentialVersion")
-    implementation ("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    implementation ("com.google.android.libraries.identity.googleid:googleid:1.2.0")
 
     //Sentry
     implementation ("io.sentry:sentry-android:$sentryVersion")
@@ -134,12 +151,12 @@ dependencies {
 
     //Play Games Services
     //implementation ("com.google.android.gms:play-services-games-v2:20.1.2")
-    implementation("com.google.android.gms:play-services-auth:21.4.0")
+    implementation("com.google.android.gms:play-services-auth:21.5.1")
     //implementation ("com.google.android.gms:play-services-base:18.5.0")
     //implementation ("com.google.android.gms:play-services-tasks:18.2.0")
 
     //Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
+    implementation(platform("com.google.firebase:firebase-bom:34.10.0"))
     implementation("com.google.firebase:firebase-common")
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
@@ -147,13 +164,13 @@ dependencies {
     implementation ("com.google.firebase:firebase-firestore")
     implementation ("com.google.firebase:firebase-messaging")
     implementation("com.google.firebase:firebase-inappmessaging")
-    implementation("com.google.auth:google-auth-library-oauth2-http:1.41.0")
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.43.0")
 
     //gRPC (firestore used it for network operation
-    implementation("io.grpc:grpc-okhttp:1.78.0")
+    implementation("io.grpc:grpc-okhttp:1.80.0")
 
     //Compose navigation
-    implementation("androidx.navigation:navigation-compose:2.9.6")
+    implementation("androidx.navigation:navigation-compose:2.9.7")
 
     //Coroutines
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
@@ -163,8 +180,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0")
 
     //Core
-    implementation("androidx.core:core-ktx:1.17.0")
-    implementation("androidx.activity:activity-compose:1.12.2")
+    implementation("androidx.core:core-ktx:1.18.0")
+    implementation("androidx.activity:activity-compose:1.13.0")
     implementation(platform("androidx.compose:compose-bom:$composeBomVersion"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
@@ -180,14 +197,14 @@ dependencies {
 
     //Room database
     implementation("androidx.room:room-ktx:$roomVersion")
-    implementation("androidx.room:room-runtime: $roomVersion")
+    implementation("androidx.room:room-runtime:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
 
     //Testing
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.mockito:mockito-core:5.21.0")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
-    testImplementation("io.mockk:mockk:1.14.7")
+    testImplementation("org.mockito:mockito-core:5.23.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
+    testImplementation("io.mockk:mockk:1.14.9")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     androidTestImplementation(platform("androidx.compose:compose-bom:$composeBomVersion"))

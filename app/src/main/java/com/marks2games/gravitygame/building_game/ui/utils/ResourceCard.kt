@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -18,14 +19,15 @@ fun ResourceCard(
     isStoredResource: Boolean,
     possibleIncome: Int = 0,
     isBordered: Boolean,
-    border: Int = 0
+    border: Int = 0,
+    iconSize: Dp = 24.dp
 ) {
 val possibleIncomeString = if(possibleIncome < 0) "$possibleIncome" else "+$possibleIncome"
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
-            modifier = modifier.size(24.dp),
+            modifier = modifier.size(iconSize),
             painter = painterResource(icon),
             contentDescription = "Resource icon in Resource card"
         )

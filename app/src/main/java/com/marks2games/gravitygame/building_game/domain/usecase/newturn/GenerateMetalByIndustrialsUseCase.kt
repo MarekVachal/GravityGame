@@ -20,7 +20,7 @@ class GenerateMetalByIndustrialsUseCase @Inject constructor(
     operator fun invoke(planet: Planet, technologies: List<Technology>): Pair<Int, Float> {
         val exampleDistrict = planet.districts
             .filterIsInstance<District.Industrial>()
-            .firstOrNull()?: return Pair(planet.metal, planet.organicSediment)
+            .firstOrNull { it.isWorking && it.mode == IndustrialMode.METAL } ?: return Pair(planet.metal, planet.organicSediment)
         val productionRate = exampleDistrict.generateResources().produced[Resource.METAL] ?: 0
         val consumptionRate = exampleDistrict.generateResources().consumed[Resource.ORGANIC_SEDIMENTS] ?: 0
 

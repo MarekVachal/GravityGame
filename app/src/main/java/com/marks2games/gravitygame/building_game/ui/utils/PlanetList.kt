@@ -133,7 +133,7 @@ fun PlanetCard(
                     ResourceCard(
                         modifier = modifier,
                         resourceCount = planet.army,
-                        icon = R.drawable.army_icon,
+                        icon = R.drawable.warship_material_icon,
                         isStoredResource = true,
                         possibleIncome = testPlanet.planetResourcesPossibleIncome.resources[Resource.ARMY]
                             ?: 0,

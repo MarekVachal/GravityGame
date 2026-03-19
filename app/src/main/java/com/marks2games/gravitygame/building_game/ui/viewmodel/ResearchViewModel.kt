@@ -31,7 +31,7 @@ class ResearchViewModel @Inject constructor(
     override val updateMapSize: UpdateMapSizeUseCase,
     private val updateResearchingTechnology: UpdateResearchingTechnologyUseCase,
     private val createTechnologicalNodes: CreateTechnologicalNodesUseCase,
-    @TechnologyMap override val mapConfig: MapConfig,
+    @param:TechnologyMap override val mapConfig: MapConfig,
     getToroidalPositions: GetToroidalPositionsUseCase<TechnologyNode>,
     getNodePosition: GetNodePositionUseCase<TechnologyNode>
 ) : MapViewModel<TechnologyNode>(

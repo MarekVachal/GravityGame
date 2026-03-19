@@ -298,7 +298,7 @@ sealed interface Technology{
             override val posY: Float = 1.0f
         ): MultiplyTechnology(){
             override fun changeTechnologyState(newState: TechnologyResearchState): Technology {
-                return if(this.state == TechnologyResearchState.SELECTED && newState == TechnologyResearchState.FINISHED) return this.copy(level = this.level + 1)
+                return if(this.state == TechnologyResearchState.SELECTED && newState == TechnologyResearchState.FINISHED) this.copy(level = this.level + 1)
                 else this.copy(state = newState)
             }
         }
@@ -317,7 +317,7 @@ sealed interface Technology{
             override val posY: Float = 0.7f
         ): MultiplyTechnology(){
             override fun changeTechnologyState(newState: TechnologyResearchState): Technology {
-                return if(this.state == TechnologyResearchState.SELECTED && newState == TechnologyResearchState.FINISHED) return this.copy(level = this.level + 1)
+                return if(this.state == TechnologyResearchState.SELECTED && newState == TechnologyResearchState.FINISHED) this.copy(level = this.level + 1)
                 else this.copy(state = newState)
             }
         }
@@ -335,7 +335,7 @@ sealed interface Technology{
             override val posY: Float = 0.4f
         ): MultiplyTechnology(){
             override fun changeTechnologyState(newState: TechnologyResearchState): Technology {
-                return if(this.state == TechnologyResearchState.SELECTED && newState == TechnologyResearchState.FINISHED) return this.copy(level = this.level + 1)
+                return if(this.state == TechnologyResearchState.SELECTED && newState == TechnologyResearchState.FINISHED) this.copy(level = this.level + 1)
                 else this.copy(state = newState)
             }
         }
@@ -353,7 +353,7 @@ sealed interface Technology{
             override val posY: Float = 0.1f
         ): MultiplyTechnology(){
             override fun changeTechnologyState(newState: TechnologyResearchState): Technology {
-                return if(this.state == TechnologyResearchState.SELECTED && newState == TechnologyResearchState.FINISHED) return this.copy(level = this.level + 1)
+                return if(this.state == TechnologyResearchState.SELECTED && newState == TechnologyResearchState.FINISHED) this.copy(level = this.level + 1)
                 else this.copy(state = newState)
             }
         }
@@ -361,8 +361,8 @@ sealed interface Technology{
 }
 
 enum class TechnologyEnum(
-    @StringRes val nameIdNominative: Int,
-    @StringRes val nameIdGenitive: Int
+    @get:StringRes val nameIdNominative: Int,
+    @get:StringRes val nameIdGenitive: Int
 ){
     ROCKET_SCIENCE(R.string.rocketScienceNominative, R.string.rocketScienceGenitive),
     SYNTHETIC_MATERIALS(R.string.syntheticMaterialsNominative, R.string.syntheticMaterialsGenitive),

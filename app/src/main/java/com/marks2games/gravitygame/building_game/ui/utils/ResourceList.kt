@@ -1,5 +1,6 @@
 package com.marks2games.gravitygame.building_game.ui.utils
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
@@ -19,7 +20,10 @@ import kotlin.math.floor
 fun ResourceList(
     modifier: Modifier = Modifier,
     planet: Planet?,
-    testPlanet: Planet?
+    testPlanet: Planet?,
+    showResourceInfoDialog: (Boolean) -> Unit,
+    changeResource: (Resource) -> Unit
+
 ) {
     Card(
         modifier = modifier.wrapContentSize()
@@ -28,7 +32,12 @@ fun ResourceList(
             Text(text = planet?.name?: stringResource(R.string.unknown_planet))
 
             ResourceCard(
-                modifier = modifier,
+                modifier = modifier.
+                    clickable {
+                        changeResource(Resource.PROGRESS)
+                        showResourceInfoDialog(true)
+                },
+                iconSize = 24.dp,
                 resourceCount = planet?.progress?: 0,
                 icon = R.drawable.progress_icon,
                 isStoredResource = true,
@@ -39,7 +48,12 @@ fun ResourceList(
             )
 
             ResourceCard(
-                modifier = modifier,
+                modifier = modifier.
+                        clickable {
+                    changeResource(Resource.BIOMASS)
+                    showResourceInfoDialog(true)
+                },
+                iconSize = 24.dp,
                 resourceCount = floor(planet?.biomass?: 0f).toInt(),
                 icon = R.drawable.biomass_icon,
                 isStoredResource = true,
@@ -49,7 +63,12 @@ fun ResourceList(
             )
 
             ResourceCard(
-                modifier = modifier,
+                modifier = modifier.
+                        clickable {
+                    changeResource(Resource.ORGANIC_SEDIMENTS)
+                    showResourceInfoDialog(true)
+                },
+                iconSize = 24.dp,
                 resourceCount = floor(planet?.organicSediment?: 0f).toInt(),
                 icon = R.drawable.organic_sediments_icon,
                 isStoredResource = true,
@@ -60,9 +79,14 @@ fun ResourceList(
             )
 
             ResourceCard(
-                modifier = modifier,
+                modifier = modifier.
+                clickable {
+                    changeResource(Resource.ARMY)
+                    showResourceInfoDialog(true)
+                },
+                iconSize = 24.dp,
                 resourceCount = planet?.army?: 0,
-                icon = R.drawable.army_icon,
+                icon = R.drawable.warship_material_icon,
                 isStoredResource = true,
                 possibleIncome = testPlanet?.planetResourcesPossibleIncome?.resources[Resource.ARMY]
                     ?: 0,
@@ -70,7 +94,12 @@ fun ResourceList(
             )
 
             ResourceCard(
-                modifier = modifier,
+                modifier = modifier.
+                clickable {
+                    changeResource(Resource.METAL)
+                    showResourceInfoDialog(true)
+                },
+                iconSize = 24.dp,
                 resourceCount = planet?.metal?: 0,
                 icon = R.drawable.metal_icon,
                 isStoredResource = true,
@@ -81,7 +110,12 @@ fun ResourceList(
             )
 
             ResourceCard(
-                modifier = modifier,
+                modifier = modifier.
+                clickable {
+                    changeResource(Resource.ROCKET_MATERIALS)
+                    showResourceInfoDialog(true)
+                },
+                iconSize = 24.dp,
                 resourceCount = planet?.rocketMaterials?: 0,
                 icon = R.drawable.rocket_material_icon,
                 isStoredResource = true,
@@ -91,7 +125,12 @@ fun ResourceList(
             )
 
             ResourceCard(
-                modifier = modifier,
+                modifier = modifier.
+                clickable {
+                    changeResource(Resource.INFRASTRUCTURE)
+                    showResourceInfoDialog(true)
+                },
+                iconSize = 24.dp,
                 resourceCount = testPlanet?.planetResourcesPossibleIncome?.resources[Resource.INFRASTRUCTURE]?: 0,
                 icon = R.drawable.infrastructure_icon,
                 isStoredResource = false,
@@ -99,7 +138,12 @@ fun ResourceList(
             )
 
             ResourceCard(
-                modifier = modifier,
+                modifier = modifier.
+                clickable {
+                    changeResource(Resource.DEVELOPMENT)
+                    showResourceInfoDialog(true)
+                },
+                iconSize = 24.dp,
                 resourceCount = testPlanet?.planetResourcesPossibleIncome?.resources[Resource.DEVELOPMENT]?: 0,
                 icon = R.drawable.development_icon,
                 isStoredResource = false,

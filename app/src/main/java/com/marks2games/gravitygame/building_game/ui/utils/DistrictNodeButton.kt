@@ -2,8 +2,8 @@ package com.marks2games.gravitygame.building_game.ui.utils
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -13,6 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.marks2games.gravitygame.building_game.data.model.District
 import com.marks2games.gravitygame.core.data.model.DistrictNode
@@ -25,14 +27,16 @@ fun DistrictNodeButton(
     mapUiState: MapUiState<DistrictNode>
 ){
   Card(
-      modifier = Modifier.fillMaxSize(),
+      modifier = Modifier.fillMaxHeight(),
       colors = CardDefaults.cardColors(
           containerColor = MaterialTheme.colorScheme.primaryContainer,
           contentColor = MaterialTheme.colorScheme.onPrimaryContainer
       )
   )  {
       Column(
-          modifier = Modifier.fillMaxWidth(),
+          modifier = Modifier
+              .fillMaxHeight()
+              .padding(horizontal = 4.dp, vertical = 4.dp),
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.Center
       ){
@@ -40,6 +44,8 @@ fun DistrictNodeButton(
               text = stringResource(node?.type?.nameIdNominative?: R.string.unknown_district),
               fontSize = (12 * mapUiState.scale.coerceIn(0.7f, 1.5f)).sp,
               maxLines = 2,
+              softWrap = true,
+              overflow = TextOverflow.Ellipsis,
               textAlign = TextAlign.Center
           )
       }

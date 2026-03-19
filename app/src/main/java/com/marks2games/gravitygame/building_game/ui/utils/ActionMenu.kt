@@ -5,9 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -23,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.building_game.data.model.Action
 import com.marks2games.gravitygame.building_game.data.util.ActionDescriptionData
@@ -30,7 +30,7 @@ import com.marks2games.gravitygame.core.ui.utils.SwipeUtil
 
 @Composable
 fun ActionMenu(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     actionsCount: Int,
     onActionMenuClick: () -> Unit
 ) {
@@ -41,13 +41,13 @@ fun ActionMenu(
                 imageVector = Icons.Default.Menu,
                 contentDescription = "Menu icon",
                 tint = Color.White,
-                modifier = modifier
+                modifier = Modifier
                     .padding(16.dp)
                     .align(Alignment.Center)
             )
 
         Card(
-            modifier = modifier
+            modifier = Modifier
                 .align(Alignment.TopEnd),
             shape = CircleShape
         ) {
@@ -56,6 +56,31 @@ fun ActionMenu(
                 text = "$actionsCount"
             )
         }
+    }
+}
+
+@Composable
+fun ActionListPopup(
+    modifier: Modifier = Modifier,
+    actions: List<Action>,
+    deleteAllActions: () -> Unit,
+    getActionDescription: (Action) -> ActionDescriptionData,
+    deleteAction: (Action) -> Unit,
+    onDismiss: () -> Unit
+) {
+    Popup(
+        onDismissRequest = onDismiss,
+        properties = PopupProperties(
+            focusable = true
+        )
+    ) {
+        ActionList(
+            modifier = modifier,
+            actions = actions,
+            deleteAllActions = deleteAllActions,
+            getActionDescription = getActionDescription,
+            deleteAction = deleteAction
+        )
     }
 }
 
@@ -69,26 +94,23 @@ fun ActionList(
 ){
     Card(
         modifier = modifier
-            .wrapContentSize()
             .padding(8.dp)
     ){
         Column (
-            modifier = modifier
-                .wrapContentSize()
+            modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ){
             Row(
-                modifier = modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.Top
             ){
                 Text(
                     text = stringResource(R.string.deleteAllActions),
-                    modifier = modifier.clickable { deleteAllActions() }
+                    modifier = Modifier.clickable { deleteAllActions() }
                 )
             }
             HorizontalDivider(
-                modifier = modifier.padding(bottom = 4.dp)
+                modifier = Modifier.padding(bottom = 4.dp)
             )
             LazyColumn {
                 items (

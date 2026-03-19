@@ -1,11 +1,17 @@
 package com.marks2games.gravitygame.building_game.data.model
 
+import androidx.annotation.DrawableRes
 import com.marks2games.gravitygame.R
 import androidx.annotation.StringRes
 import io.sentry.Sentry
 
 sealed class District{
     abstract val nameId: Int
+    @get:StringRes
+    abstract val districtDescriptionId: Int
+
+    @get:DrawableRes
+    abstract val icon: Int
     abstract val districtId: Int
     abstract val type: DistrictEnum
     abstract val isWorking: Boolean
@@ -18,6 +24,9 @@ sealed class District{
 
     data class Capitol(
         override val nameId: Int = R.string.capitolDistrictName,
+        override val districtDescriptionId: Int =
+            R.string.capitolDistrictDescription,
+        override val icon: Int = R.drawable.capitol_icon,
         override val districtId: Int = 0,
         override val type: DistrictEnum = DistrictEnum.CAPITOL,
         override val isWorking: Boolean = true
@@ -54,6 +63,9 @@ sealed class District{
 
     data class Prospectors(
         override val nameId: Int = R.string.prospectorsDistrictName,
+        override val districtDescriptionId: Int =
+            R.string.prospectorsDistrictDescription,
+        override val icon: Int = R.drawable.prospectors_icon,
         override val districtId: Int,
         override val type: DistrictEnum = DistrictEnum.PROSPECTORS,
         val mode: ProspectorsMode = ProspectorsMode.METAL,
@@ -90,6 +102,9 @@ sealed class District{
 
     data class Empty(
         override val nameId: Int = R.string.emptyDistrictName,
+        override val districtDescriptionId: Int =
+            R.string.emptyDistrictDescription,
+        override val icon: Int = R.drawable.wilderness_icon,
         override val districtId: Int,
         override val type: DistrictEnum = DistrictEnum.EMPTY,
         override val isWorking: Boolean = true
@@ -116,6 +131,9 @@ sealed class District{
 
     data class InConstruction(
         override val nameId: Int = R.string.inConstructionDistrictName,
+        override val districtDescriptionId: Int =
+            R.string.inConstructionDistrictDescription,
+        override val icon: Int = R.drawable.in_construction_icon,
         override val districtId: Int,
         override val type: DistrictEnum = DistrictEnum.IN_CONSTRUCTION,
         override val isWorking: Boolean = true,
@@ -144,6 +162,9 @@ sealed class District{
 
     data class Industrial(
         override val nameId: Int = R.string.industrialDistrictName,
+        override val districtDescriptionId: Int =
+            R.string.IndustrialDistrictDescription,
+        override val icon: Int = R.drawable.industrials_icon,
         override val districtId: Int,
         override val type: DistrictEnum = DistrictEnum.INDUSTRIAL,
         val mode: IndustrialMode = IndustrialMode.INFRASTRUCTURE,
@@ -187,6 +208,9 @@ sealed class District{
 
     data class ExpeditionPlatform(
         override val nameId: Int = R.string.expeditionPlatformDistrictName,
+        override val districtDescriptionId: Int =
+            R.string.expeditionPlatformDistrictDescription,
+        override val icon: Int = R.drawable.expedition_platform_icon,
         override val type: DistrictEnum = DistrictEnum.EXPEDITION_PLATFORM,
         override val districtId: Int = 0,
         override val isWorking: Boolean = true
@@ -218,6 +242,9 @@ sealed class District{
 
     data class UrbanCenter(
         override val nameId: Int = R.string.urbanCenterDistrictName,
+        override val districtDescriptionId: Int =
+            R.string.urbanCenterDistrictDescription,
+        override val icon: Int = R.drawable.urban_icon,
         override val districtId: Int,
         override val type: DistrictEnum = DistrictEnum.URBAN_CENTER,
         val mode: UrbanCenterMode = UrbanCenterMode.RESEARCH,
@@ -252,6 +279,9 @@ sealed class District{
 
     data class Unnocupated(
         override val nameId: Int = R.string.unnocupatedNominative,
+        override val districtDescriptionId: Int =
+            R.string.unnocupatedDistrictDescription,
+        override val icon: Int = R.drawable.empty_icon,
         override val districtId: Int,
         override val type: DistrictEnum = DistrictEnum.UNNOCUPATED,
         override val isWorking: Boolean = false
@@ -315,9 +345,9 @@ enum class ProspectorsMode {METAL, ORGANIC_SEDIMENTS}
 enum class IndustrialMode {INFRASTRUCTURE, ROCKET_MATERIALS, METAL}
 enum class UrbanCenterMode {INFLUENCE, RESEARCH}
 enum class DistrictEnum (
-    @StringRes val nameIdNominative: Int,
-    @StringRes val nameIdGenitive: Int,
-    @StringRes val nameIdInstrumental: Int
+    @get:StringRes val nameIdNominative: Int,
+    @get:StringRes val nameIdGenitive: Int,
+    @get:StringRes val nameIdInstrumental: Int
 ){
     CAPITOL(R.string.capitolDistrictName, R.string.capitolDistrictGenitive, R.string.capitolDistrictInstrumental),
     PROSPECTORS(R.string.prospectorsDistrictName, R.string.prospectorsDistrictGenitive, R.string.prospectorsDistrictInstrumental),
@@ -328,9 +358,9 @@ enum class DistrictEnum (
     IN_CONSTRUCTION(R.string.inConstructionDistrictName, R.string.inConstructionDistrictGenitive, R.string.inConstructionDistrictInstrumental),
     UNNOCUPATED(R.string.unnocupatedNominative, R.string.unnocupatedGenitive, R.string.unnocupatedInstrumental)
 }
-enum class RocketMaterialsSetting (@StringRes val nameId: Int)
+enum class RocketMaterialsSetting (@get:StringRes val nameId: Int)
 {NOTHING (R.string.nothing), MAXIMUM(R.string.maximum), USAGE(R.string.usage)}
-enum class InfrastructureSetting (@StringRes val nameId: Int)
+enum class InfrastructureSetting (@get:StringRes val nameId: Int)
 {NOTHING (R.string.nothing), MAXIMUM(R.string.maximum), USAGE(R.string.usage)}
 
 fun String.toDistrictEnum(): DistrictEnum? {
