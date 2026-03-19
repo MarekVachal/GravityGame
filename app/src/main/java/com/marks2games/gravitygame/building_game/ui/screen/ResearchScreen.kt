@@ -1,9 +1,11 @@
 package com.marks2games.gravitygame.building_game.ui.screen
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -19,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.building_game.data.model.Technology
@@ -89,27 +93,37 @@ private fun ResearchNodeButton(
     mapUiState: MapUiState<TechnologyNode>,
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxHeight(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(horizontal = 4.dp, vertical = 4.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = stringResource(node?.nameId ?: R.string.unknownTechnology),
-                fontSize = (12 * mapUiState.scale.coerceIn(0.7f, 1.5f)).sp,
-                maxLines = 2,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = "${node?.cost ?: "X"}",
-                fontSize = (10 * mapUiState.scale.coerceIn(0.7f, 1.5f)).sp
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy((-2).dp, Alignment.CenterVertically)
+            ) {
+                val fontSize = 12 * mapUiState.scale.coerceIn(0.7f, 1.5f)
+                Text(
+                    text = stringResource(node?.nameId ?: R.string.unknownTechnology),
+                    fontSize = fontSize.sp,
+                    lineHeight = (fontSize * 0.9f).sp,
+                    maxLines = 3,
+                    softWrap = true,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "${node?.cost ?: "X"}",
+                    fontSize = (10 * mapUiState.scale.coerceIn(0.7f, 1.5f)).sp
+                )
+            }
         }
     }
 }

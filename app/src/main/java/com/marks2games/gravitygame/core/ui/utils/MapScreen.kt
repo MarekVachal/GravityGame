@@ -6,13 +6,20 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.requiredWidthIn
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
@@ -22,6 +29,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.core.data.model.MapNode
 import com.marks2games.gravitygame.ui.viewModel.MapViewModel
@@ -41,25 +49,33 @@ fun <T : MapNode> MapScreen(
 ) {
     val state by mapModel.mapUiState.collectAsState()
     val nodeMap = state.nodes.associateBy { it.id }
+    val nodeSizes = remember { mutableStateMapOf<String, IntSize>() }
 
     val drawWidth = state.mapSize.width * state.scale
     val drawHeight = state.mapSize.height * state.scale
 
     val drawNodes: @Composable (T, Offset) -> Unit = { node, position ->
-        val x = position.x - state.buttonSize
-        val y = position.y - state.buttonSize
+        val measuredSize = nodeSizes[node.id] ?: IntSize.Zero
+
+        val x = position.x - measuredSize.width / 2f
+        val y = position.y - measuredSize.height / 2f
+
         Box(
+            propagateMinConstraints = true,
             modifier = Modifier
-                .size(
-                    state.buttonSize.dp,
-                    (state.buttonSize * mapModel.mapConfig.buttonShapeCoefficientY).dp
+                .onSizeChanged { nodeSizes[node.id] = it }
+                .height((state.buttonSize * mapModel.mapConfig.buttonShapeCoefficientY).dp)
+                .widthIn(
+                    min = state.buttonSize.dp,
+                    max = (state.buttonSize * 1.5f * state.scale).dp
                 )
                 .offset { IntOffset(x.roundToInt(), y.roundToInt()) }
                 .border(2.dp, node.buttonColor, RoundedCornerShape(8.dp))
                 .combinedClickable(
                     onClick = { onNodeClicked(node) },
                     onLongClick = { onLongNodeClicked(node) }
-                )
+                ),
+            contentAlignment = Alignment.Center
         ) {
             nodeInfoContent(node)
         }

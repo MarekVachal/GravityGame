@@ -43,7 +43,7 @@ class BattleGameRepository(
                         val opponentLocations = when (player) {
                             Players.PLAYER1 -> room.player2LocationList
                             Players.PLAYER2 -> room.player1LocationList
-                            else -> return
+                            Players.NONE -> return
                         }
 
                         if (opponentLocations != null) {
@@ -53,7 +53,7 @@ class BattleGameRepository(
                                     .setValue(null)
                                 Players.PLAYER2 -> roomRef.child("player1LocationList")
                                     .setValue(null)
-                                else -> return
+                                Players.NONE -> return
                             }
                             roomRef.removeEventListener(this)
                             continuation.resume(Unit)

@@ -7,7 +7,7 @@ import javax.inject.Inject
 class GetResourceIconUseCase @Inject constructor() {
     operator fun invoke(resource: Resource): Int{
         return when(resource){
-            Resource.ARMY -> R.drawable.army_icon
+            Resource.ARMY -> R.drawable.warship_material_icon
             Resource.BIOMASS -> R.drawable.biomass_icon
             Resource.METAL -> R.drawable.metal_icon
             Resource.ORGANIC_SEDIMENTS -> R.drawable.organic_sediments_icon

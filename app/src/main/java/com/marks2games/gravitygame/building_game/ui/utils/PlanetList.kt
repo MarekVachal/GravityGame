@@ -27,6 +27,7 @@ import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.building_game.data.model.Empire
 import com.marks2games.gravitygame.building_game.data.model.Planet
 import com.marks2games.gravitygame.building_game.data.model.Resource
+import com.marks2games.gravitygame.building_game.ui.viewmodel.PlanetViewModel
 import kotlin.math.floor
 
 @Composable
@@ -133,7 +134,7 @@ fun PlanetCard(
                     ResourceCard(
                         modifier = modifier,
                         resourceCount = planet.army,
-                        icon = R.drawable.army_icon,
+                        icon = R.drawable.warship_material_icon,
                         isStoredResource = true,
                         possibleIncome = testPlanet.planetResourcesPossibleIncome.resources[Resource.ARMY]
                             ?: 0,

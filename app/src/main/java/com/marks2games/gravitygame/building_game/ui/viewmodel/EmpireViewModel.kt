@@ -99,6 +99,14 @@ class EmpireViewModel @Inject constructor(
         }
     }
 
+    fun dismissActionMenu() {
+        updateActionsShown(false)
+    }
+
+    fun dismissTransportMenu(){
+        updateTransportMenuShown(false)
+    }
+
     fun onTransportMenuClick(){
         if(empireUiState.value.isTransportMenuShown){
             updateTransportMenuShown(false)
@@ -201,7 +209,8 @@ class EmpireViewModel @Inject constructor(
         _testEmpire.update { newTurnTestResult.first }
         _empireUiState.update { state ->
             state.copy(
-                errors = newTurnTestResult.second
+                errors = newTurnTestResult.second,
+                turn = empire.turns
             )
         }
     }
@@ -212,7 +221,8 @@ class EmpireViewModel @Inject constructor(
         _empire.update { updatedEmpire }
         _empireUiState.update { state ->
             state.copy(
-                errors = emptyList()
+                errors = emptyList(),
+                turn = updatedEmpire.turns
             )
         }
         testNewTurn(updatedEmpire)

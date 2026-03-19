@@ -117,8 +117,7 @@ class ProduceInfrastructureUseCase @Inject constructor(
             }
         } else {
             Log.d("ProduceInfra", "Maximum setting")
-            val cappedBaseProduction = totalBaseProduction
-            val metalUsed = ((cappedBaseProduction / productionRate) * consumptionRate).toInt()
+            val metalUsed = ((totalBaseProduction / productionRate) * consumptionRate)
             if(infraNeeded > maxProduction && isPlanning){
                 Log.d("ProduceInfra", "Planning mode: Not enough infra, fallback success")
                 val cappedPlanningBase = (infraNeeded - infraProducedByCapitol).toFloat()

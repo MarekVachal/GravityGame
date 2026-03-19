@@ -8,5 +8,6 @@ data class EmpireUiState(
     val isActionsShown: Boolean = false,
     val isTransportMenuShown: Boolean = false,
     val isTransportDialogShown: Boolean = false,
-    val planetForTransport: Planet? = null
+    val planetForTransport: Planet? = null,
+    val turn: Int = 0
 )

@@ -5,11 +5,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,17 +23,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.building_game.data.model.Empire
-import com.marks2games.gravitygame.building_game.ui.utils.ActionList
+import com.marks2games.gravitygame.building_game.ui.utils.ActionListPopup
 import com.marks2games.gravitygame.building_game.ui.utils.ErrorList
 import com.marks2games.gravitygame.building_game.ui.utils.PlanetList
 import com.marks2games.gravitygame.building_game.ui.utils.TopGameStatsRow
-import com.marks2games.gravitygame.building_game.ui.utils.TransportsList
+import com.marks2games.gravitygame.building_game.ui.utils.TransportListPopup
 import com.marks2games.gravitygame.building_game.ui.viewmodel.EmpireViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TransportViewModel
 
@@ -48,7 +50,10 @@ fun EmpireOverview(
     val empire by empireModel.empire.collectAsState()
     val empireUiState by empireModel.empireUiState.collectAsState()
     val testEmpire by empireModel.testEmpire.collectAsState()
-    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+
+    val windowInfo = LocalWindowInfo.current
+    val density = LocalDensity.current
+    val screenWidth = with(density) { windowInfo.containerSize.width.toDp() }
 
     LaunchedEffect(Unit) {
         if(!empire.hasLaunched){
@@ -88,15 +93,15 @@ To use it for click on item on transportMenu
             painter = painterResource(id = R.drawable.battle_background),
             contentDescription = "Battle map background",
             contentScale = ContentScale.FillBounds,
-            modifier = modifier.matchParentSize()
+            modifier = Modifier.matchParentSize()
         )
     }
 
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         Row(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp),
         ) {
@@ -118,18 +123,18 @@ To use it for click on item on transportMenu
         }
 
         Box(
-            modifier = modifier
+            modifier = Modifier
                 .weight(1f)
                 .fillMaxSize()
         ) {
             Box(
-                modifier = modifier
+                modifier = Modifier
                     .align(Alignment.TopCenter)
                     .width(screenWidth * 0.9f)
                     .fillMaxWidth()
             ) {
                 PlanetList(
-                    modifier = modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     empire = empire,
                     testEmpire = testEmpire,
                     onPlanetClick = {
@@ -140,13 +145,13 @@ To use it for click on item on transportMenu
 
             if (empireUiState.isErrorsShown) {
                 Box(
-                    modifier = modifier
-                        .fillMaxHeight()
-                        .width(screenWidth * 0.5f)
+                    modifier = Modifier
+                        .fillMaxSize()
                         .align(Alignment.TopStart)
                 ) {
                     ErrorList(
-                        modifier = modifier,
+                        modifier = Modifier
+                            .width(screenWidth * 0.5f),
                         errors = empireUiState.errors,
                         empire = empire,
                         onCloseErrorMenuClick = { empireModel.onErrorMenuClick() }
@@ -154,51 +159,41 @@ To use it for click on item on transportMenu
                 }
             }
             if (empireUiState.isActionsShown) {
-                Box(
-                    modifier = modifier
-                        .fillMaxHeight()
-                        .width(screenWidth * 0.5f)
-                        .align(Alignment.TopStart)
-                ) {
-                    ActionList(
-                        modifier = modifier,
-                        actions = empire.actions,
-                        deleteAllActions = { empireModel.deleteAllActions() },
-                        getActionDescription = { empireModel.getActionDescription(it) },
-                        deleteAction = { empireModel.deleteAction(it) },
-                    )
-                }
+                ActionListPopup(
+                    modifier = Modifier
+                        .width(screenWidth * 0.5f),
+                    actions = empire.actions,
+                    deleteAllActions = { empireModel.deleteAllActions() },
+                    getActionDescription = { empireModel.getActionDescription(it) },
+                    deleteAction = { empireModel.deleteAction(it) },
+                    onDismiss = { empireModel.dismissActionMenu() }
+                )
             }
             if (empireUiState.isTransportMenuShown) {
-                Box(
-                    modifier = modifier
-                        .fillMaxHeight()
-                        .width(screenWidth * 0.5f)
-                        .align(Alignment.TopStart)
-                ) {
-                    TransportsList(
-                        modifier = modifier,
-                        empire = empire,
-                        transports = empireModel.getAllTransports(),
-                        onTransportClick = {
-                            empireModel.onTransportMenuClick()
-                            transportModel.updateTransportDialogOnTransportClick(it)
-                        },
-                        deleteAllTransports = { empireModel.deleteAllTransports() },
-                        deleteTransport = { empireModel.deleteTransport(it) }
-                    )
-                }
+                TransportListPopup(
+                    modifier = Modifier
+                        .width(screenWidth * 0.5f),
+                    empire = empire,
+                    transports = empireModel.getAllTransports(),
+                    onTransportClick = {
+                        empireModel.onTransportMenuClick()
+                        transportModel.updateTransportDialogOnTransportClick(it)
+                    },
+                    deleteAllTransports = { empireModel.deleteAllTransports() },
+                    deleteTransport = { empireModel.deleteTransport(it) },
+                    onDismiss = {empireModel.dismissTransportMenu()}
+                )
             }
         }
 
         Row(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             IconButton(
-                modifier = modifier,
+                modifier = Modifier,
                 onClick = { onBackButtonClicked() }
             ) {
                 Icon(
@@ -207,8 +202,20 @@ To use it for click on item on transportMenu
                     tint = Color.Unspecified
                 )
             }
+            Card(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .align(Alignment.CenterVertically)
+            ){
+                Text(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    text = stringResource(R.string.turns, empireUiState.turn)
+                )
+            }
+
             ExtendedFloatingActionButton(
-                modifier = modifier,
+                modifier = Modifier,
                 onClick = { empireModel.newTurn() }
             ) {
                 Text(text = stringResource(R.string.newTurn))

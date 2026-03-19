@@ -3,7 +3,7 @@ package com.marks2games.gravitygame.core.data.model.enum_class
 import androidx.annotation.StringRes
 import com.marks2games.gravitygame.R
 
-enum class ShipType (@StringRes val nameNominative: Int){
+enum class ShipType (@get:StringRes val nameNominative: Int){
     CRUISER (R.string.cruiser),
     DESTROYER (R.string.destroyer),
     GHOST(R.string.ghost),

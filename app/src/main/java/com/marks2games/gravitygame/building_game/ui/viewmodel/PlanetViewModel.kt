@@ -106,7 +106,7 @@ class PlanetViewModel @Inject constructor(
     private val maxProgressProduction: MaxProgressProductionUseCase,
     private val createTransports: CreateTransportListUseCase,
     private val updateDistrictsForSettle: UpdateDistrictsForSettleUseCase,
-    @DistrictMap override val mapConfig: MapConfig,
+    @param:DistrictMap override val mapConfig: MapConfig,
     getToroidalPositions: GetToroidalPositionsUseCase<DistrictNode>,
     getNodePosition: GetNodePositionUseCase<DistrictNode>
 ) : MapViewModel<DistrictNode>(
@@ -228,6 +228,14 @@ class PlanetViewModel @Inject constructor(
             updateErrorsShown(false)
             updateActionsShown(false)
         }
+    }
+
+    fun dismissActionMenu(){
+        updateActionsShown(false)
+    }
+
+    fun dismissTransportMenu(){
+        updateTransportMenuShown(false)
     }
 
     private fun updateErrorsShown(isShown: Boolean) {
@@ -655,5 +663,29 @@ class PlanetViewModel @Inject constructor(
 
     fun getUnlockedProductionModes(district: District): List<Enum<*>>{
         return getUnlockedProductionModes.invoke(planetUiState.value.empire?.technologies, district)
+    }
+
+    fun showResourceInfoDialog(toShow: Boolean){
+        _planetUiState.update { state ->
+            state.copy(showResourceInfoDialog = toShow)
+        }
+    }
+
+    fun changeResource(resource: Resource){
+        _planetUiState.update { state ->
+            state.copy(resourceType = resource)
+        }
+    }
+
+    fun showDistrictInfoDialog(toShow: Boolean){
+        _planetUiState.update { state ->
+            state.copy(showDistrictInfoDialog = toShow)
+        }
+    }
+
+    fun changeDistrictForDistrictDialog(district: District?){
+        _planetUiState.update { state ->
+            state.copy(districtTypeForInfoDialog = district)
+        }
     }
 }

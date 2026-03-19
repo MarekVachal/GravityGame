@@ -127,3 +127,6 @@
 -dontwarn coil.**
 -keep class okhttp3.** { *; }
 -dontwarn okhttp3.**
+
+-keep class com.google.android.gms.auth.api.identity.** { *; }
+-keep class com.google.android.gms.auth.api.signin.** { *; }

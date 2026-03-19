@@ -126,6 +126,35 @@ data class Planet(
     val planetMapConfig: List<DistrictConfig> = type.planetMapConfig
 ) {
 
+    fun toLogMap(): Map<String, Any?> = mapOf(
+        //"id" to id,
+        //"name" to name,
+        //"level" to level,
+        "planetMetal" to planetMetal,
+        "planetOrganicSediments" to planetOrganicSediments,
+        //"type" to type.name,
+        //"planetGrowthBorder" to planetGrowthBorder,
+        Resource.BIOMASS.name to biomass,
+        Resource.METAL.name to metal,
+        Resource.ORGANIC_SEDIMENTS.name to organicSediment,
+        //Resource.INFLUENCE.name to influence,
+        //Resource.INFRASTRUCTURE.name to infrastructure,
+        Resource.ROCKET_MATERIALS.name to rocketMaterials,
+        //Resource.PROGRESS.name to progress,
+        //Resource.DEVELOPMENT.name to development,
+        //Resource.ARMY.name to army,
+        //"progressSetting" to progressSetting,
+        //"researchSetting" to researchSetting,
+        //"expeditionsSetting" to expeditionsSetting,
+        "armyConstructionSetting" to armyConstructionSetting,
+        "rocketMaterialsSetting" to rocketMaterialsSetting.name,
+        "infrastructureSetting" to infrastructureSetting.name,
+        //"districts" to districts.map { it.toMap() },
+        //"isInnerSpherePlanet" to isInnerSpherePlanet,
+        //"buildingShip" to buildingShip?.name,
+        //"dockingShip" to dockingShip?.name
+    )
+
     fun toMap(): Map<String, Any?> = mapOf(
         "id" to id,
         "name" to name,

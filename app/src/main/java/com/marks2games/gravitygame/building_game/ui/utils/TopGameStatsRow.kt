@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.building_game.data.model.Empire
@@ -72,10 +71,13 @@ fun TopGameStatsRow(
         Button(
             onClick = { toResearchScreen() }
         ) {
-            StatText(
-                label = stringResource(R.string.research),
-                value = empire?.research.toString(),
-                income = testEmpire?.empireResourcesPossibleIncome?.resources[Resource.RESEARCH] ?: 0,
+            ResourceCard(
+                modifier = modifier.padding(horizontal = 4.dp),
+                iconSize = 36.dp,
+                resourceCount = empire?.research ?: 0,
+                icon = R.drawable.research_icon,
+                isStoredResource = true,
+                possibleIncome = testEmpire?.empireResourcesPossibleIncome?.resources[Resource.RESEARCH] ?: 0,
                 isBordered = true,
                 border = getTechnologyPrice()
             )
@@ -83,18 +85,23 @@ fun TopGameStatsRow(
         Button(
             onClick = { }
         ) {
-            StatText(
-                label = stringResource(R.string.credits),
-                value = empire?.credits.toString(),
-                income = testEmpire?.empireResourcesPossibleIncome?.resources[Resource.CREDITS] ?: 0,
+            ResourceCard(
+                modifier = modifier.padding(horizontal = 4.dp),
+                iconSize = 36.dp,
+                resourceCount = empire?.credits ?: 0,
+                icon = R.drawable.money_icon,
+                isStoredResource = true,
+                possibleIncome = testEmpire?.empireResourcesPossibleIncome?.resources[Resource.CREDITS] ?: 0,
                 isBordered = false
             )
         }
+
         Card{
             ResourceCard(
-                modifier = modifier.padding(8.dp),
+                modifier = modifier.padding(4.dp),
+                iconSize = 36.dp,
                 resourceCount = empire?.expeditions ?: 0,
-                icon = R.drawable.cruiser,
+                icon = R.drawable.expedition_icon,
                 isStoredResource = true,
                 possibleIncome = testEmpire?.empireResourcesPossibleIncome?.resources[Resource.EXPEDITIONS] ?: 0,
                 isBordered = true,

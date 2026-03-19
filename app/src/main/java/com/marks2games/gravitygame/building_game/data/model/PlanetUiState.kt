@@ -24,5 +24,9 @@ data class PlanetUiState(
     val buildingShip: ShipType? = null,
     val rocketMaterialsProductionSet: RocketMaterialsSetting = RocketMaterialsSetting.USAGE,
     val infrastructureProductionSet: InfrastructureSetting = InfrastructureSetting.USAGE,
-    val districtToBuild: DistrictEnum = DistrictEnum.PROSPECTORS
+    val districtToBuild: DistrictEnum = DistrictEnum.PROSPECTORS,
+    val showResourceInfoDialog: Boolean = false,
+    val resourceType: Resource = Resource.BIOMASS,
+    val showDistrictInfoDialog: Boolean = false,
+    val districtTypeForInfoDialog: District? = null
 )

@@ -72,7 +72,7 @@ class NewTurnUseClass @Inject constructor(
         isPlanning: Boolean,
         planetIds: List<Int> = emptyList()
     ): Pair<Empire, List<NewTurnError>> {
-        Log.d("NewTurn", "Starting new turn for empire: $empire")
+        //Log.d("NewTurn", "Starting new turn for empire: $empire")
         val errors: MutableList<NewTurnError> = mutableListOf()
         var expeditions = empire.expeditions
         var tradepower = 0
@@ -116,9 +116,9 @@ class NewTurnUseClass @Inject constructor(
             if (planetIds.isNotEmpty() && planet.id !in planetIds) {
                 return@map planet
             }
-            Log.d("NewTurn", "Processing planet: ${planet.id}")
+            //Log.d("NewTurn", "Processing planet: ${planet.id}")
             var updatedPlanet = planet
-            Log.d("NewTurn", "Initial planet state: $updatedPlanet")
+            Log.d("NewTurn", "Initial planet state: ${updatedPlanet.toLogMap()}")
             val planetActions = empire.actions.filter { it.planetId == updatedPlanet.id }
 
             //1 Close districts
@@ -133,18 +133,18 @@ class NewTurnUseClass @Inject constructor(
             }
             val transportResult = transportOutUseCase.invoke(transportsOutForPlanet, updatedPlanet, isPlanning)
             updatedPlanet = transportResult.first
-            Log.d("NewTurn", "After transports out: $updatedPlanet")
+            //Log.d("NewTurn", "After transports out: ${updatedPlanet.toLogMap()}")
 
             //3 Set resources production by user
             updatedPlanet = setResourcesProduceUseCase.invoke(updatedPlanet, planetActions)
-            Log.d("NewTurn", "After set resources production: $updatedPlanet")
+            Log.d("NewTurn", "After set resources production: ${updatedPlanet.toLogMap()}")
 
             //4 Generate planet resources of OS
             val incomeOS = generatePlanetOrganicSedimentsUseCase.invoke(updatedPlanet)
             updatedPlanet = updatedPlanet.copy(
                 planetOrganicSediments = updatedPlanet.planetOrganicSediments + incomeOS
             )
-            Log.d("NewTurn", "After planet organic sediments generation: $updatedPlanet")
+            Log.d("NewTurn", "After planet organic sediments generation: ${updatedPlanet.toLogMap()}")
 
             //5 Generate OS
             val generateOSResult = generateOrganicSedimentsUseCase.invoke(updatedPlanet, empire.technologies)
@@ -152,13 +152,13 @@ class NewTurnUseClass @Inject constructor(
                 organicSediment = generateOSResult.first,
                 planetOrganicSediments = generateOSResult.second
             )
-            Log.d("NewTurn", "After organic sediments generation: $updatedPlanet")
+            Log.d("NewTurn", "After organic sediments generation: ${updatedPlanet.toLogMap()}")
 
             //5 Generate BIOMASS
             updatedPlanet = updatedPlanet.copy(
                 biomass = updatedPlanet.biomass + generateBiomassUseCase.invoke(updatedPlanet, empire.technologies)
             )
-            Log.d("NewTurn", "After biomass generation: $updatedPlanet")
+            Log.d("NewTurn", "After biomass generation: ${updatedPlanet.toLogMap()}")
 
             //6 Generate METALS
             val metalProspectorProductionResult = generateMetalByProspectorsUseCase(updatedPlanet, empire.technologies)
@@ -166,19 +166,20 @@ class NewTurnUseClass @Inject constructor(
                 metal = metalProspectorProductionResult.first,
                 planetMetal = metalProspectorProductionResult.second
             )
+            Log.d("NewTurn", "After prospectors metal generation: ${updatedPlanet.toLogMap()}")
 
             val metalIndustrialProductionResult = generateMetalByIndustrialsUseCase.invoke(updatedPlanet, empire.technologies)
             updatedPlanet = updatedPlanet.copy(
                 metal = metalIndustrialProductionResult.first,
                 organicSediment = metalIndustrialProductionResult.second
             )
-            Log.d("NewTurn", "After metal generation: $updatedPlanet")
+            Log.d("NewTurn", "After industrial metal generation: ${updatedPlanet.toLogMap()}")
 
             //7 Generate INFLUENCE
             updatedPlanet = updatedPlanet.copy(
                 influence = generateInfluenceUseCase.invoke(updatedPlanet, empire.technologies)
             )
-            Log.d("NewTurn", "After influence generation: $updatedPlanet")
+            Log.d("NewTurn", "After influence generation: ${updatedPlanet.toLogMap()}")
 
             //8 Produce INFRASTRUCTURE
             val infraResult = produceInfrastructureUseCase.invoke(updatedPlanet, planetActions, isPlanning, empire.technologies)
@@ -216,7 +217,7 @@ class NewTurnUseClass @Inject constructor(
                     )
                 }
             }
-            Log.d("NewTurn", "After infrastructure production: $updatedPlanet")
+            Log.d("NewTurn", "After infrastructure production: ${updatedPlanet.toLogMap()}")
 
             //9 Planet maintenance
             if (planet.level > 4){
@@ -257,7 +258,7 @@ class NewTurnUseClass @Inject constructor(
                     }
                 }
             }
-            Log.d("NewTurn", "After planet maintenance: $updatedPlanet")
+            Log.d("NewTurn", "After planet maintenance: ${updatedPlanet.toLogMap()}")
 
             //10 Army maintenance
             val armyMaintenanceResult = armyMaintenanceUseCase.invoke(updatedPlanet, isPlanning)
@@ -301,7 +302,7 @@ class NewTurnUseClass @Inject constructor(
                     )
                 }
             }
-            Log.d("NewTurn", "After army maintenance: $updatedPlanet")
+            Log.d("NewTurn", "After army maintenance: ${updatedPlanet.toLogMap()}")
 
             //11 Produce ROCKET MATERIALS
             val rocketMaterialsResult = produceRocketMaterialsUseCase.invoke(updatedPlanet, empire.technologies)
@@ -339,7 +340,7 @@ class NewTurnUseClass @Inject constructor(
                     )
             }
 
-            Log.d("NewTurn", "After rocket materials production: $updatedPlanet")
+            Log.d("NewTurn", "After rocket materials production: ${updatedPlanet.toLogMap()}")
 
             //12 ProduceArmyUnit
             val armyResult = produceMilitaryCompoundsUseCase.invoke(updatedPlanet, empire.technologies)
@@ -347,7 +348,7 @@ class NewTurnUseClass @Inject constructor(
                 army = armyResult.first,
                 rocketMaterials = armyResult.second
             )
-            Log.d("NewTurn", "After army production: $updatedPlanet")
+            Log.d("NewTurn", "After army production: ${updatedPlanet.toLogMap()}")
 
             //13 Produce EXPEDITIONS
             val expeditionsResult = produceExpeditionsUseCase.invoke(updatedPlanet, empire.technologies)
@@ -355,7 +356,7 @@ class NewTurnUseClass @Inject constructor(
             updatedPlanet = updatedPlanet.copy(
                 rocketMaterials = expeditionsResult.second
             )
-            Log.d("NewTurn", "After expeditions production: $expeditions")
+            Log.d("NewTurn", "After expeditions production: ${updatedPlanet.toLogMap()}")
 
             //14 Produce RESEARCH
             val researchResult = produceResearchUseCase.invoke(updatedPlanet, empire.technologies)
@@ -363,11 +364,10 @@ class NewTurnUseClass @Inject constructor(
             updatedPlanet = updatedPlanet.copy(
                 biomass = researchResult.second
             )
-            Log.d("NewTurn", "After research production: $updatedPlanet")
+            Log.d("NewTurn", "After research production: ${updatedPlanet.toLogMap()}")
 
             //15 Produce PROGRESS
-            val progressResult = produceProgressUseCase.invoke(updatedPlanet, isPlanning)
-            when (progressResult){
+            when (val progressResult = produceProgressUseCase.invoke(updatedPlanet, isPlanning)){
                 is ProduceProgressResult.Error.InsufficientResources -> {
                     errors.add(
                         ProduceProgressError(
@@ -406,7 +406,7 @@ class NewTurnUseClass @Inject constructor(
                 }
             }
 
-            Log.d("NewTurn", "After progress production: $updatedPlanet")
+            Log.d("NewTurn", "After progress production: ${updatedPlanet.toLogMap()}")
 
             //17 Generate TRADEPOWER
             val tradepowerResult = generateTradepowerUseCase.invoke(updatedPlanet)
@@ -414,7 +414,7 @@ class NewTurnUseClass @Inject constructor(
             updatedPlanet = updatedPlanet.copy(
                 influence = tradepowerResult.second
             )
-            Log.d("NewTurn", "After tradepower generation: $tradepower")
+            Log.d("NewTurn", "After tradepower generation: ${updatedPlanet.toLogMap()}")
 
             //18 Trade
 
@@ -443,7 +443,7 @@ class NewTurnUseClass @Inject constructor(
                         }
                     }
                 }
-            Log.d("NewTurn", "After building new districts: $updatedPlanet")
+            Log.d("NewTurn", "After building new districts: ${updatedPlanet.toLogMap()}")
 
             //19b Destroy districts
             planetActions
@@ -455,7 +455,7 @@ class NewTurnUseClass @Inject constructor(
                         districts = destroyDistrictResult.second
                     )
                 }
-            Log.d("NewTurn", "After destroying districts: $updatedPlanet")
+            Log.d("NewTurn", "After destroying districts: ${updatedPlanet.toLogMap()}")
 
             //19c Change district mode
             planetActions
@@ -496,7 +496,7 @@ class NewTurnUseClass @Inject constructor(
                         }
                     }
                 }
-            Log.d("NewTurn", "After changing district mode: $updatedPlanet")
+            Log.d("NewTurn", "After changing district mode: ${updatedPlanet.toLogMap()}")
 
             //Finish district construction
             val finishBuildingResult = finishDistrictConstructionUseCase.invoke(updatedPlanet, isPlanning)
@@ -504,7 +504,7 @@ class NewTurnUseClass @Inject constructor(
                 districts = finishBuildingResult.first,
                 infrastructure = finishBuildingResult.second
             )
-            Log.d("NewTurn", "After finishing district construction: $updatedPlanet")
+            Log.d("NewTurn", "After finishing district construction: ${updatedPlanet.toLogMap()}")
 
             //16 Generate DEVELOPMENT
             val developmentResult = generateDevelopmentUsaCase.invoke(updatedPlanet)
@@ -519,7 +519,7 @@ class NewTurnUseClass @Inject constructor(
                 )
             }
 
-            Log.d("NewTurn", "After development generation: $updatedPlanet")
+            Log.d("NewTurn", "After development generation: ${updatedPlanet.toLogMap()}")
 
             //17 Build ship
             updatedPlanet = buildShip.invoke(updatedPlanet)
@@ -530,7 +530,7 @@ class NewTurnUseClass @Inject constructor(
             }
             updatedPlanet = transportInUseCase.invoke(transportsForPlanet, updatedPlanet)
 
-            Log.d("NewTurn", "After transports in: $updatedPlanet")
+            //Log.d("NewTurn", "After transports in: ${updatedPlanet.toLogMap()}")
 
 
             //22 Check for new planet expedition
@@ -552,7 +552,7 @@ class NewTurnUseClass @Inject constructor(
                 ),
                 planetOrganicSediments = calculatePlanetOSCapacityUseCase.invoke(updatedPlanet).toFloat()
             )
-            Log.d("NewTurn", "After checking resources capacities: $updatedPlanet")
+            Log.d("NewTurn", "After checking resources capacities: ${updatedPlanet.toLogMap()}")
 
             if(isPlanning){
                 Log.d("PlanIncome", "Planet income calculation started.")
@@ -560,7 +560,7 @@ class NewTurnUseClass @Inject constructor(
                     planetResourcesPossibleIncome = updatePossiblePlanetResourcesIncomeUseCase.invoke(updatedPlanet, planet)
                 )
             }
-            Log.d("NewTurn", "Updated planet after updatedPlanet: $updatedPlanet")
+            Log.d("NewTurn", "Updated planet after updatedPlanet: ${updatedPlanet.toLogMap()}")
             updatedPlanet
         }
 

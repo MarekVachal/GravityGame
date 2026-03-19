@@ -31,7 +31,7 @@ class GenerateOrganicSedimentsUseCase @Inject constructor(
             }
 
         val basicOSProduction = min(availableOSProduction.toFloat(), planet.planetOrganicSediments)
-        val maxOSProduction = basicOSProduction.toFloat() * applyDiversity.invoke(technologies,
+        val maxOSProduction = basicOSProduction * applyDiversity.invoke(technologies,
             DistrictEnum.EMPTY, planet)
         val remainingPlanetOS = planet.planetOrganicSediments - maxOSProduction
 

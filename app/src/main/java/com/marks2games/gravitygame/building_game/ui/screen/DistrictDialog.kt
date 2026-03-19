@@ -59,6 +59,8 @@ import com.marks2games.gravitygame.building_game.data.model.Resource
 import com.marks2games.gravitygame.building_game.data.model.RocketMaterialsSetting
 import com.marks2games.gravitygame.building_game.data.model.TechnologyEnum
 import com.marks2games.gravitygame.building_game.data.model.UrbanCenterMode
+import com.marks2games.gravitygame.building_game.ui.utils.DistrictInfoDialog
+import com.marks2games.gravitygame.building_game.ui.utils.ResourceInfoDialog
 import com.marks2games.gravitygame.building_game.ui.viewmodel.PlanetViewModel
 import com.marks2games.gravitygame.core.data.model.enum_class.ShipType
 import com.marks2games.gravitygame.core.ui.utils.NumberInputField
@@ -72,9 +74,26 @@ fun DistrictDialog(
     planets: List<Planet>,
     district: District?,
     planetModel: PlanetViewModel,
-    planetUiState: PlanetUiState
+    planetUiState: PlanetUiState,
+    onDismissResource: () -> Unit = {planetModel.showResourceInfoDialog(false)},
+    onDismissDistrictInfo: () -> Unit = {planetModel.showDistrictInfoDialog(false)}
 ) {
     val context = LocalContext.current
+
+    ResourceInfoDialog(
+        resource = planetUiState.resourceType,
+        toShow = planetUiState.showResourceInfoDialog,
+        onDismiss = onDismissResource,
+        onConfirm = onDismissResource
+    )
+
+    DistrictInfoDialog(
+        district = planetUiState.districtTypeForInfoDialog,
+        toShow = planetUiState.showDistrictInfoDialog,
+        onDismiss = onDismissDistrictInfo,
+        onConfirm = onDismissDistrictInfo
+    )
+
     if (toShow && planet != null) {
         Dialog(
             onDismissRequest = { planetModel.updateDistrictDialogShown(false, null) },
@@ -94,7 +113,14 @@ fun DistrictDialog(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Row{
-                        Text(stringResource(district?.type?.nameIdNominative?: R.string.unknown_district))
+                        Text(
+                            text = stringResource(district?.type?.nameIdNominative?: R.string.unknown_district),
+                            modifier = modifier
+                                .clickable {
+                                    planetModel.changeDistrictForDistrictDialog(district)
+                                    planetModel.showDistrictInfoDialog(true)
+                                }
+                        )
                     }
                     HorizontalDivider(
                         modifier = Modifier
@@ -113,6 +139,10 @@ fun DistrictDialog(
                                         districtId = district.districtId,
                                         mode = planetUiState.modeIsChecked,
                                         context = context
+                                    )
+                                    planetModel.updateDistrictDialogShown(
+                                        isShown = false,
+                                        district = district
                                     )
 
                                 }
@@ -177,6 +207,10 @@ fun DistrictDialog(
                                     planetModel.addProgressProductionAction(
                                         context = context,
                                         planetUiState.progressProductionSet.toInt()
+                                    )
+                                    planetModel.updateDistrictDialogShown(
+                                        isShown = false,
+                                        district = district
                                     )
                                 },
                                 value = planetUiState.progressProductionSet,
@@ -265,6 +299,10 @@ fun DistrictDialog(
                                             context = context,
                                             planetUiState.researchProductionSet.toInt()
                                         )
+                                        planetModel.updateDistrictDialogShown(
+                                            isShown = false,
+                                            district = district
+                                        )
                                     },
                                     value = planetUiState.researchProductionSet,
                                     onValueChange = { newValue ->
@@ -309,6 +347,10 @@ fun DistrictDialog(
                                         context = context,
                                         planetUiState.districtToBuild,
                                         district.districtId
+                                    )
+                                    planetModel.updateDistrictDialogShown(
+                                        isShown = false,
+                                        district = district
                                     )
                                 },
                                 textOnButton = stringResource(R.string.buildDistrict),
@@ -425,13 +467,13 @@ private fun ProductionLabelRow(
 
         consumedResource1Enum?.let{ resource ->
             consumedResource1?.let{ value ->
-                DisplayResourceBox(resource = resource, value = value)
+                DisplayResourceBox(planetModel = planetModel, resource = resource, value = value)
             }
         }
         consumedResource2Enum?.let{ resource ->
             consumedResource2?.let{ value ->
                 Text(" + ")
-                DisplayResourceBox(resource = resource, value = value)
+                DisplayResourceBox(planetModel = planetModel, resource = resource, value = value)
             }
         }
         if(consumedResource1Enum != null ){
@@ -442,15 +484,19 @@ private fun ProductionLabelRow(
             )
         }
         producedResourceValue?.let{
-            DisplayResourceBox(resource = producedResource, value = it)
+            DisplayResourceBox(planetModel = planetModel, resource = producedResource, value = it)
         }
     }
 }
 
 @Composable
-private fun DisplayResourceBox(resource: Resource, value: Int){
+private fun DisplayResourceBox(planetModel: PlanetViewModel, resource: Resource, value: Int){
     Box(
         modifier = Modifier
+            .clickable{
+                planetModel.changeResource(resource)
+                planetModel.showResourceInfoDialog(true)
+            }
             .padding(horizontal = 8.dp)
             .wrapContentWidth()
     ) {
@@ -647,6 +693,7 @@ fun <T : Enum<T>> DropdownSelector(
                     onClick = {
                         if (!isDisabled) {
                             onItemSelectedState.value(item)
+                            expanded = false
                         }
                     },
                     enabled = !isDisabled,

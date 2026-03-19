@@ -21,19 +21,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.building_game.data.model.Action
-import com.marks2games.gravitygame.building_game.ui.utils.ActionList
+import com.marks2games.gravitygame.building_game.ui.utils.ActionListPopup
 import com.marks2games.gravitygame.building_game.ui.utils.DistrictNodeButton
 import com.marks2games.gravitygame.building_game.ui.utils.ErrorList
+import com.marks2games.gravitygame.building_game.ui.utils.ResourceInfoDialog
 import com.marks2games.gravitygame.building_game.ui.utils.ResourceList
 import com.marks2games.gravitygame.building_game.ui.utils.TopGameStatsRow
-import com.marks2games.gravitygame.building_game.ui.utils.TransportsList
+import com.marks2games.gravitygame.building_game.ui.utils.TransportListPopup
 import com.marks2games.gravitygame.building_game.ui.viewmodel.PlanetViewModel
 import com.marks2games.gravitygame.building_game.ui.viewmodel.TransportViewModel
 import com.marks2games.gravitygame.core.ui.utils.MapScreen
@@ -45,15 +47,20 @@ fun PlanetScreen(
     transportModel: TransportViewModel,
     onBackButtonClicked: (Int?, List<Action>) -> Unit,
     toResearchScreen: () -> Unit,
-    toEmpireScreen: (Int?, List<Action>) -> Unit
+    toEmpireScreen: (Int?, List<Action>) -> Unit,
+    onDismiss: () -> Unit = { planetModel.showResourceInfoDialog(false) },
 ) {
     val uiState by planetModel.planetUiState.collectAsState()
     val mapState by planetModel.mapUiState.collectAsState()
-    val context = LocalContext.current
-    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 
-    uiState.planetId?.let{ id ->
-        val planet = uiState.empire?.planets?.find { it.id ==  id}
+    val context = LocalContext.current
+
+    val windowInfo = LocalWindowInfo.current
+    val density = LocalDensity.current
+    val screenWidth = with(density) { windowInfo.containerSize.width.toDp() }
+
+    uiState.planetId?.let { id ->
+        val planet = uiState.empire?.planets?.find { it.id == id }
         DistrictDialog(
             planet = planet,
             district = uiState.districtForDialog,
@@ -80,6 +87,13 @@ fun PlanetScreen(
         )
     }
 
+    ResourceInfoDialog(
+        resource = uiState.resourceType,
+        toShow = uiState.showResourceInfoDialog,
+        onDismiss = onDismiss,
+        onConfirm = onDismiss
+    )
+
     Box(
         modifier = modifier.fillMaxSize()
     ) {
@@ -92,10 +106,10 @@ fun PlanetScreen(
     }
 
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         Row(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp),
         ) {
@@ -125,14 +139,18 @@ fun PlanetScreen(
             Box(
                 modifier = modifier
                     .align(Alignment.CenterEnd)
-                    .width(screenWidth * 0.9f)
+                    .width(screenWidth * 0.80f)
                     .fillMaxWidth()
             ) {
-
                 MapScreen(
                     modifier = Modifier.fillMaxSize(),
                     mapModel = planetModel,
-                    nodeInfoContent = { DistrictNodeButton(node = it.district, mapUiState = mapState) },
+                    nodeInfoContent = {
+                        DistrictNodeButton(
+                            node = it.district,
+                            mapUiState = mapState
+                        )
+                    },
                     onNodeClicked = { planetModel.openDistrictDetails(it.district) },
                     onLongNodeClicked = {},
                     backgroundImageId = null,
@@ -144,7 +162,9 @@ fun PlanetScreen(
             ResourceList(
                 modifier = Modifier.align(Alignment.CenterStart),
                 planet = uiState.empire?.planets?.first { it.id == uiState.planetId },
-                testPlanet = uiState.testEmpire?.planets?.first { it.id == uiState.planetId }
+                testPlanet = uiState.testEmpire?.planets?.first { it.id == uiState.planetId },
+                showResourceInfoDialog = { planetModel.showResourceInfoDialog(true) },
+                changeResource = { planetModel.changeResource(it) }
             )
 
             if (uiState.isErrorsShown) {
@@ -163,53 +183,42 @@ fun PlanetScreen(
                 }
             }
             if (uiState.isActionsShown) {
-                Box(
-                    modifier = modifier
-                        .fillMaxHeight()
-                        .width(screenWidth * 0.5f)
-                        .align(Alignment.TopStart)
-                ) {
-                    ActionList(
-                        modifier = modifier,
-                        actions = uiState.actions,
-                        deleteAllActions = { planetModel.deleteAllActions() },
-                        getActionDescription = { planetModel.getActionDescription(it) },
-                        deleteAction = { planetModel.deleteAction(it) },
+                ActionListPopup(
+                    modifier = Modifier
+                        .width(screenWidth * 0.5f),
+                    actions = uiState.actions,
+                    deleteAllActions = { planetModel.deleteAllActions() },
+                    getActionDescription = { planetModel.getActionDescription(it) },
+                    deleteAction = { planetModel.deleteAction(it) },
+                    onDismiss = { planetModel.dismissActionMenu() }
+                )
+            }
+            if (uiState.isTransportMenuShown) {
+                uiState.empire?.let { empire ->
+                    TransportListPopup(
+                        modifier = Modifier
+                            .width(screenWidth * 0.5f),
+                        empire = empire,
+                        transports = planetModel.getAllTransports(),
+                        onTransportClick = {
+                            planetModel.onTransportMenuClick()
+                            transportModel.updateTransportDialogOnTransportClick(it)
+                        },
+                        deleteAllTransports = { planetModel.deleteAllTransports() },
+                        deleteTransport = { planetModel.deleteTransport(it) },
+                        onDismiss = { planetModel.dismissTransportMenu() }
                     )
                 }
             }
-            if (uiState.isTransportMenuShown) {
-                Box(
-                    modifier = modifier
-                        .fillMaxHeight()
-                        .width(screenWidth * 0.5f)
-                        .align(Alignment.TopStart)
-                ) {
-                    uiState.empire?.let{ empire ->
-                        TransportsList(
-                            modifier = modifier,
-                            empire = empire,
-                            transports = planetModel.getAllTransports(),
-                            onTransportClick = {
-                                planetModel.onTransportMenuClick()
-                                transportModel.updateTransportDialogOnTransportClick(it)
-                            },
-                            deleteAllTransports = { planetModel.deleteAllTransports() },
-                            deleteTransport = { planetModel.deleteTransport(it) }
-                        )
-                    }
-                }
-            }
         }
-
         Row(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             IconButton(
-                modifier = modifier,
+                modifier = Modifier,
                 onClick = { onBackButtonClicked(uiState.planetId, uiState.actions) }
             ) {
                 Icon(
@@ -219,10 +228,10 @@ fun PlanetScreen(
                 )
             }
             ExtendedFloatingActionButton(
-                modifier = modifier,
+                modifier = Modifier,
                 onClick = { planetModel.testTurn(uiState.empire) }
             ) {
-                Text(text = stringResource(R.string.newTurn))
+                Text(text = stringResource(R.string.testTurn))
             }
         }
     }

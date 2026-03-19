@@ -7,9 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.view.Window
-import android.view.WindowInsets
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,6 +17,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
@@ -59,19 +60,28 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var googleAuthHelper: GoogleAuthHelper
     private lateinit var navController: NavHostController
+    private var pendingIntentToHandle: Intent? = null
+
+    private val roomDatabase: AppDatabase by lazy {
+        Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java,
+            "battle_results.db"
+        ).build()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         closeAndroidBars(window = window)
         requestNotificationPermission()
-        val roomDatabase = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java, "battle_results.db"
-        ).build()
+
         notification.createNotificationChannel(this)
         fcmToken.retrieveAndSaveFcmToken()
         googleAuthHelper.setActivity(this)
+
+        pendingIntentToHandle = intent
 
         setContent {
             GravityGameTheme {
@@ -90,11 +100,28 @@ class MainActivity : ComponentActivity() {
                         sharedPreferences = sharedPreferences,
                         context = this
                     )
-                    handleIntent(intent)
                 }
+            }
+
+            pendingIntentToHandle?.let {
+                handleIntent(it)
+                pendingIntentToHandle = null
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        closeAndroidBars(window)
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            closeAndroidBars(window)
+        }
+    }
+
     private fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val hasPermission = ContextCompat.checkSelfPermission(
@@ -115,25 +142,51 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        handleIntent(intent)
+
+        if (::navController.isInitialized) {
+            handleIntent(intent)
+        } else {
+            pendingIntentToHandle = intent
+        }
     }
 
     private fun handleIntent(intent: Intent?) {
         Log.d("FCM", "Intent: $intent")
-            val roomId = intent?.getStringExtra("roomId")
-            Log.d("FCM", "Room Id in Extra: $roomId")
-            val route = if (!roomId.isNullOrEmpty()) {
-                "${Matchmaking.route}?roomId=$roomId"
-            } else {
-                "BattleGame"
-            }
+
+        val roomId = intent?.getStringExtra("roomId")
+        Log.d("FCM", "Room Id in Extra: $roomId")
+
+        val route = if (!roomId.isNullOrEmpty()) {
+            "${Matchmaking.route}?roomId=$roomId"
+        } else {
+            "BattleGame"
+        }
+
         Log.d("FCM", "Route: $route")
-        navController.navigate(route)
+
+        if (!::navController.isInitialized) {
+            pendingIntentToHandle = intent
+            return
+        }
+
+        navController.navigate(route) {
+            launchSingleTop = true
+        }
     }
 }
 
-@Suppress("DEPRECATION")
 private fun closeAndroidBars(window: Window){
+    WindowCompat.setDecorFitsSystemWindows(window, false)
+
+    val controller = WindowCompat.getInsetsController(window, window.decorView)
+    controller.systemBarsBehavior =
+        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+
+    controller.hide(
+        WindowInsetsCompat.Type.statusBars() or
+                WindowInsetsCompat.Type.navigationBars()
+    )
+    /*
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         window.decorView.windowInsetsController?.hide(
             WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars()
@@ -158,6 +211,8 @@ private fun closeAndroidBars(window: Window){
             }
         }
     }
+
+     */
 }
 
 fun loadSettings(

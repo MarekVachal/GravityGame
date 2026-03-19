@@ -228,7 +228,7 @@
     <string name="destroyDistrict">Destroy district</string>
     <string name="buildDistrict">Build district</string>
     <string name="progress">Progress</string>
-    <string name="army">Military compounds</string>
+    <string name="army">Warship materials</string>
     <string name="actionAdded">Action added to your plan</string>
     <string name="metal">Metal</string>
     <string name="organic_sediments">Organic sediments</string>
@@ -289,9 +289,9 @@
     <string name="districtToBuildDescription">Build district: %1$s</string>
     <string name="researchGenitive">Research</string>
     <string name="tradepowerGenitive">Tradepower</string>
-    <string name="armyGenitive">military compounds</string>
+    <string name="armyGenitive">warship materials</string>
     <string name="creditsGenitive">credits</string>
-    <string name="expeditionsGenitive">expeditions</string>
+    <string name="expeditionsGenitive">Colonization ships</string>
     <string name="biomassGenitive">biomass</string>
     <string name="metalGenitive">metal</string>
     <string name="organic_sedimentsGenitive">organic sediments</string>
@@ -316,7 +316,7 @@
     <string name="urbanCenterDistrictInstrumental">Urban Center</string>
     <string name="inConstructionDistrictInstrumental">In construction</string>
     <string name="armyProductionAccusative">military compounds production</string>
-    <string name="expeditionProductionAccusative">expedition</string>
+    <string name="expeditionProductionAccusative">colonization ship</string>
     <string name="progressProductionAccusative">progress</string>
     <string name="isLongTermTransport">Is long term transport?</string>
     <string name="cost">"Cost: %1$d"</string>
@@ -332,7 +332,7 @@
     <string name="warperTechnologyNominative">Warper</string>
     <string name="prospectorSynergyNominative">Prospectors synergy</string>
     <string name="industrialSynergyNominative">Industrials synergy</string>
-    <string name="expeditionSynergyNominative">Expeditions synergy</string>
+    <string name="expeditionSynergyNominative">Colonization ships synergy</string>
     <string name="urbanCenterSynergyNominative">Urban center synergy</string>
     <string name="cyberneticsNominative">Cybernetics</string>
     <string name="terraformNominative">Terraform</string>
@@ -350,7 +350,7 @@
     <string name="warperTechnologyGenitive">warper</string>
     <string name="prospectorSynergyGenitive">prospectors synergy</string>
     <string name="industrialSynergyGenitive">industrials synergy</string>
-    <string name="expeditionSynergyGenitive">expeditions synergy</string>
+    <string name="expeditionSynergyGenitive">colonization ships synergy</string>
     <string name="urbanCenterSynergyGenitive">urban center synergy</string>
     <string name="cyberneticsGenitive">cybernetics</string>
     <string name="terraformGenitive">terraform</string>
@@ -358,20 +358,20 @@
     <string name="gravityManipulationGenitive">gravity manipulation</string>
     <string name="rocketScienceDescription">Unlocks Prospectors Mode 2 (mining organic sediments).\n\nUnlocks Industrials Mode 2 (production of rocket materials).</string>
     <string name="syntheticMaterialsDescription">Unlocks Industrials Mode 3 (production of metals from organic sediments).</string>
-    <string name="spaceTravellingDescription">Unlocks construction of the Expedition Platform.  Expeditions can be produced in the Expedition Platform.</string>
+    <string name="spaceTravellingDescription">Unlocks construction of the Expedition Platform. Colonization ships can be produced in the Expedition Platform.</string>
     <string name="transportTechnologyDescription">Unlocks the ability to establish Transports in the Expedition Platform.</string>
     <string name="influenceTechnologyDescription">Unlocks Urban Center Mode 2 (generation of Influence).</string>
     <string name="tradeTechnologyDescription">Grants access to the Trade Center. Trading is possible there.</string>
-    <string name="cruiserTechnologyDescription">Cruiser military units can be built in the Expedition Platform instead of Expeditions.</string>
-    <string name="destroyerTechnologyDescription">Destroyer military units can be built in the Expedition Platform instead of Expeditions.</string>
-    <string name="ghostTechnologyDescription">Ghost military units can be built in the Expedition Platform instead of Expeditions.</string>
-    <string name="warperTechnologyDescription">Warper military units can be built in the Expedition Platform instead of Expeditions.</string>
+    <string name="cruiserTechnologyDescription">Cruiser war ship can be built in the Expedition Platform.</string>
+    <string name="destroyerTechnologyDescription">Destroyer war ship can be built in the Expedition Platform.</string>
+    <string name="ghostTechnologyDescription">Ghost war ship can be built in the Expedition Platform.</string>
+    <string name="warperTechnologyDescription">Warper war ship can be built in the Expedition Platform.</string>
     <string name="prospectorSynergyDescription">Each Prospector mines +2 metals and +1 organic sediments in each mode for every adjacent Wilderness district.</string>
     <string name="industrialSynergyDescription">Each Industrial produces +10 infrastructure, +2 rocket materials, and +2 metals in each mode for every adjacent Prospectors district. Increased production does not increase material consumption.</string>
-    <string name="expeditionSynergyDescription">The Expedition Platform produces +2 Expeditions and +2 Army units for every adjacent Industrial district.  Increased production does not increase material consumption.</string>
+    <string name="expeditionSynergyDescription">The Expedition Platform produces +2 Colonization ships and +2 Warship materials for every adjacent Industrial district.  Increased production does not increase material consumption.</string>
     <string name="urbanCenterSynergyDescription">The Urban Center produces +2 Research and +2 Influence in each mode for every adjacent Wilderness district.  Increased production does not increase material consumption.</string>
     <string name="cyberneticsDescription">Reduces planet maintenance by 5 for each resource. Can be researched repeatedly.</string>
-    <string name="terraformDescription">Multiplies the cost of discovering a new planet in Expedition Points by ×0.8. Can be researched repeatedly.</string>
+    <string name="terraformDescription">Multiplies the cost of discovering a new planet in Colonization ships by ×0.8. Can be researched repeatedly.</string>
     <string name="diversityDescription">Each district multiplies its production by (1 + 0.01 × number of districts of a different type). Can be researched repeatedly. Increased production does not raise resource consumption (but increased mining by Prospectors increases extracted resources from reserves).  Capitol do not benefit from this bonus in any way.</string>
     <string name="gravityManipulationDescription">Increases the number of planets in the \"inner sphere\" by 1. A planet in the inner sphere cannot be lost in battle.</string>
     <string name="unknownTechnology">Unknown technology</string>
@@ -388,6 +388,28 @@
     <string name="unnocupatedInstrumental">unnocupated</string>
     <string name="settleNewDistrict">Settle</string>
     <string name="settleDistrict">Settle district</string>
+    <string name="creditsDescription">Credits are earned by selling resources at the Trade Center and can be used there to purchase other resources.</string>
+    <string name="researchDescription">A resource produced in Urban Districts and sent to the Empire. It has no storage limit and requires no upkeep. Spending Research allows you to unlock new technologies.</string>
+    <string name="tradepowerDescription">A resource generated from unused Influence in the previous turn. It reduces taxes on all trades at the Trade Center.</string>
+    <string name="armyDescription">A resource produced at the Expedition Platform from Rocket Materials.\nIt is stored on the planet, has no storage limit, and requires no upkeep.\nOnce a certain threshold is reached, it can be spent to construct a warship.</string>
+    <string name="expeditionsDescription">A resource produced at the Expedition Platform from Rocket Materials. It is stored directly in the Empire, has unlimited capacity, and requires no upkeep. When a certain threshold is reached, a new planet is added to your Empire.</string>
+    <string name="biomassDescription">A naturally occurring planetary resource that does not need to be extracted. It can be consumed directly. Its growth per turn is equal to (capacity / 10 − organic sediment growth). Capacity is increased by the Capitol and Wilderness districts. The smallest planets have 50% higher Biomass capacity. Biomass cannot be transported or traded.</string>
+    <string name="organic_sedimentsDescritpion">A planetary resource whose value starts at 0 and must be generated before extraction. It increases each turn by Biomass / 10, rounded down. This increase is also used in the calculation of Biomass growth. The maximum amount of Organic Sediments on each planet is 1000. Organic Sediments must be extracted using Prospectors before they can be further processed. Storage capacity is increased by Prospectors and the Capitol. They can be transported between planets using Transport ships, and are also used to pay for transport. They can be sold at the Trade Center for Credits.</string>
+    <string name="infrastructureDescription">A virtual resource representing the work of builders and engineers. It is required for Progress and Development. Infrastructure is also needed to construct new Districts and to change work modes within Districts. It cannot be stored for the next turn—any unused Infrastructure is converted into Development at the end of turn resolution.</string>
+    <string name="rocket_materialsDescription">Produced from Metals and Organic Sediments in Industrial Districts. They are stored on the planet, with storage capacity increased by Industrial Districts and the Capitol. Rocket Materials are used to produce Colonization Ships and Warship Components. They can be transported between planets using Transport ships and sold at the Trade Center for Credits.</string>
+    <string name="progressDescription">Produced in the Capitol. Highly developed planets consume Progress each turn to maintain their level. When a certain Progress threshold is reached, the planet’s level increases by 1, granting a new unoccupied District.</string>
+    <string name="developmentDescription">A resource whose purpose has not yet been fully defined. It will likely be used to construct defensive systems against alien threats and raiders.</string>
+    <string name="influenceDescription">A virtual resource generated in Urban Districts. It cannot be stored for the next turn. Influence is required for Progress, and each warship consumes 10 Influence per turn for upkeep. Any unused Influence at the end of the turn is converted into Trade Power, which is used in the following turn.</string>
+    <string name="metalDescription">Each planet has only a limited amount of Metal reserves. Before Metals can be used, they must first be extracted by Prospectors. Extraction reduces the planet’s reserves and adds Metals to storage. Metal storage capacity is increased by Prospector Districts and the Capitol. Metals can be transported between planets using Transport ships and sold at the Trade Center for Credits.</string>
+    <string name="capitolDistrictDescription">There is exactly one Capitol on each planet. It cannot be constructed or demolished.  Increases the storage capacity of Biomass, Organic Sediments, Metals, and Rocket Materials by 100.  Produces 10 Infrastructure per turn. Infrastructure production does not consume extracted Metals from storage, but instead consumes the planet’s Metal reserves.  Can convert any amount of Infrastructure and Biomass into Progress.</string>
+    <string name="prospectorsDistrictDescription">Increases the storage capacity of extracted Metals and Organic Sediments by 100 (this applies only to extracted resources, not to planetary reserves).  Mode 1: Extracts 20 Metals. Mode 2: Extracts 10 Organic Sediments (unlocked by research).</string>
+    <string name="emptyDistrictDescription">Increases Biomass capacity by 100.</string>
+    <string name="inConstructionDistrictDescription">A new District is constructed on this tile.</string>
+    <string name="IndustrialDistrictDescription">Increases Rocket Material storage capacity by 100.  Mode 1: Converts 50 Metals into 50 Infrastructure. Mode 2: Converts 20 Metals and 20 Organic Sediments into 10 Rocket Materials (unlocked by research). Mode 3: Converts 20 Organic Sediments into 10 Metals (unlocked by research).</string>
+    <string name="expeditionPlatformDistrictDescription">At most one Expedition Platform can exist on each planet.  For X Organic Sediments, it transports 10×X units of any resources to another planet and brings 10×X units back. The destination planet does not need to have an Expedition Platform; however, in that case, resources cannot be transported back. Such planets can only receive resources.  Each turn, the platform may perform one of the following actions (these are actions, not modes that need to be switched):  For 10 Rocket Materials, produces 10 Warship Components. Once 100 components are accumulated, one warship can be constructed: Cruiser / Destroyer / Ghost / Warper. Each planet may manage one warship. Only one Warper may exist in the entire Empire; other ships can be built up to a total of 10. Once constructed, a warship requires 20 Influence per turn for upkeep. The Warper requires 40 Influence per turn for upkeep.  For 10 Rocket Materials, produces 10 Colonization Ships. When the total number of Colonization Ships across all planets exceeds 100 × 1.4^(number of planets − 1), a new planet is added to the Empire.</string>
+    <string name="urbanCenterDistrictDescription">Mode 1: Converts 10 Biomass into 10 Research. Mode 2: Produces 10 Influence.</string>
+    <string name="unnocupatedDistrictDescription">An unoccupied District. It must be settled before it can be used.</string>
+    <string name="testTurn">TEST TURN</string>
 
 
 </resources>

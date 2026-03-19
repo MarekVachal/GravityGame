@@ -361,8 +361,8 @@ sealed interface Technology{
 }
 
 enum class TechnologyEnum(
-    @StringRes val nameIdNominative: Int,
-    @StringRes val nameIdGenitive: Int
+    @get:StringRes val nameIdNominative: Int,
+    @get:StringRes val nameIdGenitive: Int
 ){
     ROCKET_SCIENCE(R.string.rocketScienceNominative, R.string.rocketScienceGenitive),
     SYNTHETIC_MATERIALS(R.string.syntheticMaterialsNominative, R.string.syntheticMaterialsGenitive),
