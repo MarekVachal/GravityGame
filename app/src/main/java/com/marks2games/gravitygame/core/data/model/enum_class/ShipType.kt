@@ -2,6 +2,7 @@ package com.marks2games.gravitygame.core.data.model.enum_class
 
 import androidx.annotation.StringRes
 import com.marks2games.gravitygame.R
+import io.sentry.Sentry
 
 enum class ShipType (@get:StringRes val nameNominative: Int){
     CRUISER (R.string.cruiser),
@@ -14,6 +15,7 @@ fun String.toShipType(): ShipType? {
     return try {
         ShipType.valueOf(this)
     } catch (e: IllegalArgumentException) {
+        Sentry.captureException(e)
         null
     }
 }

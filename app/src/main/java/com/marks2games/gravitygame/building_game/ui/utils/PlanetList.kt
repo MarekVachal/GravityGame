@@ -27,7 +27,6 @@ import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.building_game.data.model.Empire
 import com.marks2games.gravitygame.building_game.data.model.Planet
 import com.marks2games.gravitygame.building_game.data.model.Resource
-import com.marks2games.gravitygame.building_game.ui.viewmodel.PlanetViewModel
 import kotlin.math.floor
 
 @Composable
