@@ -82,6 +82,10 @@
             android:resource="@drawable/logo_round"
             />
 
+        <meta-data
+            android:name="firebase_messaging_installation_id_enabled"
+            android:value="true" />
+
         <service
             android:name=".core.domain.MyFirebaseMessagingService"
             android:exported="false">

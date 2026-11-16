@@ -22,10 +22,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     @Inject
     lateinit var fcmTokenManager: FcmToken
 
-    override fun onNewToken(token: String) {
-        super.onNewToken(token)
-        Log.d("FCM", "New FCM Token generated: $token")
-        fcmTokenManager.handleNewToken(token)
+    override fun onRegistered(installationId: String) {
+        fcmTokenManager.handleRegistered(installationId)
+    }
+
+    override fun onUnregistered(installationId: String) {
+        fcmTokenManager.handleUnregistered(installationId)
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {

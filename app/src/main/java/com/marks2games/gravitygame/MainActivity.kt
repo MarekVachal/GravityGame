@@ -61,6 +61,11 @@ class MainActivity : ComponentActivity() {
     lateinit var googleAuthHelper: GoogleAuthHelper
     private lateinit var navController: NavHostController
     private var pendingIntentToHandle: Intent? = null
+    private val fcmAuthListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+        if (firebaseAuth.currentUser != null) {
+            fcmToken.registerInstallation()
+        }
+    }
 
     private val roomDatabase: AppDatabase by lazy {
         Room.databaseBuilder(
@@ -78,7 +83,6 @@ class MainActivity : ComponentActivity() {
         requestNotificationPermission()
 
         notification.createNotificationChannel(this)
-        fcmToken.retrieveAndSaveFcmToken()
         googleAuthHelper.setActivity(this)
 
         pendingIntentToHandle = intent
@@ -108,6 +112,17 @@ class MainActivity : ComponentActivity() {
                 pendingIntentToHandle = null
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Also runs for the current user when the listener is first attached.
+        auth.addAuthStateListener(fcmAuthListener)
+    }
+
+    override fun onStop() {
+        auth.removeAuthStateListener(fcmAuthListener)
+        super.onStop()
     }
 
     override fun onResume() {
