@@ -2,72 +2,66 @@ package com.marks2games.gravitygame.core.domain
 
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.messaging.FirebaseMessaging
 import javax.inject.Inject
 
 class FcmToken @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth
-){
-    fun retrieveAndSaveFcmToken() {
-        val playerId = auth.uid ?: return
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.e("FCM", "Fetching token failed, retrieveAndSaveFcmToken", task.exception)
-                return@addOnCompleteListener
-            }
-
-            val token = task.result
-            Log.d("FCM", "FCM Token retrieved: $token")
-
-            checkAndSaveFcmToken(playerId, token)
-        }
-    }
-
-    fun handleNewToken(newToken: String) {
-        val playerId = auth.uid ?: return
-        Log.d("FCM", "Handling new token for playerId: $playerId")
-        checkAndSaveFcmToken(playerId, newToken)
-    }
-
-    private fun checkAndSaveFcmToken(playerId: String, newToken: String) {
-        val tokenRef = firestore.collection("fcmTokens").document(playerId)
-
-        tokenRef.get()
-            .addOnSuccessListener { snapshot ->
-                if (snapshot.exists()) {
-                    val storedToken = snapshot.getString("token")
-                    if (storedToken == newToken) {
-                        Log.d("FCM", "Token is already up to date, no need to update.")
-                    } else {
-                        saveFcmTokenToDatabase(tokenRef, newToken)
-                    }
-                } else {
-                    Log.d("FCM", "No token found for player. Creating a new record.")
-                    saveFcmTokenToDatabase(tokenRef, newToken)
-                }
-            }
+) {
+    fun registerInstallation() {
+        if (auth.uid == null) return
+        FirebaseMessaging.getInstance().register()
             .addOnFailureListener { error ->
-                Log.e("FCM", "Failed to check existing FCM token: ${error.message}")
+                Log.e("FCM", "FCM installation registration failed", error)
             }
+        // register() returns Task<Void>; the registered FID arrives in onRegistered().
     }
 
-    private fun saveFcmTokenToDatabase(tokenRef: DocumentReference, token: String) {
-        val fcmTokenData = mapOf(
-            "token" to token,
+    fun handleRegistered(installationId: String) {
+        val playerId = auth.uid ?: return
+        if (installationId.isBlank()) return
+
+        // Refresh on every callback, including when the FID has not changed.
+        // The existing collection is retained so deployed readers keep working.
+        val registration = mapOf(
+            "fid" to installationId,
+            // HTTP v1's legacy token target also accepts FIDs during migration.
+            // Replace the old token so older app versions can still send to this player.
+            "token" to installationId,
             "timestamp" to FieldValue.serverTimestamp()
         )
-
-        tokenRef.set(fcmTokenData)
+        firestore.collection("fcmTokens").document(playerId)
+            .set(registration, SetOptions.merge())
             .addOnSuccessListener {
-                Log.d("FCM", "FCM token successfully saved/updated.")
+                Log.d("FCM", "FCM installation registration saved")
             }
             .addOnFailureListener { error ->
-                Log.e("FCM", "Failed to save FCM token: ${error.message}")
+                Log.e("FCM", "Failed to save FCM installation registration", error)
             }
     }
 
+    fun handleUnregistered(installationId: String) {
+        val playerId = auth.uid ?: return
+        val registrationRef = firestore.collection("fcmTokens").document(playerId)
+        firestore.runTransaction { transaction ->
+            val snapshot = transaction.get(registrationRef)
+            // A delayed callback must not remove a newer registration or another device.
+            if (snapshot.getString("fid") == installationId) {
+                val changes = mutableMapOf<String, Any>(
+                    "fid" to FieldValue.delete(),
+                    "timestamp" to FieldValue.serverTimestamp()
+                )
+                if (snapshot.getString("token") == installationId) {
+                    changes["token"] = FieldValue.delete()
+                }
+                transaction.update(registrationRef, changes)
+            }
+        }.addOnFailureListener { error ->
+            Log.e("FCM", "Failed to remove FCM installation registration", error)
+        }
+    }
 }

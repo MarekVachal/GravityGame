@@ -78,16 +78,16 @@ class Notification @Inject constructor(
 
         withContext(Dispatchers.IO) {
             try {
-                Log.d("FCM", "Fetching FCM token for playerId: $playerId")
-                val fcmTokenRef = firestore.collection("fcmTokens").document(playerId)
-                val snapshot = fcmTokenRef.get().await()
-                val token = snapshot.getString("token")
-                Log.d("FCM", "Room id in sendNotification: $roomId")
+                val registrationRef = firestore.collection("fcmTokens").document(playerId)
+                val snapshot = registrationRef.get().await()
+                val installationId = snapshot.getString("fid")?.takeIf { it.isNotBlank() }
+                val legacyToken = snapshot.getString("token")?.takeIf { it.isNotBlank() }
 
-                if (token != null) {
+                if (installationId != null || legacyToken != null) {
                     val notificationData = NotificationDto(
-                        message = NotificationHead(
-                            token = token,
+                        message = NotificationHead.forRecipient(
+                            installationId = installationId,
+                            legacyToken = legacyToken,
                             notification = NotificationContent(
                                 title = title,
                                 body = body
@@ -97,7 +97,7 @@ class Notification @Inject constructor(
                     )
                     sendNotificationRequest(notificationData, context)
                 } else {
-                    Log.e("FCM", "Token not found for playerId: $playerId")
+                    Log.e("FCM", "FCM registration not found for playerId: $playerId")
                 }
             } catch (e: Exception) {
                 Log.e("FCM", "Error fetching FCM token, sendNotificationToPlayer: ${e.message}")
@@ -146,8 +146,8 @@ class Notification @Inject constructor(
                     .createScoped(listOf("https://www.googleapis.com/auth/firebase.messaging"))
 
                 credentials.refreshIfExpired()
-                Log.d("FCM", "Access token gained: ${credentials.accessToken.tokenValue}")
-                credentials.accessToken.tokenValue
+                Log.d("FCM", "Access token gained: ${credentials.accessToken?.tokenValue}")
+                credentials.accessToken?.tokenValue
             } catch (e: Exception) {
                 e.printStackTrace()
                 Log.e("FCM", "Failed to get access token: ${e.message}")

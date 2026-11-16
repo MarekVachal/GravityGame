@@ -9,6 +9,7 @@ import com.marks2games.gravitygame.core.data.datasource.GoogleAuthHelper
 import com.marks2games.gravitygame.core.domain.repository.AuthRepository
 import com.marks2games.gravitygame.core.domain.usecases.sharedRepository.SetHasSignInUseCase
 import io.sentry.Sentry
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 import javax.inject.Inject
@@ -49,11 +50,13 @@ class AuthRepositoryImpl @Inject constructor(
 
         try {
             val token = googleAuthHelper.getGoogleIdToken(trace)
-                ?: throw IllegalStateException("[$trace] Google ID token is null")
+                ?: return // Credential Manager cancelled the operation.
 
             Log.i(TAG_AUTH, "[$trace] Got Google ID token (masked=${mask(token)}) -> authenticateWithFirebase")
             authenticateWithFirebase(idToken = token, trace = trace)
 
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG_AUTH, "[$trace] FAIL Google sign-in", e)
             Sentry.captureException(e)
@@ -68,6 +71,8 @@ class AuthRepositoryImpl @Inject constructor(
             auth.createUserWithEmailAndPassword(email, password).await()
             setHasSignInUseCase(true)
             Log.i(TAG_AUTH, "[emailRegister] SUCCESS")
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG_AUTH, "[emailRegister] FAIL", e)
             Sentry.captureException(e)
@@ -81,6 +86,8 @@ class AuthRepositoryImpl @Inject constructor(
             auth.signInWithEmailAndPassword(email, password).await()
             setHasSignInUseCase(true)
             Log.i(TAG_AUTH, "[emailSignIn] SUCCESS")
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG_AUTH, "[emailSignIn] FAIL", e)
             Sentry.captureException(e)
@@ -93,6 +100,8 @@ class AuthRepositoryImpl @Inject constructor(
             Log.i(TAG_AUTH, "[resetPassword] START email=${mask(email, 3, 10)}")
             auth.sendPasswordResetEmail(email).await()
             Log.i(TAG_AUTH, "[resetPassword] SUCCESS")
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG_AUTH, "[resetPassword] FAIL", e)
             Sentry.captureException(e)
@@ -106,7 +115,7 @@ class AuthRepositoryImpl @Inject constructor(
 
         try {
             val token = googleAuthHelper.getGoogleIdToken(trace)
-                ?: throw IllegalStateException("[$trace] Google ID token is null")
+                ?: return // Credential Manager cancelled the operation.
 
             val credential = GoogleAuthProvider.getCredential(token, null)
             auth.currentUser?.linkWithCredential(credential)?.await()
@@ -117,9 +126,11 @@ class AuthRepositoryImpl @Inject constructor(
             // account already exists -> fallback to sign-in
             Log.w(TAG_AUTH, "[$trace] COLLISION -> fallback to authenticateWithFirebase()")
             val token = googleAuthHelper.getGoogleIdToken(trace)
-                ?: throw IllegalStateException("[$trace] Google ID token is null")
+                ?: return // Credential Manager cancelled the operation.
             authenticateWithFirebase(idToken = token, trace = trace)
 
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG_AUTH, "[$trace] LINK FAIL", e)
             Sentry.captureException(e)
@@ -155,6 +166,8 @@ class AuthRepositoryImpl @Inject constructor(
         try {
             auth.signInAnonymously().await()
             Log.i(TAG_AUTH, "[$trace] SUCCESS anonymousSignIn uid=${auth.currentUser?.uid}")
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG_AUTH, "[$trace] FAIL anonymousSignIn", e)
             Sentry.captureException(e)
@@ -167,7 +180,7 @@ class AuthRepositoryImpl @Inject constructor(
 
         try {
             val googleIdToken = googleAuthHelper.getGoogleIdToken(trace)
-                ?: throw IllegalStateException("[$trace] Google ID token is null (reauth needed)")
+                ?: return // Reauthentication was cancelled; keep the account.
             val credential = GoogleAuthProvider.getCredential(googleIdToken, null)
 
             auth.currentUser?.reauthenticate(credential)?.await()
@@ -175,6 +188,8 @@ class AuthRepositoryImpl @Inject constructor(
             setHasSignInUseCase(false)
 
             Log.i(TAG_AUTH, "[$trace] SUCCESS deleteUser")
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG_AUTH, "[$trace] FAIL deleteUser", e)
             Sentry.captureException(e)
@@ -191,6 +206,8 @@ class AuthRepositoryImpl @Inject constructor(
             Log.i(TAG_FB, "[$trace] SUCCESS Firebase signIn uid=$uid isNewUser=${result.additionalUserInfo?.isNewUser}")
             setHasSignInUseCase(true)
 
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             // If this fails, it’s usually SHA / OAuth mismatch or invalid token.
             Log.e(TAG_FB, "[$trace] FAIL Firebase signInWithCredential -> fallback anonymousSignIn()", e)

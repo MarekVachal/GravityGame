@@ -26,6 +26,10 @@ abstract class MapViewModel<T : MapNode> (
     private val getNodePosition: GetNodePositionUseCase<T>
 ) : ViewModel() {
 
+    companion object {
+        const val MAX_SCALE = 2.5f
+    }
+
     private val _mapUiState = MutableStateFlow<MapUiState<T>>(MapUiState())
     val mapUiState = _mapUiState.asStateFlow()
 
@@ -46,7 +50,7 @@ abstract class MapViewModel<T : MapNode> (
     }
 
     fun updateScale(newScale: Float) {
-        val clampedScale = newScale.coerceIn(mapUiState.value.minScale, 2.5f)
+        val clampedScale = newScale.coerceIn(mapUiState.value.minScale, MAX_SCALE)
         updateState{ copy(
                 scale = clampedScale,
                 buttonSize = updateButtonSize.invoke(

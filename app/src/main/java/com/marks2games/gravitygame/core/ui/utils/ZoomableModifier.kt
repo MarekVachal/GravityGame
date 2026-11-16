@@ -8,17 +8,18 @@ import androidx.compose.ui.input.pointer.pointerInput
 fun Modifier.zoomable(
     getScale: () -> Float,
     getOffset: () -> Offset,
-    maxScale: Float = 3f,
+    maxScale: Float,
     minScale: Float = 0.5f,
     onScaleChange: (Float) -> Unit,
     onOffsetChange: (Offset) -> Unit,
-) = pointerInput(Unit) {
-    detectTransformGestures { _, pan, zoom, _ ->
+) = pointerInput(minScale, maxScale) {
+    detectTransformGestures { centroid, pan, zoom, _ ->
         val currentScale = getScale()
         val currentOffset = getOffset()
 
         val newScale = (currentScale * zoom).coerceIn(minScale, maxScale)
-        val newOffset = currentOffset + pan * newScale
+        // Keep the same map point under the gesture centroid. Pan is already in pixels.
+        val newOffset = centroid - (centroid - currentOffset) * (newScale / currentScale) + pan
 
         onScaleChange(newScale)
         onOffsetChange(newOffset)

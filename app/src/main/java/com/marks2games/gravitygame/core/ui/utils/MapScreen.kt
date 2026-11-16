@@ -64,7 +64,7 @@ fun <T : MapNode> MapScreen(
                 .height((state.buttonSize * mapModel.mapConfig.buttonShapeCoefficientY).dp)
                 .widthIn(
                     min = state.buttonSize.dp,
-                    max = (state.buttonSize * 1.5f * state.scale).dp
+                    max = (state.buttonSize * 1.5f).dp
                 )
                 .offset { IntOffset(x.roundToInt(), y.roundToInt()) }
                 .border(2.dp, node.buttonColor, RoundedCornerShape(8.dp))
@@ -115,9 +115,10 @@ fun <T : MapNode> MapScreen(
                 .background(Color.Transparent)
                 .onSizeChanged { mapModel.updateScreenSize(it) }
                 .zoomable(
-                    getScale = { state.scale },
-                    getOffset = { state.offset },
+                    getScale = { mapModel.mapUiState.value.scale },
+                    getOffset = { mapModel.mapUiState.value.offset },
                     minScale = state.minScale,
+                    maxScale = MapViewModel.MAX_SCALE,
                     onScaleChange = mapModel::updateScale,
                     onOffsetChange = mapModel::updateOffset
                 )
