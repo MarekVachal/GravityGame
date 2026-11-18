@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import com.marks2games.gravitygame.core.domain.Notification
 import com.marks2games.gravitygame.battle_game.data.model.realtime_database.Room
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.Players
 import com.marks2games.gravitygame.battle_game.data.SharedPlayerDataRepository
@@ -14,13 +13,11 @@ import com.marks2games.gravitygame.battle_game.ui.utils.timer.CoroutineTimer
 import com.marks2games.gravitygame.battle_game.ui.utils.timer.TimerViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.marks2games.gravitygame.R
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.toBattleMap
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.RoomStatus
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.toGameType
@@ -33,7 +30,6 @@ class MatchmakingViewModel @Inject constructor(
     private val sharedPlayerModel: SharedPlayerDataRepository,
     private val auth: FirebaseAuth,
     private val database: FirebaseDatabase,
-    private val notification: Notification,
     private val anonymousSignInUseCase: AnonymousSignInUseCase,
     private val signInWithGoogleUseCase: SignInWithGoogleUseCase
 ): ViewModel() {
@@ -247,15 +243,6 @@ class MatchmakingViewModel @Inject constructor(
                         }
 
                         RoomStatus.TO_CONFIRM -> {
-                            viewModelScope.launch(Dispatchers.IO) {
-                                notification.sendNotificationToPlayer(
-                                    roomId = roomRef.key?: "",
-                                    playerId = room.player1Id,
-                                    title = context.getString(R.string.notificationTitleOpponentFound),
-                                    body = context.getString(R.string.notificationBodyOpponentFound),
-                                    context = context
-                                )
-                            }
                             onMatchFound(roomRef)
                         }
 

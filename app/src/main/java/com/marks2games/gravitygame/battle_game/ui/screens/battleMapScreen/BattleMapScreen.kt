@@ -48,7 +48,6 @@ import com.marks2games.gravitygame.battle_game.ui.utils.CapitulateInfoDialog
 import com.marks2games.gravitygame.battle_game.ui.screens.selectArmyScreen.SelectArmyViewModel
 import com.marks2games.gravitygame.core.ui.utils.ProgressIndicator
 import com.marks2games.gravitygame.core.ui.utils.TimerCard
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -104,17 +103,16 @@ fun BattleMapScreen(
                 timerModel = timerModel,
                 databaseModel = databaseModel
             )
+            if (battleModel.movementUiState.value.endOfGame) return@LaunchedEffect
             timerModel.makeTimer(
                 CoroutineTimer(
                     timerModel = timerModel,
                     onFinishTimer = {
-                        MainScope().launch {
+                        coroutineScope.launch {
                             battleModel.finishTurn(
                                 timerModel = timerModel,
                                 databaseModel = databaseModel
                             )
-                            timerModel.resetTimer()
-                            timerModel.startTimer()
                         }
                     },
                     secondsForTurn = battleModel.battleMap.secondsForTurn
@@ -125,12 +123,9 @@ fun BattleMapScreen(
         battleModel.cleanEnemyRecord()
     }
 
-    DisposableEffect(Unit) {
-        battleModel.listenForCapitulation(
-            timerModel,
-            databaseModel = databaseModel
-        )
-        onDispose {  }
+    DisposableEffect(movementUiState.battleGameRepository) {
+        val stopListening = battleModel.listenForCapitulation(timerModel, databaseModel)
+        onDispose { stopListening?.invoke() }
     }
 
     EndOfGameDialog(

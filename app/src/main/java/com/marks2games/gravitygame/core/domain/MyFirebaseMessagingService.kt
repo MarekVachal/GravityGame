@@ -33,8 +33,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
-        val title = remoteMessage.notification?.title ?: this.getString(R.string.newMessage)
-        val body = remoteMessage.notification?.body ?: this.getString(R.string.clickToOpenScreen)
+        val isOpponentFound = remoteMessage.data["type"] == "OPPONENT_FOUND"
+        val title = remoteMessage.notification?.title ?: getString(
+            if (isOpponentFound) R.string.notificationTitleOpponentFound else R.string.newMessage
+        )
+        val body = remoteMessage.notification?.body ?: getString(
+            if (isOpponentFound) R.string.notificationBodyOpponentFound else R.string.clickToOpenScreen
+        )
         val roomId = remoteMessage.data["roomId"]
 
         Log.d("FCM", "Notification received: Title: $title, Body: $body, RoomId: $roomId")
