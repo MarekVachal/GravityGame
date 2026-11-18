@@ -34,12 +34,6 @@ class DatabaseViewModel (
         getAllResults()
     }
 
-    fun insertBattleResult(battleResult: BattleResult){
-        viewModelScope.launch{
-            repository.insertBattleResult(battleResult = battleResult)
-        }
-    }
-
     private fun getTotalMyShipLost(){
         viewModelScope.launch {
             val total = repository.getTotalMyShipLost()

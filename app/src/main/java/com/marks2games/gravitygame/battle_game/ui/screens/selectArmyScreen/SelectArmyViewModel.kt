@@ -3,7 +3,6 @@ package com.marks2games.gravitygame.battle_game.ui.screens.selectArmyScreen
 import androidx.lifecycle.ViewModel
 import com.marks2games.gravitygame.battle_game.data.SharedPlayerDataRepository
 import com.marks2games.gravitygame.core.data.model.enum_class.ShipType
-import com.marks2games.gravitygame.battle_game.ui.screens.battleMapScreen.BattleViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,12 +22,7 @@ class SelectArmyViewModel @Inject constructor(
         return sharedPlayerData.getIsOnline()
     }
 
-    fun checkArmySize(
-        battleModel: BattleViewModel
-    ): Boolean {
-        val shipLimit = battleModel.battleMap.shipLimitOnMap
-        return countArmySize() == shipLimit
-    }
+    fun checkArmySize(shipLimit: Int): Boolean = countArmySize() == shipLimit
 
     fun countArmySize(): Int {
         return selectArmyUiState.let {

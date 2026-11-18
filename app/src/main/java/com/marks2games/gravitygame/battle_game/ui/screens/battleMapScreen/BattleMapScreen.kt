@@ -1,6 +1,7 @@
 package com.marks2games.gravitygame.battle_game.ui.screens.battleMapScreen
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -18,7 +19,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,21 +31,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.battle_game.domain.ai.createAiArmy
-import com.marks2games.gravitygame.battle_game.data.room_database.DatabaseViewModel
+import com.marks2games.gravitygame.battle_game.domain.turn.BattleTurnPhase
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.Tasks
 import com.marks2games.gravitygame.battle_game.ui.tutorial.TutorialDialog
 import com.marks2games.gravitygame.battle_game.ui.tutorial.TutorialViewModel
-import com.marks2games.gravitygame.battle_game.ui.utils.timer.CoroutineTimer
 import com.marks2games.gravitygame.battle_game.ui.utils.EndOfGameDialog
 import com.marks2games.gravitygame.battle_game.ui.utils.LocationInfoDialog
 import com.marks2games.gravitygame.battle_game.ui.utils.timer.TimerViewModel
 import com.marks2games.gravitygame.battle_game.ui.utils.BattleInfoDialog
 import com.marks2games.gravitygame.ui.screens.settingScreen.SettingViewModel
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.IntOffset
 import com.marks2games.gravitygame.battle_game.ui.utils.CapitulateInfoDialog
 import com.marks2games.gravitygame.battle_game.ui.screens.selectArmyScreen.SelectArmyViewModel
+import com.marks2games.gravitygame.core.data.model.enum_class.ProgressIndicatorType
 import com.marks2games.gravitygame.core.ui.utils.ProgressIndicator
 import com.marks2games.gravitygame.core.ui.utils.TimerCard
 import kotlinx.coroutines.launch
@@ -57,13 +55,19 @@ fun BattleMapScreen(
     timerModel: TimerViewModel,
     tutorialModel: TutorialViewModel,
     settingsModel: SettingViewModel,
-    databaseModel: DatabaseViewModel,
     selectArmyModel: SelectArmyViewModel,
     context: Context,
     endOfGame: () -> Unit
 ) {
-    val coroutineScope = rememberCoroutineScope()
     val movementUiState by battleModel.movementUiState.collectAsState()
+    val turnState by battleModel.turnState.collectAsState()
+    val gameFinished = turnState.phase == BattleTurnPhase.FINISHED
+    val progress = when (turnState.phase) {
+        BattleTurnPhase.WAITING_FOR_OPPONENT -> ProgressIndicatorType.WAITING_FOR_MOVE
+        BattleTurnPhase.CALCULATING_AI -> ProgressIndicatorType.AI_CALCULATE
+        BattleTurnPhase.STARTING_NEXT_TURN -> ProgressIndicatorType.NEW_TURN
+        else -> null
+    }
     val selectArmyUiState by selectArmyModel.selectArmyUiState.collectAsState()
     val locationListUiState by battleModel.locationListUiState.collectAsState()
     val movementRecord by battleModel.movementRecord.collectAsState()
@@ -87,49 +91,12 @@ fun BattleMapScreen(
         }
     }
 
-    LaunchedEffect (Unit){
-        timerModel.stopTimer()
-        battleModel.resetUiStateForNewBattle()
-        battleModel.createArmyList(selectArmyUiState = selectArmyUiState)
-        if(!battleModel.getSharedPlayerModel().getIsOnline() && locationListUiState.locationList[battleModel.findOpponentBaseLocation()].enemyShipList.isEmpty()){
-            val enemyShipList = createAiArmy(battleMap = battleModel.battleMap)
-            battleModel.initializeEnemyShipList(enemyShipList = enemyShipList)
-            battleModel.showTimer(false)
-        }
-        if(battleModel.getSharedPlayerModel().getIsOnline()){
-            battleModel.initializeBattleGameRepository()
-            battleModel.updateLocations(
-                isSetup = true,
-                timerModel = timerModel,
-                databaseModel = databaseModel
-            )
-            if (battleModel.movementUiState.value.endOfGame) return@LaunchedEffect
-            timerModel.makeTimer(
-                CoroutineTimer(
-                    timerModel = timerModel,
-                    onFinishTimer = {
-                        coroutineScope.launch {
-                            battleModel.finishTurn(
-                                timerModel = timerModel,
-                                databaseModel = databaseModel
-                            )
-                        }
-                    },
-                    secondsForTurn = battleModel.battleMap.secondsForTurn
-                )
-            )
-            battleModel.showTimer(true)
-        }
-        battleModel.cleanEnemyRecord()
-    }
-
-    DisposableEffect(movementUiState.battleGameRepository) {
-        val stopListening = battleModel.listenForCapitulation(timerModel, databaseModel)
-        onDispose { stopListening?.invoke() }
+    LaunchedEffect(battleModel, timerModel) {
+        battleModel.runBattle(selectArmyUiState, timerModel.turnTimer)
     }
 
     EndOfGameDialog(
-        toShow = movementUiState.showEndOfGameDialog,
+        toShow = gameFinished && movementUiState.showEndOfGameDialog,
         onDismissRequest = endOfGame,
         confirmButton = endOfGame,
         dismissButton = { battleModel.showEndOfGameDialog(false) },
@@ -140,7 +107,7 @@ fun BattleMapScreen(
     CapitulateInfoDialog(
         toShow = movementUiState.showCapitulateInfoDialog,
         onCapitulateButtonClick = {
-            battleModel.capitulate(timerModel = timerModel, databaseModel = databaseModel)
+            battleModel.capitulate()
             endOfGame()
         },
         onDismissRequest = { battleModel.showCapitulateInfoDialog(toShow = false) }
@@ -187,7 +154,7 @@ fun BattleMapScreen(
                 timerModel = timerModel
             )
         }
-        if(!tutorialUiState.locationOwnerTask && movementUiState.turn == 2){
+        if(!tutorialUiState.locationOwnerTask && turnState.turn == 2){
             tutorialModel.showTutorialDialog(
                 toShow = true,
                 task = Tasks.LOCATION_OWNER,
@@ -224,7 +191,7 @@ fun BattleMapScreen(
         locationList = locationListUiState.locationList
     )
 
-    if (movementUiState.draggingIconVisible && movementUiState.startPosition != null && !movementUiState.endOfGame) {
+    if (movementUiState.draggingIconVisible && movementUiState.startPosition != null && !gameFinished) {
         Box(
             modifier = Modifier
                 .offset {
@@ -255,7 +222,7 @@ fun BattleMapScreen(
             modifier = modifier
                 .fillMaxWidth()
         ) {
-            if(movementUiState.showTimer){
+            if(turnState.timed){
                 TimerCard(timerModel)
             }
 
@@ -276,15 +243,15 @@ fun BattleMapScreen(
 
 
 
-    if(!movementUiState.showProgressIndicator){
+    if(progress == null){
         Row(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(start = 16.dp, bottom = 16.dp, end = 16.dp),
             verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = if(!movementUiState.endOfGame)Arrangement.SpaceBetween else Arrangement.End
+            horizontalArrangement = if(!gameFinished)Arrangement.SpaceBetween else Arrangement.End
         ) {
-            if(!movementUiState.endOfGame){
+            if(!gameFinished){
                 Button(
                     onClick = { battleModel.showCapitulateInfoDialog(toShow = true) }
                 ) {
@@ -297,18 +264,24 @@ fun BattleMapScreen(
             FloatingActionButton(
                 modifier = modifier,
                 onClick = {
-                    coroutineScope.launch {
-                        battleModel.setOnClickButtonNextTurn(
-                            context = context,
-                            timerModel = timerModel,
-                            databaseModel = databaseModel,
-                            navigateToMainMenuScreen = endOfGame
-                        )
+                    when {
+                        gameFinished -> {
+                            battleModel.showEndOfGameDialog(false)
+                            battleModel.showCapitulateInfoDialog(false)
+                            endOfGame()
+                        }
+                        turnState.phase == BattleTurnPhase.SETUP -> Unit
+                        battleModel.hasExceededBaseLimit() -> Toast.makeText(
+                            context,
+                            R.string.manyShipsOnBaseLocation,
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                        else -> battleModel.finishTurn()
                     }
                 }
             ) {
                 Text(
-                    text = battleModel.setOnClickButtonNextTurnText(context = context),
+                    text = stringResource(if (gameFinished) R.string.exit else R.string.nextTurn),
                     modifier = modifier.padding(16.dp)
                 )
             }
@@ -323,10 +296,9 @@ fun BattleMapScreen(
         settingsModel = settingsModel
     )
 
-    ProgressIndicator(
-        toShow = movementUiState.showProgressIndicator,
-        type = movementUiState.progressIndicatorType
-    )
+    if (progress != null) {
+        ProgressIndicator(toShow = true, type = progress)
+    }
 
 
 

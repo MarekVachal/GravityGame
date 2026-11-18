@@ -68,7 +68,7 @@ fun SelectArmyScreen(
     val column1Weight = 2f
     val buttonWeight = 1f
     val column3Weight = 0.5f
-    val isEnabled: Boolean = !selectArmyModel.checkArmySize(battleModel)
+    val isEnabled: Boolean = !selectArmyModel.checkArmySize(battleModel.battleMap.shipLimitOnMap)
 
     TutorialDialog(
         tutorialModel = tutorialModel,
@@ -252,10 +252,7 @@ fun SelectArmyScreen(
             }
             FloatingActionButton(
                 onClick = {
-                    if (selectArmyModel.checkArmySize(battleModel)) {
-                        battleModel.createArmyList(
-                            selectArmyUiState = selectArmyModel.selectArmyUiState.value
-                        )
+                    if (selectArmyModel.checkArmySize(battleModel.battleMap.shipLimitOnMap)) {
                         if(selectArmyModel.isOnlineGame()){
                             onOnlineButtonClicked()
                         } else {

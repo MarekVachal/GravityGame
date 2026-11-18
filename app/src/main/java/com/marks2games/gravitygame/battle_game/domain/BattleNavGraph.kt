@@ -86,7 +86,6 @@ fun NavGraphBuilder.battleNavGraph (
                 endOfGame = { navController.navigate(Destinations.MAINMENU.name) },
                 settingsModel = settingModel,
                 context = context,
-                databaseModel = databaseModel,
                 selectArmyModel = selectArmyModel
             )
         }

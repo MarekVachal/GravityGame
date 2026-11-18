@@ -22,8 +22,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import androidx.room.Room
-import com.marks2games.gravitygame.battle_game.data.room_database.AppDatabase
+import com.marks2games.gravitygame.battle_game.data.room_database.BattleRepository
 import com.marks2games.gravitygame.ui.screens.settingScreen.SettingViewModel
 import com.marks2games.gravitygame.ui.theme.GravityGameTheme
 import com.google.firebase.auth.FirebaseAuth
@@ -67,13 +66,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private val roomDatabase: AppDatabase by lazy {
-        Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java,
-            "battle_results.db"
-        ).build()
-    }
+    @Inject
+    lateinit var battleRepository: BattleRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,7 +91,7 @@ class MainActivity : ComponentActivity() {
                     navController = rememberNavController()
                     Routes(
                         activity = this,
-                        database = roomDatabase,
+                        battleRepository = battleRepository,
                         owner = this,
                         window = window,
                         navController = navController,

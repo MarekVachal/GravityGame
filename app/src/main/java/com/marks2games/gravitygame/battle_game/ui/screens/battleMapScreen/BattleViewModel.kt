@@ -1,44 +1,26 @@
 package com.marks2games.gravitygame.battle_game.ui.screens.battleMapScreen
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.marks2games.gravitygame.R
-import com.marks2games.gravitygame.battle_game.domain.ai.GameState
-import com.marks2games.gravitygame.battle_game.domain.ai.MCTS
-import com.marks2games.gravitygame.battle_game.data.room_database.BattleResult
-import com.marks2games.gravitygame.battle_game.data.room_database.DatabaseViewModel
-import com.marks2games.gravitygame.battle_game.data.BattleGameRepositoryFactory
-import com.marks2games.gravitygame.battle_game.data.model.realtime_database.SimplifiedMove
-import com.marks2games.gravitygame.core.data.model.enum_class.toShipType
-import com.marks2games.gravitygame.battle_game.ui.maps.BattleMap
-import com.marks2games.gravitygame.battle_game.data.model.enum_class.BattleMapEnum
-import com.marks2games.gravitygame.battle_game.ui.maps.TinyMap
-import com.marks2games.gravitygame.core.data.model.Cruiser
-import com.marks2games.gravitygame.core.data.model.Destroyer
-import com.marks2games.gravitygame.battle_game.data.model.enum_class.EndOfGameType
-import com.marks2games.gravitygame.core.data.model.Ghost
-import com.marks2games.gravitygame.battle_game.data.model.Location
-import com.marks2games.gravitygame.battle_game.data.model.LocationList
-import com.marks2games.gravitygame.core.data.model.Ship
-import com.marks2games.gravitygame.core.data.model.enum_class.ShipType
-import com.marks2games.gravitygame.core.data.model.Warper
-import com.marks2games.gravitygame.battle_game.ui.utils.timer.TimerViewModel
-import com.marks2games.gravitygame.battle_game.data.model.enum_class.Players
-import com.marks2games.gravitygame.battle_game.domain.calculateBattle
-import com.marks2games.gravitygame.battle_game.data.model.MovementRecord
 import com.marks2games.gravitygame.battle_game.data.SharedPlayerDataRepository
-import com.marks2games.gravitygame.battle_game.ui.screens.selectArmyScreen.SelectArmyUiState
+import com.marks2games.gravitygame.battle_game.data.model.enum_class.BattleMapEnum
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.BattleResultEnum
-import com.marks2games.gravitygame.core.data.model.enum_class.ProgressIndicatorType
+import com.marks2games.gravitygame.battle_game.data.model.enum_class.EndOfGameType
+import com.marks2games.gravitygame.battle_game.data.model.enum_class.Players
+import com.marks2games.gravitygame.battle_game.domain.BattleEngine
+import com.marks2games.gravitygame.battle_game.domain.Battlefield
+import com.marks2games.gravitygame.battle_game.domain.turn.BattleClock
+import com.marks2games.gravitygame.battle_game.domain.turn.BattleTurnCoordinator
+import com.marks2games.gravitygame.battle_game.ui.maps.BattleMap
+import com.marks2games.gravitygame.battle_game.ui.maps.TinyMap
+import com.marks2games.gravitygame.battle_game.ui.screens.selectArmyScreen.SelectArmyUiState
+import com.marks2games.gravitygame.core.data.model.enum_class.ShipType
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.sentry.Sentry
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
@@ -46,33 +28,73 @@ import javax.inject.Inject
 @HiltViewModel
 class BattleViewModel @Inject constructor(
     private val sharedPlayerModel: SharedPlayerDataRepository,
-    private val battleGameRepositoryFactory: BattleGameRepositoryFactory
-): ViewModel() {
+    private val engine: BattleEngine,
+    private val turnCoordinator: BattleTurnCoordinator,
+) : ViewModel() {
 
     private val _movementUiState = MutableStateFlow(MovementUiState())
-    val movementUiState: StateFlow<MovementUiState> = _movementUiState.asStateFlow()
-    private var _locationListUiState = MutableStateFlow(LocationList())
-    val locationListUiState: StateFlow<LocationList> = _locationListUiState.asStateFlow()
-    private val _movementRecord = MutableStateFlow(MovementRecord())
-    val movementRecord: StateFlow<MovementRecord> = _movementRecord.asStateFlow()
+    val movementUiState = _movementUiState.asStateFlow()
+    val locationListUiState = engine.locationList
+    val movementRecord = engine.movementRecord
+    val turnState = turnCoordinator.state
     var battleMap: BattleMap = sharedPlayerModel.getBattleMap()
-    private val mctsIterations = 500
-    private val difficulty = 5
+        private set
 
-    fun getSharedPlayerModel(): SharedPlayerDataRepository {
-        return sharedPlayerModel
+    init {
+        setEngineMap()
     }
+
+    fun createBattleMap(selectedMap: BattleMapEnum) {
+        battleMap = when (selectedMap) {
+            BattleMapEnum.TINY -> TinyMap()
+        }
+        sharedPlayerModel.updateBattleMap(selectedMap)
+        setEngineMap()
+    }
+
+    private fun setEngineMap() {
+        engine.setMap(
+            field = Battlefield(
+                player1Base = battleMap.player1Base,
+                player2Base = battleMap.player2Base,
+                shipLimitOnPosition = battleMap.shipLimitOnPosition,
+                shipLimitOnMap = battleMap.shipLimitOnMap,
+            ),
+            locations = battleMap.locationList,
+        )
+    }
+
+    private fun createArmyList(selectArmyUiState: SelectArmyUiState) {
+        engine.createArmy(
+            player = getPlayer(),
+            cruisers = selectArmyUiState.numberCruisers,
+            destroyers = selectArmyUiState.numberDestroyers,
+            ghosts = selectArmyUiState.numberGhosts,
+        )
+    }
+
+    suspend fun runBattle(army: SelectArmyUiState, timer: BattleClock) {
+        _movementUiState.update {
+            it.copy(showCapitulateInfoDialog = false, showEndOfGameDialog = true)
+        }
+        createArmyList(army)
+        turnCoordinator.runBattle(
+            timer = timer,
+            secondsPerTurn = battleMap.secondsForTurn,
+            resultScope = viewModelScope,
+            clearMovement = ::cleanMovementValues,
+        )
+    }
+
+    fun hasExceededBaseLimit(): Boolean = engine.hasExceededBaseLimit(getPlayer())
+
+    fun finishTurn() = turnCoordinator.requestTurn()
+
+    fun capitulate() = turnCoordinator.capitulate()
+
 
     fun getPlayer(): Players {
         return sharedPlayerModel.getPlayer()
-    }
-
-    fun showTimer(toShow: Boolean){
-        _movementUiState.update { state ->
-            state.copy(
-                showTimer = toShow
-            )
-        }
     }
 
     fun isMyLocation(location: Int): Boolean?{
@@ -84,91 +106,12 @@ class BattleViewModel @Inject constructor(
         }
     }
 
-    fun initializeBattleGameRepository(){
-        _movementUiState.update { state ->
-            state.copy(
-                battleGameRepository = battleGameRepositoryFactory.create()
-            )
-        }
-    }
-
-    suspend fun updateLocations(
-        isSetup: Boolean,
-        timerModel: TimerViewModel,
-        databaseModel: DatabaseViewModel
-    ) {
-        movementUiState.value.battleGameRepository?.sendUpdatedLocations(
-            updatedLocations = locationListUiState.value.locationList,
-            onOpponentReady = { newLocationList ->
-                if (!movementUiState.value.endOfGame) {
-                    updateOpponentData(simplifiedMove = newLocationList, isSetup = isSetup)
-                }
-            },
-            timeoutMillis = getTimeoutMillis(timerModel = timerModel),
-            onOpponentDisconnected = disconnected@{
-                if (movementUiState.value.endOfGame) return@disconnected
-                sharedPlayerModel.updateBattleResult(BattleResultEnum.WIN)
-                endOfGame(
-                    timerModel = timerModel,
-                    isCapitulation = false,
-                    isOpponentDisconnected = true,
-                    databaseModel = databaseModel,
-                )
-            }
-            )?: return
-    }
-
-    private fun updateOpponentData(simplifiedMove: SimplifiedMove, isSetup: Boolean) {
-        val newList = locationListUiState.value.locationList
-        if (!isSetup) {
-            simplifiedMove.acceptableLost.forEach { record ->
-                newList[record.locationId].enemyAcceptableLost.intValue = record.lostValue
-            }
-            simplifiedMove.simplifiedShipList.forEach { ship ->
-                val shipInIssue = newList[ship.startingPosition!!].enemyShipList.find { foundShip ->
-                    ship.id == foundShip.id
-                }
-                if (shipInIssue != null) {
-                    newList[ship.currentPosition!!].enemyShipList.add(shipInIssue)
-                    newList[ship.startingPosition!!].enemyShipList.remove(shipInIssue)
-                    shipInIssue.startingPosition = ship.currentPosition
-                }
-            }
-        } else {
-            simplifiedMove.simplifiedShipList.forEach { ship ->
-                val createdShip = when (ship.shipType.toShipType()) {
-                    ShipType.CRUISER -> Cruiser(ship.id)
-                    ShipType.DESTROYER -> Destroyer(ship.id)
-                    ShipType.GHOST -> Ghost(ship.id)
-                    ShipType.WARPER -> Warper(ship.id)
-                    null -> return
-                }
-                createdShip.currentPosition = ship.currentPosition
-                createdShip.startingPosition = ship.startingPosition
-                newList[ship.startingPosition!!].enemyShipList.add(createdShip)
-            }
-        }
-        _locationListUiState.update { state ->
-            state.copy(locationList = newList)
-        }
-    }
-
-    private fun getTimeoutMillis(timerModel: TimerViewModel): Long{
-        val minute = timerModel.timerUiState.value.minute ?: 0
-        val second = timerModel.timerUiState.value.second ?: 0
-        return ((minute * 60 + second) * 1000) + 2000L
-    }
-
     fun isOnlineGame(isOnline: Boolean) {
         sharedPlayerModel.updateIsOnline(isOnline)
     }
 
-    private fun updateBattleMap(battleMap: BattleMapEnum) {
-        sharedPlayerModel.updateBattleMap(battleMap)
-    }
-
     fun onDragStart(offset: Offset, location: Int) {
-        if (isAnyShipInLocation(location = location)) {
+        if (engine.canStartMove(location)) {
             val correctionSize = battleMap.planetSize.value
             val rect = movementUiState.value.mapBoxCoordinates[location]
             val correctionY = (rect?.top ?: 0.0f) - correctionSize
@@ -231,34 +174,19 @@ class BattleViewModel @Inject constructor(
 
     private fun setStartLocationMovementOrder(position: Int) {
         changeMovementPosition(isStart = true, position = position)
-        if (!isWarperPresent(position)) {
-            movementUiState.value.startPosition?.let {
-                getAccessibleConnections(it)
-                changeDraggingIconVisible(true)
-            }
-        } else {
-            openAllLocations(position)
-            changeDraggingIconVisible(true)
-        }
+        engine.markReachableLocations(position, sharedPlayerModel.playerData.value.opponent)
+        changeDraggingIconVisible(true)
     }
 
     private fun setEndLocationMovementOrder(position: Int) {
-        if (movementUiState.value.startPosition != null) {
-            if (movementUiState.value.startPosition == position) {
-                cleanAfterUnsuccessfulMovement()
-            } else {
-                if (!isWarperPresent(movementUiState.value.startPosition) && checkArmyReach(position = position)) {
-                    changeMovementPosition(isStart = false, position = position)
-                    changeWarperPresent(isPresent = false)
-                    showArmyDialog(toShow = true)
-                } else if (isWarperPresent(movementUiState.value.startPosition)) {
-                    changeMovementPosition(isStart = false, position = position)
-                    changeWarperPresent(isPresent = true)
-                    showArmyDialog(toShow = true)
-                } else {
-                    cleanAfterUnsuccessfulMovement()
-                }
-            }
+        val start = movementUiState.value.startPosition ?: return
+        val hasWarper = engine.hasWarper(start)
+        if (start != position && (hasWarper || engine.isReachable(position))) {
+            changeMovementPosition(isStart = false, position = position)
+            changeWarperPresent(hasWarper)
+            showArmyDialog(toShow = true)
+        } else {
+            cleanAfterUnsuccessfulMovement()
         }
     }
 
@@ -270,31 +198,9 @@ class BattleViewModel @Inject constructor(
         }
     }
 
-    private fun showProgressIndicator(toShow: Boolean, progressIndicatorType: ProgressIndicatorType) {
-        _movementUiState.update { state ->
-            state.copy(
-                showProgressIndicator = toShow,
-                progressIndicatorType = progressIndicatorType
-            )
-        }
-    }
-
     fun showCapitulateInfoDialog(toShow: Boolean) {
         _movementUiState.update { state ->
             state.copy(showCapitulateInfoDialog = toShow)
-        }
-    }
-
-    fun writeDestroyedShips(isSimulation: Boolean, myLostShip: Int, enemyLostShip: Int) {
-        if (!isSimulation) {
-            val newEnemyLostShip = movementUiState.value.enemyShipsDestroyed + enemyLostShip
-            val newMyLostShip = movementUiState.value.myLostShips + myLostShip
-            _movementUiState.update { state ->
-                state.copy(
-                    enemyShipsDestroyed = newEnemyLostShip,
-                    myLostShips = newMyLostShip
-                )
-            }
         }
     }
 
@@ -322,14 +228,16 @@ class BattleViewModel @Inject constructor(
         startLocation: Int?,
         endLocation: Int?
     ): Boolean {
-        return checkAddShipAccordingToNumberOfShips(shipType = shipType) &&
-                checkAddShipAccordingToMovementRestriction(
-                    isWarperPresent = isWarperPresent,
-                    endLocation = endLocation,
-                    ship = shipType,
-                    startLocation = startLocation
-                ) &&
-                checkShipLimitOnPosition()
+        val state = movementUiState.value
+        return checkAddShipAccordingToNumberOfShips(shipType) && engine.canAddShip(
+            shipType = shipType,
+            start = startLocation,
+            destination = endLocation,
+            isWarperPresent = isWarperPresent,
+            shipsAlreadySelected = state.movingCruisers + state.movingDestroyers +
+                state.movingGhosts + state.movingWarpers,
+            opponent = sharedPlayerModel.playerData.value.opponent,
+        )
     }
 
     private fun checkAddShipAccordingToNumberOfShips(shipType: ShipType): Boolean {
@@ -339,499 +247,6 @@ class BattleViewModel @Inject constructor(
             ShipType.GHOST -> movementUiState.value.ghostToMove
             ShipType.WARPER -> movementUiState.value.warperToMove
         } > 0
-    }
-
-    private fun checkAddShipAccordingToMovementRestriction(
-        isWarperPresent: Boolean,
-        ship: ShipType,
-        startLocation: Int?,
-        endLocation: Int?
-    ): Boolean {
-        if (ship == ShipType.WARPER) {
-            return true
-        } else if (!isWarperPresent) {
-            return true
-        } else {
-            val connectionList = startLocation?.let {
-                locationListUiState.value.locationList[it].getConnectionsList()
-            }
-            connectionList?.forEach { if (it == endLocation && !checkOwnersRestriction(startLocation, endLocation)) return true } ?: return false
-        }
-        return false
-    }
-
-    private fun turnCounter() {
-        val count = movementUiState.value.turn + 1
-        _movementUiState.update { state ->
-            state.copy(turn = count)
-        }
-    }
-
-    fun createBattleMap(selectedMap: BattleMapEnum) {
-        battleMap = when (selectedMap) {
-            BattleMapEnum.TINY -> TinyMap()
-        }
-        _locationListUiState.update { state ->
-            state.copy(locationList = battleMap.locationList)
-        }
-        _locationListUiState.value.locationList[battleMap.player1Base].owner.value = Players.PLAYER1
-        _locationListUiState.value.locationList[battleMap.player2Base].owner.value = Players.PLAYER2
-        updateBattleMap(selectedMap)
-    }
-
-    fun createArmyList(selectArmyUiState: SelectArmyUiState) {
-        val newLocationList = locationListUiState.value.locationList
-        newLocationList.forEach { location ->
-            location.myShipList.clear()
-            location.enemyShipList.clear()
-        }
-
-        val startingLocationIndex = findPlayerBaseLocation()
-        val location = newLocationList[startingLocationIndex]
-
-        val shipTypes = listOf(
-            selectArmyUiState.numberCruisers to ::Cruiser,
-            selectArmyUiState.numberDestroyers to ::Destroyer,
-            selectArmyUiState.numberGhosts to ::Ghost
-        )
-
-        var indexNumber = 0
-        shipTypes.forEach { (count, constructor) ->
-            repeat(count) {
-                location.myShipList.add(constructor(indexNumber++))
-            }
-        }
-        location.myShipList.add(Warper(indexNumber))
-
-        location.myShipList.forEach { ship ->
-            ship.currentPosition = startingLocationIndex
-            ship.startingPosition = startingLocationIndex
-        }
-        _locationListUiState.update { state ->
-            state.copy(locationList = newLocationList)
-        }
-    }
-
-    private fun findPlayerBaseLocation(): Int {
-        return if (sharedPlayerModel.playerData.value.player == Players.PLAYER1) {
-            battleMap.player1Base
-        } else {
-            battleMap.player2Base
-        }
-    }
-
-    fun findOpponentBaseLocation(): Int {
-        return if (sharedPlayerModel.playerData.value.opponent == Players.PLAYER1) {
-            battleMap.player1Base
-        } else {
-            battleMap.player2Base
-        }
-    }
-
-    fun initializeEnemyShipList(enemyShipList: List<Ship>) {
-        val startingLocationIndex = findOpponentBaseLocation()
-        enemyShipList.forEach { ship ->
-            ship.currentPosition = startingLocationIndex
-            ship.startingPosition = startingLocationIndex
-        }
-        _locationListUiState.value.locationList[startingLocationIndex].enemyShipList.addAll(
-            enemyShipList
-        )
-
-    }
-
-    private fun wasBattleOnLocation(location: Int, wasBattle: Boolean) {
-        val newLocationList = locationListUiState.value.locationList.toMutableList()
-        newLocationList[location].wasBattleHere.value = wasBattle
-        _locationListUiState.update { state ->
-            state.copy(locationList = newLocationList.toList())
-        }
-    }
-
-    private fun cleanBattleOnLocations() {
-        locationListUiState.value.locationList.forEach { location ->
-            wasBattleOnLocation(
-                location.id,
-                wasBattle = false
-            )
-        }
-    }
-
-    private fun setMapsOfShipsBeforeBattle(location: Int) {
-        val newLocationList = locationListUiState.value.locationList
-        val myOriginalShipList: MutableMap<ShipType, Int> = newLocationList[location].myShipList
-            .groupingBy { it.type }
-            .eachCount()
-            .toMutableMap()
-        val enemyOriginalShipList: MutableMap<ShipType, Int> =
-            newLocationList[location].enemyShipList
-                .groupingBy { it.type }
-                .eachCount()
-                .toMutableMap()
-        ShipType.entries.forEach { shipType ->
-            myOriginalShipList.putIfAbsent(shipType, 0)
-            enemyOriginalShipList.putIfAbsent(shipType, 0)
-        }
-        newLocationList[location].originalMyShipList.clear()
-        newLocationList[location].originalMyShipList.putAll(myOriginalShipList)
-        newLocationList[location].originalEnemyShipList.clear()
-        newLocationList[location].originalEnemyShipList.putAll(enemyOriginalShipList)
-
-        _locationListUiState.update { state ->
-            state.copy(locationList = newLocationList)
-        }
-    }
-
-    private fun conductBattles() {
-        val newLocationList = locationListUiState.value.locationList
-        _locationListUiState.value.locationList.forEach {
-            if (it.myShipList.isNotEmpty() && it.enemyShipList.isNotEmpty()) {
-                wasBattleOnLocation(location = it.id, wasBattle = true)
-                setMapsOfShipsBeforeBattle(it.id)
-                val (winner, myLostShips, enemyLostShips) = (calculateBattle(
-                    location = it,
-                    player = sharedPlayerModel.playerData.value.player,
-                    opponent = sharedPlayerModel.playerData.value.opponent,
-                    isSimulation = false,
-                    writeDestroyedShips = (::writeDestroyedShips)
-                )
-                        )
-                when (winner) {
-                    Players.PLAYER1 -> newLocationList[it.id].owner.value = Players.PLAYER1
-                    Players.PLAYER2 -> newLocationList[it.id].owner.value = Players.PLAYER2
-                    Players.NONE -> newLocationList[it.id].owner.value =
-                        newLocationList[it.id].owner.value
-                }
-                newLocationList[it.id].mapMyLost.clear()
-                newLocationList[it.id].mapMyLost.putAll(myLostShips)
-                newLocationList[it.id].mapEnemyLost.clear()
-                newLocationList[it.id].mapEnemyLost.putAll(enemyLostShips)
-                newLocationList[it.id].lastBattleResult = when (winner) {
-                    Players.PLAYER1 -> {
-                        when (sharedPlayerModel.playerData.value.player == Players.PLAYER1) {
-                            true -> BattleResultEnum.WIN
-                            false -> BattleResultEnum.LOSE
-                        }
-                    }
-
-                    Players.PLAYER2 -> {
-                        when (sharedPlayerModel.playerData.value.player == Players.PLAYER1) {
-                            true -> BattleResultEnum.LOSE
-                            false -> BattleResultEnum.WIN
-                        }
-                    }
-
-                    Players.NONE -> BattleResultEnum.DRAW
-                }
-            }
-            if (it.myShipList.isNotEmpty() && it.enemyShipList.isEmpty() && it.owner.value != sharedPlayerModel.playerData.value.player) {
-                newLocationList[it.id].owner.value = sharedPlayerModel.playerData.value.player
-            }
-            if (it.myShipList.isEmpty() && it.enemyShipList.isNotEmpty() && it.owner.value != sharedPlayerModel.playerData.value.opponent) {
-                newLocationList[it.id].owner.value = sharedPlayerModel.playerData.value.opponent
-            }
-        }
-        _locationListUiState.update { state ->
-            state.copy(locationList = newLocationList)
-        }
-    }
-
-    private fun cleanEnemyAcceptableLost() {
-        val newLocationList = locationListUiState.value.locationList.toMutableList()
-        newLocationList.forEach { location -> location.enemyAcceptableLost.intValue = 1 }
-        _locationListUiState.update { state ->
-            state.copy(locationList = newLocationList.toList())
-        }
-    }
-
-    suspend fun setOnClickButtonNextTurn(
-        navigateToMainMenuScreen: () -> Unit,
-        context: Context,
-        timerModel: TimerViewModel,
-        databaseModel: DatabaseViewModel
-    ) {
-        if (!movementUiState.value.endOfGame) {
-            if (hasExceededShipLimit(findPlayerBaseLocation())) {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.manyShipsOnBaseLocation),
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                finishTurn(
-                    timerModel = timerModel,
-                    databaseModel = databaseModel
-                )
-
-            }
-        } else {
-            navigateToMainMenuScreen()
-            showEndOfGameDialog(false)
-            changeEndOfGameState(false)
-            showCapitulateInfoDialog(false)
-        }
-    }
-
-    fun resetUiStateForNewBattle() {
-        showProgressIndicator(false, ProgressIndicatorType.NEW_TURN)
-        changeEndOfGameState(false)
-        showCapitulateInfoDialog(false)
-        showEndOfGameDialog(false)
-    }
-
-    fun setOnClickButtonNextTurnText(context: Context): String {
-        return if (!movementUiState.value.endOfGame) {
-            context.getString(R.string.nextTurn)
-        } else {
-            context.getString(R.string.exit)
-        }
-    }
-
-    suspend fun finishTurn(timerModel: TimerViewModel, databaseModel: DatabaseViewModel) {
-        if (movementUiState.value.endOfGame) return
-        timerModel.stopTimer()
-        cleanBattleOnLocations()
-        cleanHasMoved()
-        cleanRecordsForTurn()
-        cleanMovementValues()
-        if(movementUiState.value.turn == 0){
-            randomMoveForFirstTurn()
-        }
-        turnCounter()
-        if (sharedPlayerModel.getIsOnline()) {
-            showProgressIndicator(
-                toShow = true,
-                progressIndicatorType = ProgressIndicatorType.WAITING_FOR_MOVE
-            )
-            try {
-                updateLocations(
-                    isSetup = false,
-                    timerModel = timerModel,
-                    databaseModel = databaseModel
-                )
-                if (movementUiState.value.endOfGame) return
-                conductBattles()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Sentry.captureException(e)
-                return
-            }
-        } else {
-            showProgressIndicator(
-                toShow = true,
-                progressIndicatorType = ProgressIndicatorType.AI_CALCULATE
-            )
-            aiMove()
-            conductBattles()
-            cleanEnemyAcceptableLost()
-        }
-        checkEndCondition(timerModel = timerModel, databaseModel = databaseModel)
-        if (!movementUiState.value.endOfGame) {
-            showNewTurnDialog()
-            if (movementUiState.value.endOfGame) return
-            timerModel.resetTimer()
-            timerModel.startTimer()
-        }
-    }
-
-    private suspend fun showNewTurnDialog(){
-        showProgressIndicator(
-            toShow = true,
-            progressIndicatorType = ProgressIndicatorType.NEW_TURN
-        )
-        delay(1000)
-        showProgressIndicator(
-            toShow = false,
-            progressIndicatorType = ProgressIndicatorType.NEW_TURN
-        )
-    }
-
-    private fun writeDataToDatabase(databaseModel: DatabaseViewModel) {
-        databaseModel.insertBattleResult(
-            BattleResult(
-                result = sharedPlayerModel.playerData.value.playerBattleResult,
-                timestamp = System.currentTimeMillis(),
-                enemyShipDestroyed = movementUiState.value.enemyShipsDestroyed,
-                myShipLost = movementUiState.value.myLostShips,
-                turn = movementUiState.value.turn
-            )
-        )
-        cleanBattleResult()
-    }
-
-    private fun cleanBattleResult() {
-        _movementUiState.value = _movementUiState.value.copy(
-            enemyShipsDestroyed = 0,
-            myLostShips = 0,
-            turn = 0
-        )
-    }
-
-    private fun initializeGameState(): GameState {
-        val locationList = locationListUiState.value.locationList
-        val gameMap = battleMap
-        val battleModel = this
-        return GameState(
-            locationList = locationList,
-            battleModel = battleModel,
-            gameMap = gameMap
-        )
-    }
-
-    private suspend fun aiMove() {
-        val state = initializeGameState()
-        val mcts = MCTS(mctsIterations, difficulty)
-        val bestMove = mcts.findBestMove(
-            initialState = state,
-            player = sharedPlayerModel.playerData.value.player,
-            opponent = sharedPlayerModel.playerData.value.opponent
-        )
-        updateUIWithBestMove(bestMove)
-        updateEnemyRecord(bestMove)
-    }
-
-    fun cleanEnemyRecord() {
-        val newList = movementRecord.value.enemyRecord.toMutableList()
-        newList.clear()
-        _movementRecord.update { state ->
-            state.copy(enemyRecord = newList.toList())
-        }
-    }
-
-    private fun updateEnemyRecord(gameState: GameState) {
-        val newList: MutableList<Ship> = mutableListOf()
-        gameState.locationList.forEach { location ->
-            location.enemyShipList.forEach { ship ->
-                if (ship.startingPosition != ship.currentPosition) newList.add(ship)
-            }
-        }
-        _movementRecord.update { state ->
-            state.copy(enemyRecord = newList.toList())
-        }
-    }
-
-    private fun updateUIWithBestMove(gameState: GameState) {
-        _locationListUiState.update { state ->
-            state.copy(locationList = gameState.locationList)
-        }
-    }
-
-    private fun checkEndCondition(timerModel: TimerViewModel, databaseModel: DatabaseViewModel) {
-        val player: Players
-        val opponent: Players
-        val playerBase: Int
-        val opponentBase: Int
-        when(sharedPlayerModel.playerData.value.player) {
-            Players.PLAYER1 -> {
-                player = Players.PLAYER1
-                opponent = Players.PLAYER2
-                playerBase = battleMap.player1Base
-                opponentBase = battleMap.player2Base
-            }
-            Players.PLAYER2 -> {
-                player = Players.PLAYER2
-                opponent = Players.PLAYER1
-                playerBase = battleMap.player2Base
-                opponentBase = battleMap.player1Base
-            }
-            else -> return
-        }
-        val locationList = locationListUiState.value.locationList
-
-        if (locationList[playerBase].owner.value == opponent &&
-            locationList[opponentBase].owner.value == player
-        ) {
-            sharedPlayerModel.updateBattleResult(BattleResultEnum.DRAW)
-            endOfGame(
-                timerModel = timerModel,
-                isCapitulation = false,
-                isOpponentDisconnected = false,
-                databaseModel = databaseModel
-            )
-        } else if (locationList[playerBase].owner.value == opponent ||
-            locationList.all { it.myShipList.isEmpty() } ) {
-            sharedPlayerModel.updateBattleResult(BattleResultEnum.LOSE)
-            endOfGame(
-                timerModel = timerModel,
-                isCapitulation = false,
-                isOpponentDisconnected = false,
-                databaseModel = databaseModel
-            )
-        } else if (locationList[opponentBase].owner.value == player ||
-            locationList.all { it.enemyShipList.isEmpty() }) {
-            sharedPlayerModel.updateBattleResult(BattleResultEnum.WIN)
-            endOfGame(
-                timerModel = timerModel,
-                isCapitulation = false,
-                isOpponentDisconnected = false,
-                databaseModel = databaseModel
-            )
-        }
-    }
-
-    fun capitulate(timerModel: TimerViewModel, databaseModel: DatabaseViewModel) {
-        sharedPlayerModel.updateBattleResult(BattleResultEnum.LOSE)
-        timerModel.cancelTimer()
-        movementUiState.value.battleGameRepository?.capitulate() ?: return
-        endOfGame(
-            timerModel = timerModel,
-            isCapitulation = true,
-            isOpponentDisconnected = false,
-            databaseModel = databaseModel
-        )
-    }
-
-    fun listenForCapitulation(
-        timerModel: TimerViewModel,
-        databaseModel: DatabaseViewModel
-    ): (() -> Unit)? {
-        return movementUiState.value.battleGameRepository?.listenForCapitulation {
-            if (!movementUiState.value.endOfGame) {
-                sharedPlayerModel.updateBattleResult(BattleResultEnum.WIN)
-                endOfGame(
-                    timerModel = timerModel,
-                    isCapitulation = true,
-                    isOpponentDisconnected = false,
-                    databaseModel = databaseModel
-                )
-            }
-        }
-    }
-
-    private fun changeEndOfGameType(endOfGameType: EndOfGameType){
-        _movementUiState.update { state ->
-            state.copy(endOfGameType = endOfGameType)
-        }
-    }
-
-    private fun endOfGame(
-        timerModel: TimerViewModel,
-        isCapitulation: Boolean,
-        isOpponentDisconnected: Boolean,
-        databaseModel: DatabaseViewModel
-    ) {
-        if (isCapitulation) {
-            changeEndOfGameType(EndOfGameType.CAPITULATION)
-            showEndOfGameDialog(true)
-        } else if (isOpponentDisconnected){
-            changeEndOfGameType(EndOfGameType.DISCONNECTED)
-            showEndOfGameDialog(true)
-        } else {
-            changeEndOfGameType(EndOfGameType.REGULAR)
-            showEndOfGameDialog(true)
-        }
-        changeEndOfGameState(true)
-        showProgressIndicator(false, ProgressIndicatorType.NEW_TURN)
-        writeDataToDatabase(databaseModel)
-        movementUiState.value.battleGameRepository?.deleteRoom(isOpponentDisconnected)?: return
-        timerModel.cancelTimer()
-    }
-
-    private fun changeEndOfGameState(isEnd: Boolean) {
-        _movementUiState.update { state ->
-            state.copy(endOfGame = isEnd)
-        }
     }
 
     fun showEndOfGameDialog(toShow: Boolean) {
@@ -844,31 +259,6 @@ class BattleViewModel @Inject constructor(
         _movementUiState.update { state ->
             state.copy(showLocationInfoDialog = toShow)
         }
-    }
-
-    private fun moveShips(locationList: MutableList<Location>, shipType: ShipType) {
-        val shipInIssueNullable: Ship? =
-            movementUiState.value.startPosition?.let { startLocation ->
-                locationListUiState.value.locationList[startLocation].myShipList.firstOrNull { ship ->
-                    ship.type == shipType && !ship.hasMoved
-                }
-            }
-        val shipInIssue: Ship = shipInIssueNullable?.let { shipInIssueNullable } ?: return
-        movementUiState.value.endPosition?.let { endPosition ->
-            locationList[endPosition].myShipList.add(
-                shipInIssue
-            )
-        }
-
-        movementUiState.value.startPosition?.let { startLocation ->
-            locationList[startLocation].myShipList.remove(
-                shipInIssue
-            )
-        }
-        shipInIssue.hasMoved = true
-        shipInIssue.justMoved = true
-        shipInIssue.startingPosition = movementUiState.value.startPosition
-        shipInIssue.currentPosition = movementUiState.value.endPosition
     }
 
     fun initializeLocationDialogValues() {
@@ -1039,56 +429,6 @@ class BattleViewModel @Inject constructor(
         }
     }
 
-    // Functions for movement records
-    private fun updateRecordsForTurn() {
-        val indexOfEndLocation = movementUiState.value.endPosition
-        val movementMap: MutableMap<Ship, Int> = mutableMapOf()
-        val movementRecord: MutableList<Map<Ship, Int>> =
-            movementRecord.value.movementRecordOfTurn.toMutableList()
-        indexOfEndLocation?.let {
-            locationListUiState.value.locationList[it].myShipList
-                .forEach { ship ->
-                    if (ship.justMoved)
-                        movementMap[ship] = indexOfEndLocation
-                }
-        }
-        movementRecord.add(movementMap.toMap())
-        _movementRecord.update { state ->
-            state.copy(movementRecordOfTurn = movementRecord.toList())
-        }
-    }
-
-    private fun cleanRecordsForTurn() {
-        val newRecord = movementRecord.value.movementRecordOfTurn.toMutableList()
-        newRecord.clear()
-        _movementRecord.update { state ->
-            state.copy(movementRecordOfTurn = newRecord.toList())
-        }
-    }
-
-    fun undoAttack() {
-        if (movementRecord.value.movementRecordOfTurn.isNotEmpty()) {
-            val newLocationList: MutableList<Location> =
-                locationListUiState.value.locationList.toMutableList()
-            val indexOfLastMove = movementRecord.value.movementRecordOfTurn.size - 1
-            movementRecord.value.movementRecordOfTurn[indexOfLastMove].forEach { map ->
-                val ship = map.key
-                ship.startingPosition?.let { newLocationList[it].myShipList.add(ship) }
-                ship.currentPosition?.let { newLocationList[it].myShipList.remove(ship) }
-                ship.currentPosition = ship.startingPosition
-                ship.hasMoved = false
-            }
-            _locationListUiState.update { state ->
-                state.copy(locationList = newLocationList)
-            }
-            val newMovementRecord = movementRecord.value.movementRecordOfTurn.toMutableList()
-            newMovementRecord.removeAt(indexOfLastMove)
-            _movementRecord.update { state ->
-                state.copy(movementRecordOfTurn = newMovementRecord.toList())
-            }
-        }
-    }
-
     fun getNumberShipsForRecord(
         shipType: ShipType,
         location1: Int,
@@ -1133,60 +473,29 @@ class BattleViewModel @Inject constructor(
         }
     }
 
-    private fun getAccessibleConnections(location: Int) {
-        val connections = locationListUiState.value.locationList[location].getConnectionsList()
-        for (i in locationListUiState.value.locationList.indices) {
-            if (connections.any {
-                    it == i &&
-                            locationListUiState.value.locationList[it].myShipList.size < (battleMap.shipLimitOnPosition) &&
-                            !checkOwnersRestriction(startLocation = location, endLocation = it)
-                }
-            ) {
-                locationListUiState.value.locationList[i].accessible = true
-            }
-        }
-    }
-
-    private fun checkOwnersRestriction(startLocation: Int, endLocation: Int): Boolean {
-        val startLocationOwner = locationListUiState.value.locationList[startLocation].owner.value
-        val endLocationOwner = locationListUiState.value.locationList[endLocation].owner.value
-        val opponent = sharedPlayerModel.playerData.value.opponent
-        return startLocationOwner == opponent && endLocationOwner == opponent
-    }
-
     fun attack() {
-        val newLocationList: MutableList<Location> =
-            locationListUiState.value.locationList.toMutableList()
-        repeat(movementUiState.value.movingCruisers) {
-            moveShips(locationList = newLocationList, shipType = ShipType.CRUISER)
-        }
-        repeat(movementUiState.value.movingDestroyers) {
-            moveShips(locationList = newLocationList, shipType = ShipType.DESTROYER)
-        }
-        repeat(movementUiState.value.movingGhosts) {
-            moveShips(locationList = newLocationList, shipType = ShipType.GHOST)
-        }
-        repeat(movementUiState.value.movingWarpers) {
-            moveShips(locationList = newLocationList, shipType = ShipType.WARPER)
-        }
-        _locationListUiState.update { state ->
-            state.copy(locationList = newLocationList.toList())
-        }
-        movementUiState.value.endPosition?.let { changeAcceptableLost(position = it) }
-        updateRecordsForTurn()
-        cleanJustMoved()
+        val state = movementUiState.value
+        val start = state.startPosition ?: return
+        val destination = state.endPosition ?: return
+        engine.moveFleet(
+            start = start,
+            destination = destination,
+            fleet = mapOf(
+                ShipType.CRUISER to state.movingCruisers,
+                ShipType.DESTROYER to state.movingDestroyers,
+                ShipType.GHOST to state.movingGhosts,
+                ShipType.WARPER to state.movingWarpers,
+            ),
+            acceptableLoss = state.acceptableLost.toInt(),
+        )
         cleanMovementValues()
         changeWarperPresent(isPresent = false)
     }
 
+    fun undoAttack() = engine.undoLastMove()
+
     private fun changeAcceptableLost(position: Int) {
-        val newLocationList: MutableList<Location> =
-            locationListUiState.value.locationList.toMutableList()
-        val intValue: Int = movementUiState.value.acceptableLost.toInt()
-        newLocationList[position].myAcceptableLost.intValue = intValue
-        _locationListUiState.update { state ->
-            state.copy(locationList = newLocationList.toList())
-        }
+        engine.setAcceptableLoss(position, movementUiState.value.acceptableLost.toInt())
     }
 
     fun changeValueAcceptableLost(value: Float) {
@@ -1213,24 +522,12 @@ class BattleViewModel @Inject constructor(
 
     private fun cleanAfterUnsuccessfulMovement() {
         cleanPositions()
-        cleanAccessibleLocations()
+        engine.clearReachableLocations()
     }
 
     private fun cleanPositions() {
         changeMovementPosition(isStart = true, position = null)
         changeMovementPosition(isStart = false, position = null)
-    }
-
-    private fun cleanAccessibleLocations() {
-        _locationListUiState.value.locationList.forEach { it.accessible = false }
-    }
-
-    private fun cleanJustMoved() {
-        movementUiState.value.endPosition?.let {
-            _locationListUiState.value.locationList[it].myShipList.forEach { ship ->
-                ship.justMoved = false
-            }
-        }
     }
 
     /**
@@ -1250,45 +547,6 @@ class BattleViewModel @Inject constructor(
         }
     }
 
-    private fun openAllLocations(location: Int) {
-        val newLocationList: MutableList<Location> =
-            locationListUiState.value.locationList.toMutableList()
-        newLocationList.forEach {
-            if (it.id != location && canAddMoreShips(it.id)) it.accessible = true
-        }
-        _locationListUiState.update { state ->
-            state.copy(locationList = newLocationList)
-        }
-    }
-
-    private fun isAnyShipInLocation(location: Int): Boolean {
-        return locationListUiState.value.locationList[location].myShipList.any { it.currentPosition == location && !it.hasMoved }
-    }
-
-    private fun isWarperPresent(location: Int?): Boolean {
-        return location?.let {
-            locationListUiState.value.locationList[it].myShipList.any { ship ->
-                ship.type == ShipType.WARPER && ship.currentPosition == location
-            }
-        } == true
-    }
-
-    private fun checkArmyReach(position: Int?): Boolean {
-        return position?.let { locationListUiState.value.locationList[it].accessible } == true
-    }
-
-    private fun cleanHasMoved() {
-        val newLocationList = locationListUiState.value.locationList
-        newLocationList.forEach { location ->
-            location.myShipList.forEach { ship ->
-                ship.hasMoved = false
-            }
-        }
-        _locationListUiState.update { state ->
-            state.copy(locationList = newLocationList)
-        }
-    }
-
     fun getNumberOfShip(
         location: Int?,
         shipType: ShipType,
@@ -1303,20 +561,6 @@ class BattleViewModel @Inject constructor(
         } ?: 0
     }
 
-    private fun canAddMoreShips(location: Int?): Boolean {
-        return location?.let {
-            val locationInstance = locationListUiState.value.locationList[it]
-            locationInstance.canAddMoreShips(battleMap.shipLimitOnPosition)
-        } == true
-    }
-
-    private fun hasExceededShipLimit(location: Int?): Boolean {
-        return location?.let {
-            val locationInstance = locationListUiState.value.locationList[it]
-            locationInstance.hasExceededShipLimit(battleMap.shipLimitOnPosition)
-        } == true
-    }
-
     private fun cleanMovingShip() {
         _movementUiState.update { state ->
             state.copy(
@@ -1328,20 +572,6 @@ class BattleViewModel @Inject constructor(
         }
     }
 
-    private fun checkShipLimitOnPosition(): Boolean {
-        val totalShipsOnPosition: Int
-        val shipsAlreadyOnPosition =
-            movementUiState.value.endPosition?.let { locationListUiState.value.locationList[it].myShipList.size }
-                ?: 100
-        val shipsMovingOnPosition =
-            movementUiState.value.movingCruisers +
-                    movementUiState.value.movingDestroyers +
-                    movementUiState.value.movingGhosts +
-                    movementUiState.value.movingWarpers
-        totalShipsOnPosition = shipsAlreadyOnPosition + shipsMovingOnPosition
-        return battleMap.shipLimitOnPosition > totalShipsOnPosition
-    }
-
     private fun cleanAcceptableLost() {
         _movementUiState.update { state ->
             state.copy(acceptableLost = 1.0f)
@@ -1350,7 +580,7 @@ class BattleViewModel @Inject constructor(
 
     fun cleanMovementValues() {
         cleanPositions()
-        cleanAccessibleLocations()
+        engine.clearReachableLocations()
         cleanMovingShip()
         cleanAcceptableLost()
         showArmyDialog(toShow = false)
@@ -1385,7 +615,7 @@ class BattleViewModel @Inject constructor(
                 BattleResultEnum.DRAW -> context.getString(R.string.titleDrawGame)
             }
         } else {
-            when(movementUiState.value.endOfGameType){
+            when(turnState.value.endReason ?: EndOfGameType.REGULAR){
                 EndOfGameType.CAPITULATION -> context.getString(R.string.winViaCapitulation)
                 EndOfGameType.DISCONNECTED -> context.getString(R.string.winViaOpponentDisconnection)
                 EndOfGameType.REGULAR -> {
@@ -1395,41 +625,6 @@ class BattleViewModel @Inject constructor(
                         BattleResultEnum.DRAW -> context.getString(R.string.drawGame)
                     }
                 }
-            }
-        }
-    }
-
-    private fun randomMoveForFirstTurn() {
-        val startingIndex = if (sharedPlayerModel.getPlayer() == Players.PLAYER1) {
-            battleMap.player1Base
-        } else {
-            battleMap.player2Base
-        }
-        if(locationListUiState.value.locationList[startingIndex].myShipList.size > battleMap.shipLimitOnPosition){
-            val newList = locationListUiState.value.locationList
-            val shipList = newList[startingIndex].myShipList.toMutableList()
-            do {
-                val possibleLocations: MutableList<Int> = mutableListOf()
-                val connections = newList[startingIndex].getConnectionsList().filter { targetId ->
-                    val targetLocation = newList[targetId]
-                    targetLocation.enemyShipList.size < battleMap.shipLimitOnPosition
-                }
-                val currentIsValid = newList[startingIndex].myShipList.size < battleMap.shipLimitOnPosition
-                possibleLocations.addAll(connections)
-                if (currentIsValid){
-                    possibleLocations.add(startingIndex)
-                }
-                val ship = shipList.random()
-                val randomLocation = possibleLocations.random()
-                newList[startingIndex].myShipList.remove(ship)
-                newList[randomLocation].myShipList.add(ship)
-                ship.currentPosition = randomLocation
-                shipList.remove(ship)
-            } while (shipList.isNotEmpty())
-            _locationListUiState.update { state ->
-                state.copy(
-                    locationList = newList
-                )
             }
         }
     }

@@ -9,7 +9,6 @@ import com.google.firebase.database.*
 import com.marks2games.gravitygame.battle_game.data.model.realtime_database.Room
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.Players
 import com.marks2games.gravitygame.battle_game.data.SharedPlayerDataRepository
-import com.marks2games.gravitygame.battle_game.ui.utils.timer.CoroutineTimer
 import com.marks2games.gravitygame.battle_game.ui.utils.timer.TimerViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
@@ -320,18 +319,9 @@ class MatchmakingViewModel @Inject constructor(
                     onMatchConfirmed()
                 } else {
                     waitingForConfirmation(true)
-                    val timer = CoroutineTimer(
-                        timerModel = timerModel,
-                        secondsForTurn = 60,
-                        onFinishTimer = {
-                            onFinishTimer(
-                                roomRef = roomRef,
-                                context = context,
-                                timerModel = timerModel
-                            )
-                        }
-                    )
-                    timerModel.makeTimer(timer)
+                    timerModel.makeTimer(seconds = 60) {
+                        onFinishTimer(roomRef = roomRef, context = context, timerModel = timerModel)
+                    }
 
                     roomRef.addValueEventListener(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {

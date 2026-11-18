@@ -1,20 +1,18 @@
 package com.marks2games.gravitygame.battle_game.domain.ai
 
 import android.util.Log
-import com.marks2games.gravitygame.battle_game.ui.maps.BattleMap
+import com.marks2games.gravitygame.battle_game.domain.Battlefield
 import com.marks2games.gravitygame.battle_game.data.model.Location
 import com.marks2games.gravitygame.core.data.model.Ship
 import com.marks2games.gravitygame.core.data.model.enum_class.ShipType
 import com.marks2games.gravitygame.battle_game.data.model.deepCopy
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.Players
 import com.marks2games.gravitygame.battle_game.domain.calculateBattle
-import com.marks2games.gravitygame.battle_game.ui.screens.battleMapScreen.BattleViewModel
 import kotlinx.coroutines.*
 
 data class GameState(
     val locationList: List<Location>,
-    val battleModel: BattleViewModel,
-    val gameMap: BattleMap
+    val battlefield: Battlefield
 )
 
 data class Move(val ship: Ship, val targetLocation: Int)
@@ -83,7 +81,7 @@ private fun GameState.evaluateGameState(player: Players, opponent: Players): Int
     }
 
     //Empty AI base remove score
-    if(this.locationList[this.gameMap.player2Base].enemyShipList.isEmpty() &&
+    if(this.locationList[this.battlefield.player2Base].enemyShipList.isEmpty() &&
         this.locationList.any { location -> location.myShipList.any { ship -> ship.type == ShipType.WARPER } }){
         score -= 20
     }
@@ -170,11 +168,11 @@ private fun GameState.generateTurnMove(){
 
 private fun GameState.getPossibleLocations(ship: Ship): List<Int> {
     val currentLocation = ship.currentPosition?.let { this.locationList[it] }
-    val battleLimit = battleModel.battleMap.shipLimitOnPosition
+    val battleLimit = battlefield.shipLimitOnPosition
 
     return when {
-        ship.type == ShipType.WARPER && this.locationList[this.gameMap.player1Base].myShipList.isEmpty()
-        -> listOf(this.gameMap.player1Base)
+        ship.type == ShipType.WARPER && this.locationList[this.battlefield.player1Base].myShipList.isEmpty()
+        -> listOf(this.battlefield.player1Base)
         currentLocation != null
         -> {val connections = currentLocation.getConnectionsList().filter { targetId ->
             val targetLocation = this.locationList[targetId]
@@ -200,12 +198,12 @@ private fun GameState.applyMove(move: Move){
 }
 
 private fun GameState.isWinningState(): Boolean{
-    val player1Base = this.gameMap.player1Base
+    val player1Base = this.battlefield.player1Base
     return this.locationList[player1Base].owner.value == Players.PLAYER2
 }
 
 private fun GameState.isLostState(): Boolean{
-    val player2Base = this.gameMap.player2Base
+    val player2Base = this.battlefield.player2Base
     return this.locationList[player2Base].owner.value == Players.PLAYER1
 }
 
@@ -215,8 +213,8 @@ private fun GameState.isTerminal(): Boolean {
 }
 
 private fun GameState.checkBaseCaptured(player: Players): Boolean {
-    val player1Base = this.gameMap.player1Base
-    val player2Base = this.gameMap.player2Base
+    val player1Base = this.battlefield.player1Base
+    val player2Base = this.battlefield.player2Base
     return when (player) {
         Players.PLAYER1 -> this.locationList[player2Base].owner.value == Players.PLAYER1
         Players.PLAYER2 -> this.locationList[player1Base].owner.value == Players.PLAYER2
@@ -229,7 +227,6 @@ private fun GameState.deepCopy(): GameState {
 
     return GameState(
         locationList = copiedLocationList,
-        battleModel = this.battleModel,
-        gameMap = this.gameMap
+        battlefield = this.battlefield
     )
 }

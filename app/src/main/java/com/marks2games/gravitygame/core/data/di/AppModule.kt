@@ -2,11 +2,14 @@ package com.marks2games.gravitygame.core.data.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.room.Room
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.marks2games.gravitygame.battle_game.data.BattleGameRepositoryFactory
 import com.marks2games.gravitygame.battle_game.data.SharedPlayerDataRepository
+import com.marks2games.gravitygame.battle_game.data.room_database.AppDatabase
+import com.marks2games.gravitygame.battle_game.data.room_database.BattleRepository
 import com.marks2games.gravitygame.building_game.data.repository.EmpireRepositoryImpl
 import com.marks2games.gravitygame.building_game.domain.repository.EmpireRepository
 import com.marks2games.gravitygame.building_game.domain.usecase.utils.CreateNewEmpireUseCase
@@ -84,6 +87,13 @@ object AppModule {
     @Singleton
     fun provideTimeProvider(): TimeProvider {
         return RealTimeProvider()
+    }
+
+    @Provides
+    @Singleton
+    fun provideBattleRepository(@ApplicationContext context: Context): BattleRepository {
+        val database = Room.databaseBuilder(context, AppDatabase::class.java, "battle_results.db").build()
+        return BattleRepository(database.battleResultDao())
     }
 
     @Provides

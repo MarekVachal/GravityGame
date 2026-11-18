@@ -1,6 +1,5 @@
 package com.marks2games.gravitygame.battle_game.domain.ai
 
-import com.marks2games.gravitygame.battle_game.ui.maps.BattleMap
 import com.marks2games.gravitygame.core.data.model.Cruiser
 import com.marks2games.gravitygame.core.data.model.Destroyer
 import com.marks2games.gravitygame.core.data.model.Ghost
@@ -8,9 +7,9 @@ import com.marks2games.gravitygame.core.data.model.Ship
 import com.marks2games.gravitygame.core.data.model.Warper
 import kotlin.random.Random
 
-fun createAiArmy(battleMap: BattleMap): List<Ship>{
+fun createAiArmy(shipLimitOnMap: Int): List<Ship>{
     val enemyArmy: MutableList<Ship> = mutableListOf(Warper(0))
-    val maxUnits = battleMap.shipLimitOnMap - 1
+    val maxUnits = shipLimitOnMap - 1
     var cruisers: Int
     var destroyers: Int
     var ghosts: Int

@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.marks2games.gravitygame.battle_game.data.room_database.AppDatabase
 import com.marks2games.gravitygame.battle_game.data.room_database.BattleRepository
 import com.marks2games.gravitygame.battle_game.data.room_database.DatabaseViewModel
 import com.marks2games.gravitygame.battle_game.data.room_database.ViewModelFactory
@@ -36,7 +35,7 @@ import com.marks2games.gravitygame.ui.screens.statisticScreen.StatisticViewModel
 @Composable
 fun Routes(
     activity: Activity,
-    database: AppDatabase,
+    battleRepository: BattleRepository,
     owner: ViewModelStoreOwner,
     window: Window,
     navController: NavHostController,
@@ -48,9 +47,8 @@ fun Routes(
     val transportModel: TransportViewModel = viewModel()
     val empireViewModel: EmpireViewModel = viewModel()
     val researchModel: ResearchViewModel = viewModel()
-    val repository = BattleRepository(database.battleResultDao())
     val databaseModel: DatabaseViewModel = ViewModelProvider(
-        owner, ViewModelFactory(repository)
+        owner, ViewModelFactory(battleRepository)
     )[DatabaseViewModel::class.java]
     val battleModel: BattleViewModel = viewModel()
     val selectArmyModel: SelectArmyViewModel = viewModel()

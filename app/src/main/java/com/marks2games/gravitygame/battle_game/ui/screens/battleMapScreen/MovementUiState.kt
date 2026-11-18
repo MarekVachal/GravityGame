@@ -1,10 +1,7 @@
 package com.marks2games.gravitygame.battle_game.ui.screens.battleMapScreen
 
 import androidx.compose.ui.geometry.Rect
-import com.marks2games.gravitygame.battle_game.data.BattleGameRepository
-import com.marks2games.gravitygame.battle_game.data.model.enum_class.EndOfGameType
 import com.marks2games.gravitygame.core.data.model.enum_class.ShipType
-import com.marks2games.gravitygame.core.data.model.enum_class.ProgressIndicatorType
 
 data class MovementUiState(
 
@@ -18,22 +15,13 @@ data class MovementUiState(
     val showEndOfGameDialog: Boolean = false,
     val showLocationInfoDialog: Boolean = false,
     val showCapitulateInfoDialog: Boolean = false,
-    val showTimer: Boolean = false,
     val locationForInfo: Int = 0,
     val mapBoxCoordinates: Map<Int, Rect> = mutableMapOf(),
-    val turn: Int = 0,
-    val endOfGameType: EndOfGameType = EndOfGameType.REGULAR,
-    val endOfGame: Boolean = false,
-    val myLostShips: Int = 0,
-    val enemyShipsDestroyed: Int = 0,
     val showBattleInfoOnLocation: Boolean = false,
     val indexOfBattleLocationToShow: Int = 0,
-    val showProgressIndicator: Boolean = false,
-    val progressIndicatorType: ProgressIndicatorType = ProgressIndicatorType.NEW_TURN,
     val draggingIconVisible: Boolean = false,
     val iconPositionX: Float = 0f,
     val iconPositionY: Float = 0f,
-    val battleGameRepository: BattleGameRepository? = null,
 
     val cruiserOnPosition: Int = 0,
     val destroyerOnPosition: Int = 0,
