@@ -3,7 +3,6 @@ package com.marks2games.gravitygame.core.data.di
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.marks2games.gravitygame.battle_game.data.BattleGameRepositoryFactory
@@ -50,19 +49,13 @@ object AppModule {
     }
 
     @Provides
-    fun provideFirebaseUser(auth: FirebaseAuth): FirebaseUser? {
-        return auth.currentUser
-    }
-
-
-    @Provides
     @Singleton
     fun provideEmpireRepository(
         firestore: FirebaseFirestore,
-        user: FirebaseUser?,
+        auth: FirebaseAuth,
         createNewEmpireUseCase: CreateNewEmpireUseCase
     ): EmpireRepository {
-        return EmpireRepositoryImpl(firestore, user, createNewEmpireUseCase)
+        return EmpireRepositoryImpl(firestore, auth, createNewEmpireUseCase)
     }
 
     @Provides

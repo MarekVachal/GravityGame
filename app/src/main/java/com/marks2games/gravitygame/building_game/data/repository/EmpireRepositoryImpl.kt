@@ -1,7 +1,8 @@
 package com.marks2games.gravitygame.building_game.data.repository
 
 import android.util.Log
-import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.marks2games.gravitygame.building_game.data.model.Empire
 import com.marks2games.gravitygame.building_game.data.model.Planet
@@ -17,24 +18,21 @@ import javax.inject.Inject
 
 class EmpireRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val user: FirebaseUser?,
+    private val auth: FirebaseAuth,
     private val createNewEmpireUseCase: CreateNewEmpireUseCase
 ) : EmpireRepository {
+    private fun currentEmpireDocument(): DocumentReference? {
+        val uid = auth.currentUser?.uid ?: return null
+        return firestore.collection("empires").document(uid)
+    }
+
     override suspend fun getEmpire(): Empire {
-        if(user == null) return createNewEmpireUseCase.invoke()
+        val empireDoc = currentEmpireDocument() ?: return createNewEmpireUseCase.invoke()
         try {
-            val snapshot = firestore
-                .collection("empires")
-                .document(user.uid)
-                .get()
-                .await()
+            val snapshot = empireDoc.get().await()
             if(snapshot.exists()){
                 val empire = Empire.fromMap(snapshot.data ?: emptyMap())
-                val planetsCollection = firestore
-                    .collection("empires")
-                    .document(user.uid)
-                    .collection("planets")
-                val planets = planetsCollection
+                val planets = empireDoc.collection("planets")
                     .get()
                     .await()
                     .map { Planet.fromMap(it.data) }
@@ -44,7 +42,7 @@ class EmpireRepositoryImpl @Inject constructor(
                 )
             } else {
                 val newEmpire = createNewEmpireUseCase.invoke()
-                updateEmpire(newEmpire)
+                updateEmpire(empireDoc, newEmpire)
                 return newEmpire
             }
         } catch (e: Exception) {
@@ -54,10 +52,8 @@ class EmpireRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getPlanet(planetId: Int): Planet {
-        if(user == null) return Planet(type = SmallPlanet)
-        val planetDoc = firestore
-            .collection("empires")
-            .document(user.uid)
+        val empireDoc = currentEmpireDocument() ?: return Planet(type = SmallPlanet)
+        val planetDoc = empireDoc
             .collection("planets")
             .document(planetId.toString())
             .get()
@@ -68,18 +64,15 @@ class EmpireRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateEmpire(empire: Empire) {
-        if (user == null) return
+        val empireDoc = currentEmpireDocument() ?: return
+        updateEmpire(empireDoc, empire)
+    }
+
+    private suspend fun updateEmpire(empireDoc: DocumentReference, empire: Empire) {
         try {
             Log.d("Firebase", "Updating empire: ${empire.toMap()}")
-            firestore
-                .collection("empires")
-                .document(user.uid)
-                .set(empire.toMap())
-                .await()
-            val planetsCollection = firestore
-                .collection("empires")
-                .document(user.uid)
-                .collection("planets")
+            empireDoc.set(empire.toMap()).await()
+            val planetsCollection = empireDoc.collection("planets")
             coroutineScope {
                 empire.planets.map { planet ->
                     async {
@@ -97,10 +90,8 @@ class EmpireRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updatePlanet(planet: Planet) {
-        if(user == null) return
-        firestore
-            .collection("empires")
-            .document(user.uid)
+        val empireDoc = currentEmpireDocument() ?: return
+        empireDoc
             .collection("planets")
             .document(planet.id.toString())
             .set(planet)
@@ -108,12 +99,8 @@ class EmpireRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteEmpire() {
-        if (user == null) return
+        val empireDoc = currentEmpireDocument() ?: return
         try {
-            val empireDoc = firestore
-                .collection("empires")
-                .document(user.uid)
-
             val planetsCollection = empireDoc.collection("planets")
             val planetDocs = planetsCollection.get().await()
             coroutineScope {
@@ -132,11 +119,9 @@ class EmpireRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deletePlanet(planetId: Int) {
-        if (user == null) return
+        val empireDoc = currentEmpireDocument() ?: return
         try {
-            firestore
-                .collection("empires")
-                .document(user.uid)
+            empireDoc
                 .collection("planets")
                 .document(planetId.toString())
                 .delete()
