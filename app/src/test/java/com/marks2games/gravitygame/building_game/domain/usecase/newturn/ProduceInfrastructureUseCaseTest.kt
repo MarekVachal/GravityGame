@@ -1,5 +1,6 @@
 package com.marks2games.gravitygame.building_game.domain.usecase.newturn
 
+import android.util.Log
 import com.marks2games.gravitygame.building_game.data.model.District
 import com.marks2games.gravitygame.building_game.data.model.IndustrialMode
 import com.marks2games.gravitygame.building_game.data.model.InfrastructureSetting
@@ -13,7 +14,10 @@ import com.marks2games.gravitygame.building_game.domain.usecase.technology.Apply
 import com.marks2games.gravitygame.core.domain.error.ProduceInfraResult
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -28,10 +32,17 @@ class ProduceInfrastructureUseCaseTest {
 
     @Before
     fun setUp() {
+        mockkStatic(Log::class)
+        every { Log.d("ProduceInfra", any()) } returns 0
         maintenanceCost = mockk()
         applyDiversity = mockk()
         applySynergy = mockk()
         useCase = ProduceInfrastructureUseCase(maintenanceCost, applyDiversity, applySynergy)
+    }
+
+    @After
+    fun tearDown() {
+        unmockkStatic(Log::class)
     }
 
     private fun createCapitolDistrict(infraProduced: Int): District.Capitol {
