@@ -1,0 +1,17 @@
+{
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "notifications",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "*.test.js",
+        ".env*"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" test"
+      ]
+    }
+  ]
+}

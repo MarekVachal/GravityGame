@@ -11,9 +11,7 @@ import com.marks2games.gravitygame.battle_game.domain.toSimplifiedMove
 import com.marks2games.gravitygame.battle_game.data.model.Location
 import com.marks2games.gravitygame.battle_game.data.model.enum_class.Players
 import io.sentry.Sentry
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
 
@@ -27,12 +25,12 @@ class BattleGameRepository(
         onOpponentReady: (SimplifiedMove) -> Unit,
         timeoutMillis: Long,
         onOpponentDisconnected: ()-> Unit
-    ): Unit = withContext(Dispatchers.IO) {
+    ) {
         val myMove = updatedLocations.toSimplifiedMove()
         when (player) {
             Players.PLAYER1 -> roomRef.child("player1LocationList").setValue(myMove)
             Players.PLAYER2 -> roomRef.child("player2LocationList").setValue(myMove)
-            Players.NONE -> return@withContext
+            Players.NONE -> return
         }
 
         val result = withTimeoutOrNull(timeoutMillis) {
@@ -90,23 +88,27 @@ class BattleGameRepository(
             }
     }
 
-    fun listenForCapitulation(onOpponentCapitulated: () -> Unit) {
-        val child = if(player == Players.PLAYER1){
-            "player2Capitulated"
-        } else {
-            "player1Capitulated"
+    fun listenForCapitulation(onOpponentCapitulated: () -> Unit): () -> Unit {
+        val child = when (player) {
+            Players.PLAYER1 -> "player2Capitulated"
+            Players.PLAYER2 -> "player1Capitulated"
+            Players.NONE -> return {}
         }
-        roomRef.child("capitulation").child(child).addValueEventListener(object : ValueEventListener {
+        val ref = roomRef.child("capitulation").child(child)
+        val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val capitulated = snapshot.getValue(Boolean::class.java) ?: false
                 if (capitulated) {
+                    ref.removeEventListener(this)
                     onOpponentCapitulated()
                 }
             }
             override fun onCancelled(error: DatabaseError) {
                 Sentry.captureException(error.toException())
             }
-        })
+        }
+        ref.addValueEventListener(listener)
+        return { ref.removeEventListener(listener) }
     }
 
     fun deleteRoom(isOpponentDisconnected: Boolean) {

@@ -78,6 +78,11 @@ android {
     }
     */
 
+    // Defense in depth: service account credentials must never enter an APK/AAB.
+    androidResources {
+        ignoreAssetsPattern += ":service-account*.json:service_account*.json"
+    }
+
     buildFeatures {
         compose = true
     }
@@ -121,15 +126,11 @@ dependencies {
     val roomVersion = "2.8.5"
     val credentialVersion = "1.6.0"
     val hiltVersion = "2.60.1"
-    val ktorVersion = "3.6.1"
     val coroutineVersion = "1.11.0"
     val sentryVersion = "8.64.0"
 
-    //Ktor
-    implementation ("io.ktor:ktor-client-core:$ktorVersion")
-    implementation ("io.ktor:ktor-client-cio:$ktorVersion")
-    implementation ("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation ("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+    // Explicit dependency for serialized models and their JSON tests.
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.13.0")
 
     //Hilt
     implementation ("com.google.dagger:hilt-android:$hiltVersion")
@@ -159,13 +160,10 @@ dependencies {
     //Firebase
     implementation(platform("com.google.firebase:firebase-bom:35.2.0"))
     implementation("com.google.firebase:firebase-common")
-    implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-database")
     implementation ("com.google.firebase:firebase-firestore")
     implementation ("com.google.firebase:firebase-messaging")
-    implementation("com.google.firebase:firebase-inappmessaging")
-    implementation("com.google.auth:google-auth-library-oauth2-http:1.57.0")
 
     //gRPC (firestore used it for network operation
     implementation("io.grpc:grpc-okhttp:1.85.1")

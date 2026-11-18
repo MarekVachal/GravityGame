@@ -35,6 +35,7 @@ import com.marks2games.gravitygame.battle_game.data.model.enum_class.BattleResul
 import com.marks2games.gravitygame.core.data.model.enum_class.ProgressIndicatorType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -99,9 +100,13 @@ class BattleViewModel @Inject constructor(
         movementUiState.value.battleGameRepository?.sendUpdatedLocations(
             updatedLocations = locationListUiState.value.locationList,
             onOpponentReady = { newLocationList ->
-                updateOpponentData(simplifiedMove = newLocationList, isSetup = isSetup) },
+                if (!movementUiState.value.endOfGame) {
+                    updateOpponentData(simplifiedMove = newLocationList, isSetup = isSetup)
+                }
+            },
             timeoutMillis = getTimeoutMillis(timerModel = timerModel),
-            onOpponentDisconnected = {
+            onOpponentDisconnected = disconnected@{
+                if (movementUiState.value.endOfGame) return@disconnected
                 sharedPlayerModel.updateBattleResult(BattleResultEnum.WIN)
                 endOfGame(
                     timerModel = timerModel,
@@ -583,6 +588,7 @@ class BattleViewModel @Inject constructor(
     }
 
     suspend fun finishTurn(timerModel: TimerViewModel, databaseModel: DatabaseViewModel) {
+        if (movementUiState.value.endOfGame) return
         timerModel.stopTimer()
         cleanBattleOnLocations()
         cleanHasMoved()
@@ -603,7 +609,10 @@ class BattleViewModel @Inject constructor(
                     timerModel = timerModel,
                     databaseModel = databaseModel
                 )
+                if (movementUiState.value.endOfGame) return
                 conductBattles()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Sentry.captureException(e)
                 return
@@ -620,6 +629,7 @@ class BattleViewModel @Inject constructor(
         checkEndCondition(timerModel = timerModel, databaseModel = databaseModel)
         if (!movementUiState.value.endOfGame) {
             showNewTurnDialog()
+            if (movementUiState.value.endOfGame) return
             timerModel.resetTimer()
             timerModel.startTimer()
         }
@@ -772,8 +782,12 @@ class BattleViewModel @Inject constructor(
         )
     }
 
-    fun listenForCapitulation(timerModel: TimerViewModel, databaseModel: DatabaseViewModel) {
-        movementUiState.value.battleGameRepository?.listenForCapitulation {
+    fun listenForCapitulation(
+        timerModel: TimerViewModel,
+        databaseModel: DatabaseViewModel
+    ): (() -> Unit)? {
+        return movementUiState.value.battleGameRepository?.listenForCapitulation {
+            if (!movementUiState.value.endOfGame) {
                 sharedPlayerModel.updateBattleResult(BattleResultEnum.WIN)
                 endOfGame(
                     timerModel = timerModel,
@@ -782,7 +796,7 @@ class BattleViewModel @Inject constructor(
                     databaseModel = databaseModel
                 )
             }
-
+        }
     }
 
     private fun changeEndOfGameType(endOfGameType: EndOfGameType){
